@@ -10,10 +10,30 @@ interface SpotifyPlaylist {
   }
 }
 
+interface ExtendedSession {
+  user?: {
+    email?: string
+    name?: string
+  }
+  accessToken?: string
+  refreshToken?: string
+  expiresAt?: number
+}
+
+interface VoteResult {
+  trackId: string
+  totalPoints: number
+  totalVotes: number
+  trackName: string
+  artistName: string
+  albumName: string
+  rank: number
+}
+
 // Create or update BossHoss voting playlist for user
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
-    const session = await getServerSession() as any
+    const session = await getServerSession() as ExtendedSession | null
     
     if (!session?.user?.email || !session?.accessToken) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
@@ -70,10 +90,10 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Get current playlist status for user
-export async function GET(request: NextRequest) {
+// Get user's playlist status
+export async function GET(_request: NextRequest) {
   try {
-    const session = await getServerSession() as any
+    const session = await getServerSession() as ExtendedSession | null
     
     if (!session?.user?.email || !session?.accessToken) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
@@ -106,7 +126,7 @@ export async function GET(request: NextRequest) {
     })
     
   } catch (error) {
-    console.error('Playlist status error:', error)
+    console.error('Get playlist status error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -114,23 +134,23 @@ export async function GET(request: NextRequest) {
 // Helper: Find existing BossHoss voting playlist
 async function findExistingPlaylist(accessToken: string, userId: string): Promise<SpotifyPlaylist | null> {
   try {
-    const playlistsResponse = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists?limit=50`, {
+    const response = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists?limit=50`, {
       headers: {
         'Authorization': `Bearer ${accessToken}`
       }
     })
     
-    if (!playlistsResponse.ok) return null
+    if (!response.ok) {
+      throw new Error('Failed to get playlists')
+    }
     
-    const playlistsData = await playlistsResponse.json()
-    const playlistName = '🤠 BossHoss - Back to the Boots (Community Top 15)'
-    
-    const existingPlaylist = playlistsData.items?.find((playlist: SpotifyPlaylist) => 
-      playlist.name === playlistName
+    const data = await response.json()
+    const existingPlaylist = data.items?.find((playlist: SpotifyPlaylist & { name: string }) => 
+      playlist.name.includes('BossHoss Voting') || 
+      playlist.name.includes('Back to the Boots')
     )
     
     return existingPlaylist || null
-    
   } catch (error) {
     console.error('Error finding existing playlist:', error)
     return null
@@ -138,16 +158,8 @@ async function findExistingPlaylist(accessToken: string, userId: string): Promis
 }
 
 // Helper: Create new playlist
-async function createNewPlaylist(accessToken: string, userId: string, topTracks: Array<{
-  trackId: string
-  totalPoints: number
-  totalVotes: number
-  trackName: string
-  artistName: string
-  albumName: string
-  rank: number
-}>): Promise<SpotifyPlaylist> {
-  const playlistName = '🤠 BossHoss - Back to the Boots (Community Top 15)'
+async function createNewPlaylist(accessToken: string, userId: string, topTracks: VoteResult[]): Promise<SpotifyPlaylist> {
+  const playlistName = `🤠 BossHoss Voting Playlist - Back to the Boots Tour 2025`
   const description = `Die beliebtesten BossHoss Songs basierend auf Community Voting für die Back to the Boots Tour 2025. Wird täglich automatisch aktualisiert! 🎸 Erstellt: ${new Date().toLocaleDateString('de-DE')}`
   
   // Create playlist
@@ -178,15 +190,7 @@ async function createNewPlaylist(accessToken: string, userId: string, topTracks:
 }
 
 // Helper: Update existing playlist
-async function updatePlaylist(accessToken: string, playlistId: string, topTracks: Array<{
-  trackId: string
-  totalPoints: number
-  totalVotes: number
-  trackName: string
-  artistName: string
-  albumName: string
-  rank: number
-}>): Promise<SpotifyPlaylist> {
+async function updatePlaylist(accessToken: string, playlistId: string, topTracks: VoteResult[]): Promise<SpotifyPlaylist> {
   // Update playlist description
   const description = `Die beliebtesten BossHoss Songs basierend auf Community Voting für die Back to the Boots Tour 2025. Wird täglich automatisch aktualisiert! 🎸 Letztes Update: ${new Date().toLocaleDateString('de-DE')}`
   
@@ -227,15 +231,7 @@ async function updatePlaylist(accessToken: string, playlistId: string, topTracks
 }
 
 // Helper: Add tracks to playlist
-async function addTracksToPlaylist(accessToken: string, playlistId: string, topTracks: Array<{
-  trackId: string
-  totalPoints: number
-  totalVotes: number
-  trackName: string
-  artistName: string
-  albumName: string
-  rank: number
-}>): Promise<void> {
+async function addTracksToPlaylist(accessToken: string, playlistId: string, topTracks: VoteResult[]): Promise<void> {
   // Convert track results to Spotify URIs
   const trackUris = topTracks.map(track => `spotify:track:${track.trackId}`)
   
