@@ -74,142 +74,143 @@ export default function VotingPage() {
 
   // Load BossHoss data and user listening history
   useEffect(() => {
-    const loadData = async () => {
-      if (session?.accessToken) {
-        await loadBossHossData()
-        await loadUserListeningHistory()
-        await loadUserVotingStatus()
-      }
-    }
-    loadData()
-  }, [session])
-
-  const loadBossHossData = async () => {
-    try {
-      // Search for BossHoss artist
-      const artistResponse = await fetch(`https://api.spotify.com/v1/search?q=artist:BossHoss&type=artist&limit=1`, {
-        headers: {
-          'Authorization': `Bearer ${session?.accessToken}`
-        }
-      })
-      const artistData = await artistResponse.json()
-      
-      if (artistData.artists.items.length === 0) {
-        console.error('BossHoss artist not found')
-        return
-      }
-
-      const artistId = artistData.artists.items[0].id
-
-      // Get all BossHoss albums
-      const albumsResponse = await fetch(`https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album,single&market=DE&limit=50`, {
-        headers: {
-          'Authorization': `Bearer ${session?.accessToken}`
-        }
-      })
-      const albumsData = await albumsResponse.json()
-
-      // Get tracks for each album/single
-      const albumsWithTracks = await Promise.all(
-        albumsData.items.map(async (album: {
-          id: string
-          name: string
-          release_date: string
-          images: SpotifyImage[]
-          album_type: string
-        }) => {
-          const tracksResponse = await fetch(`https://api.spotify.com/v1/albums/${album.id}/tracks?market=DE`, {
-            headers: {
-              'Authorization': `Bearer ${session?.accessToken}`
-            }
-          })
-          const tracksData = await tracksResponse.json()
-          
-          return {
-            id: album.id,
-            name: album.name,
-            release_date: album.release_date,
-            images: album.images,
-            album_type: album.album_type,
-            tracks: tracksData.items.map((track: {
-              id: string
-              name: string
-              artists: SpotifyArtist[]
-            }) => ({
-              ...track,
-              album: {
-                name: album.name,
-                images: album.images,
-                release_date: album.release_date
-              }
-            }))
+    if (!session?.accessToken) return
+    
+    const loadBossHossData = async () => {
+      try {
+        // Search for BossHoss artist
+        const artistResponse = await fetch(`https://api.spotify.com/v1/search?q=artist:BossHoss&type=artist&limit=1`, {
+          headers: {
+            'Authorization': `Bearer ${session?.accessToken}`
           }
         })
-      )
-
-      // Sort by release date (newest first)
-      const sortedAlbums = albumsWithTracks.sort((a, b) => {
-        return new Date(b.release_date).getTime() - new Date(a.release_date).getTime()
-      })
-
-      setBosshossAlbums(sortedAlbums)
-      
-      // Expand first 2 releases by default
-      const initialExpanded: ExpandedAlbums = {}
-      sortedAlbums.slice(0, 2).forEach(album => {
-        initialExpanded[album.id] = true
-      })
-      setExpandedAlbums(initialExpanded)
-      
-      setLoading(false)
-    } catch (error) {
-      console.error('Error loading BossHoss data:', error)
-      setLoading(false)
-    }
-  }
-
-  const loadUserListeningHistory = async () => {
-    try {
-      // Get recently played tracks (last 50)
-      const recentResponse = await fetch('https://api.spotify.com/v1/me/player/recently-played?limit=50', {
-        headers: {
-          'Authorization': `Bearer ${session?.accessToken}`
+        const artistData = await artistResponse.json()
+        
+        if (artistData.artists.items.length === 0) {
+          console.error('BossHoss artist not found')
+          return
         }
-      })
-      const recentData = await recentResponse.json()
-      
-      const recentTrackIds = recentData.items?.map((item: { track: { id: string } }) => item.track.id) || []
-      setRecentTracks(recentTrackIds)
 
-      // Get top tracks (long term = ~1 year)
-      const topResponse = await fetch('https://api.spotify.com/v1/me/top/tracks?time_range=long_term&limit=50', {
-        headers: {
-          'Authorization': `Bearer ${session?.accessToken}`
-        }
-      })
-      const topData = await topResponse.json()
-      
-      const topTrackIds = topData.items?.map((item: { id: string }) => item.id) || []
-      setTopTracks(topTrackIds)
-      
-    } catch (error) {
-      console.error('Error loading user listening history:', error)
-    }
-  }
+        const artistId = artistData.artists.items[0].id
 
-  const loadUserVotingStatus = async () => {
-    try {
-      const response = await fetch('/api/vote')
-      const data = await response.json()
-      
-      if (response.ok) {
-        setRemainingVotes(data.votesRemaining)
-        setVotedTracks(data.todayVotes.map((vote: { trackId: string }) => vote.trackId))
+        // Get all BossHoss albums
+        const albumsResponse = await fetch(`https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album,single&market=DE&limit=50`, {
+          headers: {
+            'Authorization': `Bearer ${session?.accessToken}`
+          }
+        })
+        const albumsData = await albumsResponse.json()
+
+        // Get tracks for each album/single
+        const albumsWithTracks = await Promise.all(
+          albumsData.items.map(async (album: {
+            id: string
+            name: string
+            release_date: string
+            images: SpotifyImage[]
+            album_type: string
+          }) => {
+            const tracksResponse = await fetch(`https://api.spotify.com/v1/albums/${album.id}/tracks?market=DE`, {
+              headers: {
+                'Authorization': `Bearer ${session?.accessToken}`
+              }
+            })
+            const tracksData = await tracksResponse.json()
+            
+            return {
+              id: album.id,
+              name: album.name,
+              release_date: album.release_date,
+              images: album.images,
+              album_type: album.album_type,
+              tracks: tracksData.items.map((track: {
+                id: string
+                name: string
+                artists: SpotifyArtist[]
+              }) => ({
+                ...track,
+                album: {
+                  name: album.name,
+                  images: album.images,
+                  release_date: album.release_date
+                }
+              }))
+            }
+          })
+        )
+
+        // Sort by release date (newest first)
+        const sortedAlbums = albumsWithTracks.sort((a, b) => {
+          return new Date(b.release_date).getTime() - new Date(a.release_date).getTime()
+        })
+
+        setBosshossAlbums(sortedAlbums)
+        
+        // Expand first 2 releases by default
+        const initialExpanded: ExpandedAlbums = {}
+        sortedAlbums.slice(0, 2).forEach(album => {
+          initialExpanded[album.id] = true
+        })
+        setExpandedAlbums(initialExpanded)
+        
+        setLoading(false)
+      } catch (error) {
+        console.error('Error loading BossHoss data:', error)
+        setLoading(false)
       }
-    } catch (error) {
-      console.error('Error loading user voting status:', error)
     }
-  }
+
+    const loadUserListeningHistory = async () => {
+      try {
+        // Get recently played tracks (last 50)
+        const recentResponse = await fetch('https://api.spotify.com/v1/me/player/recently-played?limit=50', {
+          headers: {
+            'Authorization': `Bearer ${session?.accessToken}`
+          }
+        })
+        const recentData = await recentResponse.json()
+        
+        const recentTrackIds = recentData.items?.map((item: { track: { id: string } }) => item.track.id) || []
+        setRecentTracks(recentTrackIds)
+
+        // Get top tracks (long term = ~1 year)
+        const topResponse = await fetch('https://api.spotify.com/v1/me/top/tracks?time_range=long_term&limit=50', {
+          headers: {
+            'Authorization': `Bearer ${session?.accessToken}`
+          }
+        })
+        const topData = await topResponse.json()
+        
+        const topTrackIds = topData.items?.map((item: { id: string }) => item.id) || []
+        setTopTracks(topTrackIds)
+        
+      } catch (error) {
+        console.error('Error loading user listening history:', error)
+      }
+    }
+
+    const loadUserVotingStatus = async () => {
+      try {
+        const response = await fetch('/api/vote')
+        const data = await response.json()
+        
+        if (response.ok) {
+          setRemainingVotes(data.votesRemaining)
+          setVotedTracks(data.todayVotes.map((vote: { trackId: string }) => vote.trackId))
+        }
+      } catch (error) {
+        console.error('Error loading user voting status:', error)
+      }
+    }
+
+    const loadData = async () => {
+      await loadBossHossData()
+      await loadUserListeningHistory()
+      await loadUserVotingStatus()
+    }
+    
+    loadData()
+  }, [session?.accessToken])
 
   const getVoteMultiplier = (trackId: string) => {
     if (topTracks.includes(trackId)) return 5
