@@ -64,6 +64,11 @@ export default function VotingPage() {
   const [remainingVotes, setRemainingVotes] = useState(10)
   const [expandedAlbums, setExpandedAlbums] = useState<ExpandedAlbums>({})
   const [submitting, setSubmitting] = useState(false)
+  const [playlistStatus, setPlaylistStatus] = useState<{
+    hasPlaylist: boolean
+    playlist?: { id: string; name: string; url: string }
+  }>({ hasPlaylist: false })
+  const [creatingPlaylist, setCreatingPlaylist] = useState(false)
 
   // Redirect if not logged in
   useEffect(() => {
@@ -207,10 +212,24 @@ export default function VotingPage() {
       await loadBossHossData()
       await loadUserListeningHistory()
       await loadUserVotingStatus()
+      await loadPlaylistStatus()
     }
     
     loadData()
   }, [session?.accessToken])
+
+  const loadPlaylistStatus = async () => {
+    try {
+      const response = await fetch('/api/playlist')
+      const data = await response.json()
+      
+      if (response.ok) {
+        setPlaylistStatus(data)
+      }
+    } catch (error) {
+      console.error('Error loading playlist status:', error)
+    }
+  }
 
   const getVoteMultiplier = (trackId: string) => {
     if (topTracks.includes(trackId)) return 5
@@ -309,6 +328,40 @@ export default function VotingPage() {
     }
   }
 
+  const createOrUpdatePlaylist = async () => {
+    if (creatingPlaylist) return
+    
+    setCreatingPlaylist(true)
+    
+    try {
+      const response = await fetch('/api/playlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      const result = await response.json()
+      
+      if (result.success) {
+        setPlaylistStatus({
+          hasPlaylist: true,
+          playlist: result.playlist
+        })
+        
+        alert(`🎉 ${result.message}\n🎵 ${result.tracksCount} Songs hinzugefügt!\n\n🔗 Öffne Spotify um deine Playlist zu sehen.`)
+      } else {
+        alert(`❌ ${result.error || 'Fehler beim Erstellen der Playlist'}`)
+      }
+      
+    } catch (error) {
+      console.error('Error creating playlist:', error)
+      alert('Fehler beim Erstellen der Playlist. Bitte versuche es nochmal.')
+    } finally {
+      setCreatingPlaylist(false)
+    }
+  }
+
   if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-amber-50 to-amber-100 flex items-center justify-center">
@@ -386,14 +439,61 @@ export default function VotingPage() {
                 </div>
               </div>
               
-              {votedTracks.length > 0 && !showResults && (
-                <button
-                  onClick={loadCommunityResults}
-                  className="mt-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105"
-                >
-                  Community Results anzeigen ({votedTracks.length} Votes abgegeben)
-                </button>
-              )}
+              <div className="flex flex-wrap gap-4 mt-4">
+                {votedTracks.length > 0 && !showResults && (
+                  <button
+                    onClick={loadCommunityResults}
+                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105"
+                  >
+                    Community Results anzeigen ({votedTracks.length} Votes abgegeben)
+                  </button>
+                )}
+                
+                {/* Playlist Feature */}
+                <div className="flex items-center space-x-4">
+                  {playlistStatus.hasPlaylist ? (
+                    <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-2 bg-green-100 px-4 py-2 rounded-full">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-green-800 font-semibold text-sm">Playlist aktiv</span>
+                      </div>
+                      <a
+                        href={playlistStatus.playlist?.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full text-sm transition-all duration-300 transform hover:scale-105"
+                      >
+                        🎵 In Spotify öffnen
+                      </a>
+                      <button
+                        onClick={createOrUpdatePlaylist}
+                        disabled={creatingPlaylist}
+                        className="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-full text-sm transition-all duration-300 transform hover:scale-105 disabled:opacity-50"
+                      >
+                        {creatingPlaylist ? 'Updating...' : '🔄 Update'}
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={createOrUpdatePlaylist}
+                      disabled={creatingPlaylist}
+                      className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {creatingPlaylist ? (
+                        <span className="flex items-center space-x-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          <span>Creating...</span>
+                        </span>
+                      ) : (
+                        <span className="flex items-center space-x-2">
+                          <span>🎵</span>
+                          <span>Playlist erstellen (Top 15)</span>
+                        </span>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Albums & Songs */}
