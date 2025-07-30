@@ -2,9 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { submitVote, canUserVoteToday, getUserTodayVotes } from '@/lib/database'
 
+interface ExtendedSession {
+  user?: {
+    email?: string
+    name?: string
+  }
+  accessToken?: string
+  refreshToken?: string
+  expiresAt?: number
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const session: any = await getServerSession()
+    const session = await getServerSession() as ExtendedSession | null
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
@@ -40,7 +50,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const session: any = await getServerSession()
+    const session = await getServerSession() as ExtendedSession | null
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
