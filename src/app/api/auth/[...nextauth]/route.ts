@@ -14,8 +14,8 @@ const scopes = [
 const handler = NextAuth({
   providers: [
     SpotifyProvider({
-      clientId: process.env.SPOTIFY_CLIENT_ID,
-      clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+      clientId: process.env.SPOTIFY_CLIENT_ID!,
+      clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
       authorization: {
         params: {
           scope: scopes
@@ -24,7 +24,7 @@ const handler = NextAuth({
     })
   ],
   callbacks: {
-    async jwt({ token, account }) {
+    async jwt({ token, account }: any) {
       if (account) {
         token.accessToken = account.access_token
         token.refreshToken = account.refresh_token
@@ -32,10 +32,10 @@ const handler = NextAuth({
       }
       return token
     },
-    async session({ session, token }) {
-      session.accessToken = token.accessToken
-      session.refreshToken = token.refreshToken
-      session.expiresAt = token.expiresAt
+    async session({ session, token }: any) {
+      (session as any).accessToken = token.accessToken
+      (session as any).refreshToken = token.refreshToken
+      (session as any).expiresAt = token.expiresAt
       return session
     }
   }

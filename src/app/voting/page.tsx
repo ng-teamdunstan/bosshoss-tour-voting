@@ -79,14 +79,17 @@ export default function VotingPage() {
 
   // Load BossHoss data and user listening history
   useEffect(() => {
-    if (!session?.accessToken) return
+    if (!session) return
     
+    const userSession = session as any
+    if (!userSession.accessToken) return
+
     const loadBossHossData = async () => {
       try {
         // Search for BossHoss artist
         const artistResponse = await fetch(`https://api.spotify.com/v1/search?q=artist:BossHoss&type=artist&limit=1`, {
           headers: {
-            'Authorization': `Bearer ${session?.accessToken}`
+            'Authorization': `Bearer ${userSession.accessToken}`
           }
         })
         const artistData = await artistResponse.json()
@@ -101,7 +104,7 @@ export default function VotingPage() {
         // Get all BossHoss albums
         const albumsResponse = await fetch(`https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album,single&market=DE&limit=50`, {
           headers: {
-            'Authorization': `Bearer ${session?.accessToken}`
+            'Authorization': `Bearer ${userSession.accessToken}`
           }
         })
         const albumsData = await albumsResponse.json()
@@ -117,7 +120,7 @@ export default function VotingPage() {
           }) => {
             const tracksResponse = await fetch(`https://api.spotify.com/v1/albums/${album.id}/tracks?market=DE`, {
               headers: {
-                'Authorization': `Bearer ${session?.accessToken}`
+                'Authorization': `Bearer ${userSession.accessToken}`
               }
             })
             const tracksData = await tracksResponse.json()
@@ -170,7 +173,7 @@ export default function VotingPage() {
         // Get recently played tracks (last 50)
         const recentResponse = await fetch('https://api.spotify.com/v1/me/player/recently-played?limit=50', {
           headers: {
-            'Authorization': `Bearer ${session?.accessToken}`
+            'Authorization': `Bearer ${userSession.accessToken}`
           }
         })
         const recentData = await recentResponse.json()
@@ -181,7 +184,7 @@ export default function VotingPage() {
         // Get top tracks (long term = ~1 year)
         const topResponse = await fetch('https://api.spotify.com/v1/me/top/tracks?time_range=long_term&limit=50', {
           headers: {
-            'Authorization': `Bearer ${session?.accessToken}`
+            'Authorization': `Bearer ${userSession.accessToken}`
           }
         })
         const topData = await topResponse.json()
@@ -208,6 +211,19 @@ export default function VotingPage() {
       }
     }
 
+    const loadPlaylistStatus = async () => {
+      try {
+        const response = await fetch('/api/playlist')
+        const data = await response.json()
+        
+        if (response.ok) {
+          setPlaylistStatus(data)
+        }
+      } catch (error) {
+        console.error('Error loading playlist status:', error)
+      }
+    }
+
     const loadData = async () => {
       await loadBossHossData()
       await loadUserListeningHistory()
@@ -216,20 +232,7 @@ export default function VotingPage() {
     }
     
     loadData()
-  }, [session?.accessToken])
-
-  const loadPlaylistStatus = async () => {
-    try {
-      const response = await fetch('/api/playlist')
-      const data = await response.json()
-      
-      if (response.ok) {
-        setPlaylistStatus(data)
-      }
-    } catch (error) {
-      console.error('Error loading playlist status:', error)
-    }
-  }
+  }, [session])
 
   const getVoteMultiplier = (trackId: string) => {
     if (topTracks.includes(trackId)) return 5

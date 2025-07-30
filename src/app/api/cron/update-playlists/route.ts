@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
         }
         
         // Check if token needs refresh
-        let accessToken = userTokens.accessToken
+        const accessToken = userTokens.accessToken
         if (Date.now() > userTokens.expiresAt) {
           // Refresh token logic would go here
           console.log(`🔄 Token expired for user ${userId}, skipping for now`)
@@ -87,7 +87,15 @@ export async function GET(request: NextRequest) {
 }
 
 // Helper function to update a user's playlist
-async function updateUserPlaylist(accessToken: string, topTracks: any[]): Promise<boolean> {
+async function updateUserPlaylist(accessToken: string, topTracks: Array<{
+  trackId: string
+  totalPoints: number
+  totalVotes: number
+  trackName: string
+  artistName: string
+  albumName: string
+  rank: number
+}>): Promise<boolean> {
   try {
     // Get user profile
     const profileResponse = await fetch('https://api.spotify.com/v1/me', {
@@ -113,9 +121,11 @@ async function updateUserPlaylist(accessToken: string, topTracks: any[]): Promis
     const playlistsData = await playlistsResponse.json()
     const playlistName = '🤠 BossHoss - Back to the Boots (Community Top 15)'
     
-    const existingPlaylist = playlistsData.items?.find((playlist: any) => 
-      playlist.name === playlistName
-    )
+    const existingPlaylist = playlistsData.items?.find((playlist: {
+      id: string
+      name: string
+      external_urls: { spotify: string }
+    }) => playlist.name === playlistName)
     
     if (!existingPlaylist) return false
     
