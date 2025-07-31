@@ -1,7 +1,7 @@
 // src/app/api/vote/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '../auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { submitVote, canUserVoteToday, getUserTodayVotes } from '@/lib/database'
 
 interface SessionWithToken {

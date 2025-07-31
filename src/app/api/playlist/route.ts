@@ -1,7 +1,7 @@
 // src/app/api/playlist/route.ts
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '../auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { getTopTracks } from '@/lib/database'
 
 interface SpotifyPlaylist {
