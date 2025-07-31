@@ -1,14 +1,22 @@
-// src/lib/database.ts - Updated with proper KV integration
-import { kv } from './kv'
+// src/lib/database.ts - KOMPLETTE FUNKTIONIERENDE VERSION
+import { kv } from '@vercel/kv'
 
 export interface Vote {
   userId: string
   trackId: string
   points: number
+  timestamp: number
   trackName: string
   artistName: string
   albumName: string
-  timestamp: number
+}
+
+export interface UserVotingSession {
+  userId: string
+  date: string
+  votes: Vote[]
+  totalVotes: number
+  lastVoteTimestamp: number
 }
 
 export interface TrackResult {
@@ -21,147 +29,205 @@ export interface TrackResult {
   rank: number
 }
 
-export interface UserProfile {
-  userId: string
-  name?: string | null
-  email?: string | null
-  image?: string | null
-  createdAt: number
-  lastActive: number
-}
-
-// Submit a vote
-export async function submitVote(vote: Vote): Promise<{ success: boolean; message: string; votesRemaining: number }> {
+// Helper: Test KV connection
+export async function testKVConnection(): Promise<boolean> {
   try {
-    console.log('💾 Submitting vote to database:', vote)
-    
-    // Check if user has already voted for this track today
-    const todayKey = getTodayKey()
-    const userVotesKey = `user_votes:${vote.userId}:${todayKey}`
-    const userVotes = await kv.get<Vote[]>(userVotesKey) || []
-    
-    // Check if user already voted for this track today
-    const existingVote = userVotes.find(v => v.trackId === vote.trackId)
-    if (existingVote) {
-      return {
-        success: false,
-        message: 'Du hast heute bereits für diesen Song gestimmt!',
-        votesRemaining: Math.max(0, 10 - userVotes.length)
-      }
-    }
-    
-    // Check daily vote limit (10 votes per day)
-    if (userVotes.length >= 10) {
-      return {
-        success: false,
-        message: 'Du hast heute bereits alle 10 Stimmen abgegeben!',
-        votesRemaining: 0
-      }
-    }
-    
-    // Add vote to user's daily votes
-    userVotes.push(vote)
-    await kv.set(userVotesKey, userVotes, { ex: 60 * 60 * 24 * 2 }) // 2 days expiry
-    
-    // Update global track results
-    await updateTrackResults(vote)
-    
-    // Log vote for analytics
-    await logVote(vote)
-    
-    console.log('✅ Vote submitted successfully')
-    
-    return {
-      success: true,
-      message: 'Stimme erfolgreich abgegeben!',
-      votesRemaining: Math.max(0, 10 - userVotes.length)
-    }
-    
+    const testKey = `test_${Date.now()}`
+    await kv.set(testKey, 'test', { ex: 60 })
+    const result = await kv.get(testKey)
+    await kv.del(testKey)
+    return result === 'test'
   } catch (error) {
-    console.error('❌ Error submitting vote:', error)
-    return {
-      success: false,
-      message: 'Fehler beim Speichern der Stimme',
-      votesRemaining: 0
-    }
+    console.error('❌ KV Connection failed:', error)
+    return false
   }
 }
 
 // Check if user can vote today
-export async function canUserVoteToday(userId: string): Promise<{ canVote: boolean; votesRemaining: number; votesUsed: number }> {
+export async function canUserVoteToday(userId: string): Promise<{ canVote: boolean, votesUsed: number, votesRemaining: number }> {
   try {
-    const todayKey = getTodayKey()
-    const userVotesKey = `user_votes:${userId}:${todayKey}`
-    const userVotes = await kv.get<Vote[]>(userVotesKey) || []
+    const today = new Date().toISOString().split('T')[0]
+    const sessionKey = `user_votes:${userId}:${today}`
     
-    const votesUsed = userVotes.length
+    console.log('🔍 Checking votes for user:', userId, 'date:', today)
+    
+    const session = await kv.get<UserVotingSession>(sessionKey)
+    
+    if (!session) {
+      console.log('✅ No votes found, user can vote')
+      return { canVote: true, votesUsed: 0, votesRemaining: 10 }
+    }
+    
+    const votesUsed = session.totalVotes || 0
     const votesRemaining = Math.max(0, 10 - votesUsed)
+    
+    console.log('📊 Vote status:', { votesUsed, votesRemaining })
     
     return {
       canVote: votesRemaining > 0,
-      votesRemaining,
-      votesUsed
+      votesUsed,
+      votesRemaining
     }
   } catch (error) {
-    console.error('Error checking user vote status:', error)
-    return { canVote: false, votesRemaining: 0, votesUsed: 0 }
+    console.error('❌ Error checking user votes:', error)
+    return { canVote: true, votesUsed: 0, votesRemaining: 10 }
   }
 }
 
-// Get user's votes for today
+// Get user's today votes
 export async function getUserTodayVotes(userId: string): Promise<Vote[]> {
   try {
-    const todayKey = getTodayKey()
-    const userVotesKey = `user_votes:${userId}:${todayKey}`
-    return await kv.get<Vote[]>(userVotesKey) || []
+    const today = new Date().toISOString().split('T')[0]
+    const sessionKey = `user_votes:${userId}:${today}`
+    
+    const session = await kv.get<UserVotingSession>(sessionKey)
+    return session?.votes || []
   } catch (error) {
-    console.error('Error getting user votes:', error)
+    console.error('❌ Error getting user votes:', error)
     return []
   }
 }
 
-// Update global track results
-async function updateTrackResults(vote: Vote): Promise<void> {
-  const trackKey = `track_results:${vote.trackId}`
+// Submit user vote - IMPROVED VERSION
+export async function submitVote(vote: Vote): Promise<{ success: boolean, message: string, votesRemaining: number }> {
+  console.log('🎯 Starting vote submission:', vote.trackId)
   
   try {
-    // Get existing track results
-    const existing = await kv.get<TrackResult>(trackKey)
-    
-    if (existing) {
-      // Update existing
-      const updated: TrackResult = {
-        ...existing,
-        totalPoints: existing.totalPoints + vote.points,
-        totalVotes: existing.totalVotes + 1
-      }
-      await kv.set(trackKey, updated, { ex: 60 * 60 * 24 * 365 }) // 1 year expiry
-    } else {
-      // Create new
-      const newResult: TrackResult = {
-        trackId: vote.trackId,
-        totalPoints: vote.points,
-        totalVotes: 1,
-        trackName: vote.trackName,
-        artistName: vote.artistName,
-        albumName: vote.albumName,
-        rank: 0
-      }
-      await kv.set(trackKey, newResult, { ex: 60 * 60 * 24 * 365 }) // 1 year expiry
+    // 1. Validate vote data
+    if (!vote.userId || !vote.trackId || !vote.points) {
+      return { success: false, message: 'Ungültige Vote-Daten', votesRemaining: 0 }
     }
     
-    // Update leaderboard
-    await updateLeaderboard(vote.trackId, existing ? existing.totalPoints + vote.points : vote.points)
+    const today = new Date().toISOString().split('T')[0]
+    const sessionKey = `user_votes:${vote.userId}:${today}`
+    
+    // 2. Check voting limits
+    const { canVote, votesUsed } = await canUserVoteToday(vote.userId)
+    
+    if (!canVote) {
+      console.log('❌ User has no votes remaining')
+      return { success: false, message: 'Du hast bereits alle 10 Stimmen für heute verwendet!', votesRemaining: 0 }
+    }
+    
+    // 3. Check for duplicate vote
+    const existingSession = await kv.get<UserVotingSession>(sessionKey)
+    const existingVotes = existingSession?.votes || []
+    const alreadyVoted = existingVotes.some(v => v.trackId === vote.trackId)
+    
+    if (alreadyVoted) {
+      console.log('❌ User already voted for this track')
+      return { success: false, message: 'Du hast für diesen Song heute bereits gevotet!', votesRemaining: 10 - votesUsed }
+    }
+    
+    // 4. Create/update user session
+    const newSession: UserVotingSession = {
+      userId: vote.userId,
+      date: today,
+      votes: [...existingVotes, vote],
+      totalVotes: votesUsed + 1,
+      lastVoteTimestamp: vote.timestamp
+    }
+    
+    console.log('💾 Saving user session:', sessionKey)
+    
+    // 5. Save user session with longer expiry
+    await kv.set(sessionKey, newSession, { ex: 60 * 60 * 24 * 30 }) // 30 days
+    
+    // 6. Update global track results - WITH RETRY LOGIC
+    const trackUpdateSuccess = await updateTrackResultsWithRetry(vote, 3)
+    
+    if (!trackUpdateSuccess) {
+      console.error('❌ Failed to update track results')
+    }
+    
+    // 7. Update leaderboard
+    await updateLeaderboardSafe(vote.trackId)
+    
+    const votesRemaining = 10 - newSession.totalVotes
+    
+    console.log('✅ Vote submitted successfully, remaining:', votesRemaining)
+    
+    return { 
+      success: true, 
+      message: 'Vote erfolgreich abgegeben!', 
+      votesRemaining 
+    }
     
   } catch (error) {
-    console.error('Error updating track results:', error)
+    console.error('🔥 Vote submission error:', error)
+    return { 
+      success: false, 
+      message: 'Fehler beim Speichern der Stimme. Bitte versuche es nochmal.', 
+      votesRemaining: 0 
+    }
   }
 }
 
-// Update leaderboard
-async function updateLeaderboard(trackId: string, totalPoints: number): Promise<void> {
+// Update track results with retry logic
+async function updateTrackResultsWithRetry(vote: Vote, retries: number): Promise<boolean> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      console.log(`🔄 Updating track results, attempt ${attempt}`)
+      
+      const trackKey = `track_results:${vote.trackId}`
+      
+      // Get existing results
+      const existing = await kv.get<TrackResult>(trackKey)
+      
+      let updated: TrackResult
+      
+      if (existing) {
+        // Update existing
+        updated = {
+          ...existing,
+          totalPoints: existing.totalPoints + vote.points,
+          totalVotes: existing.totalVotes + 1
+        }
+        console.log('📊 Updating existing track:', { oldPoints: existing.totalPoints, newPoints: updated.totalPoints })
+      } else {
+        // Create new
+        updated = {
+          trackId: vote.trackId,
+          totalPoints: vote.points,
+          totalVotes: 1,
+          trackName: vote.trackName,
+          artistName: vote.artistName,
+          albumName: vote.albumName,
+          rank: 0
+        }
+        console.log('🆕 Creating new track result:', updated)
+      }
+      
+      // Save with expiry
+      await kv.set(trackKey, updated, { ex: 60 * 60 * 24 * 365 }) // 1 year
+      
+      console.log('✅ Track results updated successfully')
+      return true
+      
+    } catch (error) {
+      console.error(`❌ Track update attempt ${attempt} failed:`, error)
+      
+      if (attempt === retries) {
+        return false
+      }
+      
+      // Wait before retry
+      await new Promise(resolve => setTimeout(resolve, 100 * attempt))
+    }
+  }
+  
+  return false
+}
+
+// Safe leaderboard update
+async function updateLeaderboardSafe(trackId: string): Promise<void> {
   try {
     const leaderboardKey = 'track_leaderboard'
+    const trackKey = `track_results:${trackId}`
+    
+    // Get current track data
+    const trackData = await kv.get<TrackResult>(trackKey)
+    if (!trackData) return
     
     // Get current leaderboard
     const currentLeaderboard = await kv.get<{ trackId: string, points: number }[]>(leaderboardKey) || []
@@ -170,125 +236,131 @@ async function updateLeaderboard(trackId: string, totalPoints: number): Promise<
     const existingIndex = currentLeaderboard.findIndex(item => item.trackId === trackId)
     
     if (existingIndex >= 0) {
-      currentLeaderboard[existingIndex].points = totalPoints
+      currentLeaderboard[existingIndex].points = trackData.totalPoints
     } else {
-      currentLeaderboard.push({ trackId, points: totalPoints })
+      currentLeaderboard.push({ trackId, points: trackData.totalPoints })
     }
     
-    // Sort by points (highest first) and limit to top 100
+    // Sort and limit
     const sortedLeaderboard = currentLeaderboard
       .sort((a, b) => b.points - a.points)
-      .slice(0, 100)
+      .slice(0, 100) // Keep top 100
     
-    // Save back to KV
-    await kv.set(leaderboardKey, sortedLeaderboard, { ex: 60 * 60 * 24 * 365 }) // 1 year expiry
+    // Save with long expiry
+    await kv.set(leaderboardKey, sortedLeaderboard, { ex: 60 * 60 * 24 * 365 })
+    
+    console.log('📊 Leaderboard updated, track position for', trackId, ':', sortedLeaderboard.findIndex(item => item.trackId === trackId) + 1)
     
   } catch (error) {
-    console.error('Error updating leaderboard:', error)
+    console.error('❌ Leaderboard update error:', error)
   }
 }
 
-// Get top tracks
+// Get top tracks with better error handling
 export async function getTopTracks(limit: number = 15): Promise<TrackResult[]> {
   try {
-    const leaderboardKey = 'track_leaderboard'
+    console.log('🏆 Getting top tracks, limit:', limit)
     
-    // Get leaderboard
+    const leaderboardKey = 'track_leaderboard'
     const leaderboard = await kv.get<{ trackId: string, points: number }[]>(leaderboardKey)
     
     if (!leaderboard || leaderboard.length === 0) {
-      console.log('📊 No tracks in leaderboard yet')
+      console.log('⚠️ No leaderboard data found')
       return []
     }
     
-    console.log(`📊 Found ${leaderboard.length} tracks in leaderboard`)
+    console.log('📊 Leaderboard entries:', leaderboard.length)
     
     // Get top track IDs
     const topTrackIds = leaderboard.slice(0, limit)
-    
-    // Get full track data
     const tracks: TrackResult[] = []
     
+    // Get full track data
     for (let i = 0; i < topTrackIds.length; i++) {
-      const item = topTrackIds[i]
-      const trackData = await kv.get<TrackResult>(`track_results:${item.trackId}`)
-      
-      if (trackData) {
-        tracks.push({
-          ...trackData,
-          rank: i + 1
-        })
+      try {
+        const item = topTrackIds[i]
+        const trackData = await kv.get<TrackResult>(`track_results:${item.trackId}`)
+        
+        if (trackData) {
+          tracks.push({
+            ...trackData,
+            rank: i + 1
+          })
+        }
+      } catch (error) {
+        console.error(`❌ Error loading track ${topTrackIds[i].trackId}:`, error)
       }
     }
     
-    console.log(`📊 Returning ${tracks.length} top tracks`)
+    console.log('✅ Loaded', tracks.length, 'top tracks')
     return tracks
     
   } catch (error) {
-    console.error('Error getting top tracks:', error)
+    console.error('❌ Error getting top tracks:', error)
     return []
   }
 }
 
-// Log vote for analytics
-async function logVote(vote: Vote): Promise<void> {
-  try {
-    const logKey = `vote_log:${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    await kv.set(logKey, vote, { ex: 60 * 60 * 24 * 30 }) // 30 days expiry
-  } catch (error) {
-    console.error('Error logging vote:', error)
-  }
-}
-
-// Get voting statistics
+// Get total voting statistics - FIXED VERSION
 export async function getVotingStats(): Promise<{ totalVotes: number, totalUsers: number, totalTracks: number }> {
   try {
     const leaderboard = await kv.get<{ trackId: string, points: number }[]>('track_leaderboard')
     
-    // Calculate total votes from all tracks
+    // Get total votes from all user sessions (today)
+    const today = new Date().toISOString().split('T')[0]
+    const userKeys = await kv.keys(`user_votes:*:${today}`)
+    
     let totalVotes = 0
-    if (leaderboard) {
-      for (const item of leaderboard) {
-        const trackData = await kv.get<TrackResult>(`track_results:${item.trackId}`)
-        if (trackData) {
-          totalVotes += trackData.totalVotes
+    let uniqueUsers = new Set<string>()
+    
+    for (const key of userKeys) {
+      try {
+        const session = await kv.get<UserVotingSession>(key)
+        if (session) {
+          totalVotes += session.totalVotes
+          uniqueUsers.add(session.userId)
         }
+      } catch (error) {
+        console.error('Error reading user session:', error)
       }
     }
     
     return {
       totalVotes,
-      totalUsers: 0, // Would need dedicated counter
+      totalUsers: uniqueUsers.size,
       totalTracks: leaderboard?.length || 0
     }
   } catch (error) {
-    console.error('Error getting voting stats:', error)
-    return { totalVotes: 0, totalUsers: 0, totalTracks: 0 }
+    console.error('❌ Error getting voting stats:', error)
+    return {
+      totalVotes: 0,
+      totalUsers: 0,
+      totalTracks: 0
+    }
   }
 }
 
-// User management
+// Save user profile for future use
 export async function saveUserProfile(userId: string, profile: { 
   name?: string | null
   email?: string | null  
   image?: string | null
+  spotifyId?: string
 }): Promise<void> {
   try {
-    const userProfile: UserProfile = {
-      userId,
-      ...profile,
-      createdAt: Date.now(),
-      lastActive: Date.now()
-    }
-    
-    await kv.set(`user_profile:${userId}`, userProfile, { ex: 60 * 60 * 24 * 365 }) // 1 year expiry
+    const userKey = `user_profile:${userId}`
+    await kv.set(userKey, profile, { ex: 60 * 60 * 24 * 365 }) // 1 year
   } catch (error) {
-    console.error('Error saving user profile:', error)
+    console.error('❌ Error saving user profile:', error)
   }
 }
 
-// Helper: Get today's key for daily vote limits
-function getTodayKey(): string {
-  const today = new Date()
-  return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`
+// Get user profile
+export async function getUserProfile(userId: string): Promise<any> {
+  try {
+    return await kv.get(`user_profile:${userId}`)
+  } catch (error) {
+    console.error('❌ Error getting user profile:', error)
+    return null
+  }
 }

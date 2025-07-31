@@ -1,59 +1,97 @@
-// src/app/api/debug/route.ts - Debug Route für Upstash Redis
-import { NextResponse } from 'next/server'
-import { redis } from '@/lib/redis'
-import { getTopTracks, getVotingStats } from '@/lib/database'
+// src/app/api/debug/voting/route.ts
+import { NextRequest, NextResponse } from 'next/server'
+import { kv } from '@vercel/kv'
+import { getTopTracks, submitVote } from '@/lib/database'
 
 export async function GET() {
   try {
-    console.log('🔍 Running database debug checks...')
+    console.log('🔍 DEBUGGING VOTING SYSTEM...')
     
-    // Test Redis connection
-    const redisTestResult = await testRedisConnection()
-    console.log('📡 Redis Connection:', redisTestResult ? '✅ SUCCESS' : '❌ FAILED')
+    // 1. Test KV Connection
+    const testKey = 'debug_test'
+    await kv.set(testKey, { timestamp: Date.now(), test: 'success' })
+    const testResult = await kv.get(testKey)
     
-    // Test database functions
+    console.log('✅ KV Connection:', testResult)
+    
+    // 2. Check Leaderboard
+    const leaderboard = await kv.get('track_leaderboard')
+    console.log('📊 Current Leaderboard:', leaderboard)
+    
+    // 3. Check sample track results
+    const sampleTrackKeys = await kv.keys('track_results:*')
+    console.log('🎵 Track Result Keys:', sampleTrackKeys.slice(0, 5))
+    
+    let sampleTrackData = null
+    if (sampleTrackKeys.length > 0) {
+      sampleTrackData = await kv.get(sampleTrackKeys[0])
+      console.log('🎵 Sample Track Data:', sampleTrackData)
+    }
+    
+    // 4. Check user sessions
+    const userSessionKeys = await kv.keys('user_votes:*')
+    console.log('👤 User Session Keys:', userSessionKeys.slice(0, 3))
+    
+    // 5. Get top tracks
     const topTracks = await getTopTracks(5)
-    console.log('📊 Top tracks count:', topTracks.length)
-    
-    const stats = await getVotingStats()
-    console.log('📈 Voting stats:', stats)
-    
-    // Check leaderboard
-    const leaderboardData = await redis.get('track_leaderboard')
-    const leaderboard = leaderboardData ? JSON.parse(leaderboardData as string) : null
-    console.log('🏆 Leaderboard items:', Array.isArray(leaderboard) ? leaderboard.length : 'null/undefined')
+    console.log('🏆 Top Tracks:', topTracks)
     
     return NextResponse.json({
-      redisConnection: redisTestResult,
-      topTracksCount: topTracks.length,
-      topTracks: topTracks.slice(0, 3), // Show first 3 tracks for debugging
-      stats,
-      leaderboardItems: Array.isArray(leaderboard) ? leaderboard.length : 0,
-      environment: {
-        hasUpstashUrl: !!process.env.UPSTASH_REDIS_REST_URL,
-        hasUpstashToken: !!process.env.UPSTASH_REDIS_REST_TOKEN,
-        nodeEnv: process.env.NODE_ENV
+      success: true,
+      debug: {
+        kvConnection: !!testResult,
+        leaderboard: leaderboard,
+        sampleTrackKeys: sampleTrackKeys.length,
+        sampleTrackData,
+        userSessionKeys: userSessionKeys.length,
+        topTracks: topTracks.length,
+        topTracksData: topTracks
       }
     })
     
   } catch (error) {
-    console.error('❌ Debug error:', error)
+    console.error('🔥 DEBUG ERROR:', error)
     return NextResponse.json({ 
-      error: 'Debug failed',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 })
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error'
+    })
   }
 }
 
-async function testRedisConnection(): Promise<boolean> {
+export async function POST(request: NextRequest) {
   try {
-    const testKey = `test_${Date.now()}`
-    await redis.set(testKey, 'test_value', { ex: 10 })
-    const result = await redis.get(testKey)
-    await redis.del(testKey) // Cleanup
-    return result === 'test_value'
+    console.log('🧪 TESTING VOTE SUBMISSION...')
+    
+    // Test vote submission
+    const testVote = {
+      userId: 'debug_user_' + Date.now(),
+      trackId: 'test_track_123',
+      points: 1,
+      trackName: 'Test Song',
+      artistName: 'The BossHoss',
+      albumName: 'Test Album',
+      timestamp: Date.now()
+    }
+    
+    const result = await submitVote(testVote)
+    console.log('🗳️ Vote Result:', result)
+    
+    // Check if vote was actually saved
+    const savedVote = await kv.get(`track_results:${testVote.trackId}`)
+    console.log('💾 Saved Vote Data:', savedVote)
+    
+    return NextResponse.json({
+      success: true,
+      testVote,
+      submitResult: result,
+      savedData: savedVote
+    })
+    
   } catch (error) {
-    console.error('Redis connection test failed:', error)
-    return false
+    console.error('🔥 VOTE TEST ERROR:', error)
+    return NextResponse.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error'
+    })
   }
 }
