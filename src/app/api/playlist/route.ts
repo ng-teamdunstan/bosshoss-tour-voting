@@ -1,3 +1,4 @@
+// src/app/api/playlist/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { getTopTracks } from '@/lib/database'
@@ -10,30 +11,13 @@ interface SpotifyPlaylist {
   }
 }
 
-interface ExtendedSession {
-  user?: {
-    email?: string
-    name?: string
-  }
-  accessToken?: string
-  refreshToken?: string
-  expiresAt?: number
-}
-
-interface VoteResult {
-  trackId: string
-  totalPoints: number
-  totalVotes: number
-  trackName: string
-  artistName: string
-  albumName: string
-  rank: number
-}
+const PLAYLIST_NAME = 'The BossHoss Clubtour Setlist Voting'
+const PLAYLIST_DESCRIPTION = 'Die beliebtesten BossHoss Songs basierend auf Community Voting für die Clubtour 2025. Wird täglich automatisch aktualisiert! 🎸'
 
 // Create or update BossHoss voting playlist for user
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession() as ExtendedSession | null
+    const session = await getServerSession() as any
     
     if (!session?.user?.email || !session?.accessToken) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
@@ -90,10 +74,10 @@ export async function POST(_request: NextRequest) {
   }
 }
 
-// Get user's playlist status
-export async function GET(_request: NextRequest) {
+// Get current playlist status for user
+export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession() as ExtendedSession | null
+    const session = await getServerSession() as any
     
     if (!session?.user?.email || !session?.accessToken) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
@@ -126,7 +110,7 @@ export async function GET(_request: NextRequest) {
     })
     
   } catch (error) {
-    console.error('Get playlist status error:', error)
+    console.error('Playlist status error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -134,23 +118,22 @@ export async function GET(_request: NextRequest) {
 // Helper: Find existing BossHoss voting playlist
 async function findExistingPlaylist(accessToken: string, userId: string): Promise<SpotifyPlaylist | null> {
   try {
-    const response = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists?limit=50`, {
+    const playlistsResponse = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists?limit=50`, {
       headers: {
         'Authorization': `Bearer ${accessToken}`
       }
     })
     
-    if (!response.ok) {
-      throw new Error('Failed to get playlists')
-    }
+    if (!playlistsResponse.ok) return null
     
-    const data = await response.json()
-    const existingPlaylist = data.items?.find((playlist: SpotifyPlaylist & { name: string }) => 
-      playlist.name.includes('BossHoss Voting') || 
-      playlist.name.includes('Back to the Boots')
+    const playlistsData = await playlistsResponse.json()
+    
+    const existingPlaylist = playlistsData.items?.find((playlist: SpotifyPlaylist) => 
+      playlist.name === PLAYLIST_NAME
     )
     
     return existingPlaylist || null
+    
   } catch (error) {
     console.error('Error finding existing playlist:', error)
     return null
@@ -158,10 +141,15 @@ async function findExistingPlaylist(accessToken: string, userId: string): Promis
 }
 
 // Helper: Create new playlist
-async function createNewPlaylist(accessToken: string, userId: string, topTracks: VoteResult[]): Promise<SpotifyPlaylist> {
-  const playlistName = `🤠 BossHoss Voting Playlist - Back to the Boots Tour 2025`
-  const description = `Die beliebtesten BossHoss Songs basierend auf Community Voting für die Back to the Boots Tour 2025. Wird täglich automatisch aktualisiert! 🎸 Erstellt: ${new Date().toLocaleDateString('de-DE')}`
-  
+async function createNewPlaylist(accessToken: string, userId: string, topTracks: Array<{
+  trackId: string
+  totalPoints: number
+  totalVotes: number
+  trackName: string
+  artistName: string
+  albumName: string
+  rank: number
+}>): Promise<SpotifyPlaylist> {
   // Create playlist
   const createResponse = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
     method: 'POST',
@@ -170,10 +158,9 @@ async function createNewPlaylist(accessToken: string, userId: string, topTracks:
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      name: playlistName,
-      description: description,
-      public: false,
-      collaborative: false
+      name: PLAYLIST_NAME,
+      description: PLAYLIST_DESCRIPTION,
+      public: false
     })
   })
   
@@ -184,27 +171,34 @@ async function createNewPlaylist(accessToken: string, userId: string, topTracks:
   const playlist = await createResponse.json()
   
   // Add tracks to playlist
-  await addTracksToPlaylist(accessToken, playlist.id, topTracks)
+  const trackUris = topTracks.map(track => `spotify:track:${track.trackId}`)
+  
+  if (trackUris.length > 0) {
+    await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}/tracks`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        uris: trackUris
+      })
+    })
+  }
   
   return playlist
 }
 
 // Helper: Update existing playlist
-async function updatePlaylist(accessToken: string, playlistId: string, topTracks: VoteResult[]): Promise<SpotifyPlaylist> {
-  // Update playlist description
-  const description = `Die beliebtesten BossHoss Songs basierend auf Community Voting für die Back to the Boots Tour 2025. Wird täglich automatisch aktualisiert! 🎸 Letztes Update: ${new Date().toLocaleDateString('de-DE')}`
-  
-  await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
-    method: 'PUT',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      description: description
-    })
-  })
-  
+async function updatePlaylist(accessToken: string, playlistId: string, topTracks: Array<{
+  trackId: string
+  totalPoints: number
+  totalVotes: number
+  trackName: string
+  artistName: string
+  albumName: string
+  rank: number
+}>): Promise<SpotifyPlaylist> {
   // Clear existing tracks
   await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
     method: 'PUT',
@@ -218,28 +212,9 @@ async function updatePlaylist(accessToken: string, playlistId: string, topTracks
   })
   
   // Add new tracks
-  await addTracksToPlaylist(accessToken, playlistId, topTracks)
-  
-  // Get updated playlist info
-  const playlistResponse = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
-  })
-  
-  return await playlistResponse.json()
-}
-
-// Helper: Add tracks to playlist
-async function addTracksToPlaylist(accessToken: string, playlistId: string, topTracks: VoteResult[]): Promise<void> {
-  // Convert track results to Spotify URIs
   const trackUris = topTracks.map(track => `spotify:track:${track.trackId}`)
   
-  // Add tracks in batches of 50 (Spotify API limit)
-  const batchSize = 50
-  for (let i = 0; i < trackUris.length; i += batchSize) {
-    const batch = trackUris.slice(i, i + batchSize)
-    
+  if (trackUris.length > 0) {
     await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
       method: 'POST',
       headers: {
@@ -247,8 +222,29 @@ async function addTracksToPlaylist(accessToken: string, playlistId: string, topT
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        uris: batch
+        uris: trackUris
       })
     })
   }
+  
+  // Update playlist description
+  await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      description: PLAYLIST_DESCRIPTION
+    })
+  })
+  
+  // Return updated playlist info
+  const playlistResponse = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    }
+  })
+  
+  return await playlistResponse.json()
 }
