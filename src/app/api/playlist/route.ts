@@ -1,6 +1,7 @@
 // src/app/api/playlist/route.ts
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
+import { authOptions } from '../auth/[...nextauth]/route'
 import { getTopTracks } from '@/lib/database'
 
 interface SpotifyPlaylist {
@@ -27,7 +28,7 @@ export async function POST() {
   try {
     console.log('🎵 Starting playlist creation/update...')
     
-    const session = await getServerSession() as SessionWithToken
+    const session = await getServerSession(authOptions) as SessionWithToken
     
     if (!session?.user?.email || !session?.accessToken) {
       console.log('❌ No session or access token')
@@ -103,7 +104,7 @@ export async function POST() {
 // Get current playlist status for user
 export async function GET() {
   try {
-    const session = await getServerSession() as SessionWithToken
+    const session = await getServerSession(authOptions) as SessionWithToken
     
     if (!session?.user?.email || !session?.accessToken) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
