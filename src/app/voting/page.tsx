@@ -3,7 +3,8 @@
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { ArrowLeft, Music, Star, Users, ExternalLink, Play, Heart, Clock, TrendingUp } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowLeft, Music, Star, ExternalLink, Heart, Clock, TrendingUp } from 'lucide-react'
 
 interface SpotifyImage {
   url: string
@@ -50,6 +51,14 @@ interface VotingResult {
   rank: number
 }
 
+interface SessionWithToken {
+  user?: {
+    email?: string
+    name?: string
+  }
+  accessToken?: string
+}
+
 export default function VotingPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -86,7 +95,7 @@ export default function VotingPage() {
   useEffect(() => {
     if (!session) return
     
-    const userSession = session as any
+    const userSession = session as SessionWithToken
     if (!userSession.accessToken) return
 
     const loadBossHossData = async () => {
@@ -205,15 +214,6 @@ export default function VotingPage() {
     // NEW: Check and update playlist automatically
     const checkAndUpdatePlaylist = async () => {
       try {
-        // Get Spotify user profile
-        const profileResponse = await fetch('https://api.spotify.com/v1/me', {
-          headers: { 'Authorization': `Bearer ${userSession.accessToken}` }
-        })
-        
-        if (!profileResponse.ok) return
-        
-        const profile = await profileResponse.json()
-        
         // Check if user already has playlist
         const statusResponse = await fetch('/api/playlist')
         
@@ -474,10 +474,12 @@ export default function VotingPage() {
                 onClick={() => toggleAlbum(album.id)}
                 className="w-full p-6 flex items-center space-x-4 hover:bg-amber-50 transition-colors text-left"
               >
-                <img
+                <Image
                   src={album.images[0]?.url || '/placeholder-album.jpg'}
                   alt={album.name}
-                  className="w-16 h-16 rounded-lg shadow-md"
+                  width={64}
+                  height={64}
+                  className="rounded-lg shadow-md"
                 />
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-gray-900">{album.name}</h3>
@@ -634,7 +636,7 @@ export default function VotingPage() {
                       )}
                     </div>
                     <p className="text-green-700 text-sm mb-3">
-                      Die Playlist <strong>"{playlistInfo.name}"</strong> in deiner Spotify Library 
+                      Die Playlist <strong>&ldquo;{playlistInfo.name}&rdquo;</strong> in deiner Spotify Library 
                       basiert auf dem aktuellen Voting-Stand und wird täglich automatisch aktualisiert.
                     </p>
                     <a

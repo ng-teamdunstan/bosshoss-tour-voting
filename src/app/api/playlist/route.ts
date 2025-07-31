@@ -11,13 +11,21 @@ interface SpotifyPlaylist {
   }
 }
 
+interface SessionWithToken {
+  user?: {
+    email?: string
+    name?: string
+  }
+  accessToken?: string
+}
+
 const PLAYLIST_NAME = 'The BossHoss Clubtour Setlist Voting'
 const PLAYLIST_DESCRIPTION = 'Die beliebtesten BossHoss Songs basierend auf Community Voting für die Clubtour 2025. Wird täglich automatisch aktualisiert! 🎸'
 
 // Create or update BossHoss voting playlist for user
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
-    const session = await getServerSession() as any
+    const session = await getServerSession() as SessionWithToken
     
     if (!session?.user?.email || !session?.accessToken) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
@@ -75,9 +83,9 @@ export async function POST(request: NextRequest) {
 }
 
 // Get current playlist status for user
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const session = await getServerSession() as any
+    const session = await getServerSession() as SessionWithToken
     
     if (!session?.user?.email || !session?.accessToken) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
