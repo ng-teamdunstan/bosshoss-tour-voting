@@ -1,47 +1,65 @@
-// src/app/api/test-vote-fix/route.ts - DIRECT VOTE TEST
-import { NextRequest, NextResponse } from 'next/server'
-import { submitVote } from '@/lib/database'
+import { NextResponse } from 'next/server'
+import { kv } from '@vercel/kv'
 
-export async function POST(request: NextRequest) {
+export async function GET() {
   try {
-    console.log('🧪 TESTING VOTE SUBMISSION WITH FIX...')
+    console.log('🔍 DEBUGGING DATABASE STATE...')
     
-    // Simulate a test vote
-    const testVote = {
-      userId: 'test_user_' + Date.now(),
-      trackId: '4uLU6hMCjSI75M1A2tKUQC', // Known BossHoss track
-      points: 3,
-      trackName: 'Test Song',
-      artistName: 'The BossHoss',
-      albumName: 'Test Album',
-      timestamp: Date.now()
+    // 1. Check Leaderboard
+    const leaderboard = await kv.get('track_leaderboard')
+    console.log('📊 Leaderboard:', leaderboard)
+    
+    // 2. Get all track results
+    const trackKeys = await kv.keys('track_results:*')
+    console.log('🎵 Track Result Keys found:', trackKeys.length)
+    
+    const trackData = []
+    for (const key of trackKeys.slice(0, 10)) { // First 10 tracks
+      const data = await kv.get(key)
+      trackData.push({ key, data })
     }
     
-    console.log('🎯 Submitting test vote:', testVote)
+    // 3. Get all user sessions (today)
+    const today = new Date().toISOString().split('T')[0]
+    const userKeys = await kv.keys(`user_votes:*:${today}`)
+    console.log('👤 User Sessions Today:', userKeys.length)
     
-    const result = await submitVote(testVote)
-    
-    console.log('📊 Vote result:', result)
+    const userSessions = []
+    for (const key of userKeys.slice(0, 5)) { // First 5 users
+      const data = await kv.get(key)
+      userSessions.push({ key, data })
+    }
     
     return NextResponse.json({
       success: true,
-      testVote,
-      submitResult: result,
-      timestamp: new Date().toISOString()
+      debug: {
+        currentTime: new Date().toISOString(),
+        leaderboard: {
+          exists: !!leaderboard,
+          count: Array.isArray(leaderboard) ? leaderboard.length : 0,
+          data: leaderboard
+        },
+        trackResults: {
+          count: trackKeys.length,
+          sample: trackData
+        },
+        userSessions: {
+          today: {
+            count: userKeys.length,
+            sample: userSessions
+          }
+        },
+        dates: {
+          today
+        }
+      }
     })
     
   } catch (error) {
-    console.error('🔥 TEST VOTE ERROR:', error)
+    console.error('🔥 DEBUG ERROR:', error)
     return NextResponse.json({ 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error'
     })
   }
-}
-
-export async function GET() {
-  return NextResponse.json({ 
-    message: 'Use POST to test vote submission',
-    endpoint: '/api/test-vote-fix'
-  })
 }
