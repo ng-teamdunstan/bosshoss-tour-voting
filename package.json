@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@mailchimp/mailchimp_marketing": "^3.0.80",
+    "@upstash/redis": "^1.35.3",
     "@vercel/kv": "^3.0.0",
     "axios": "^1.11.0",
     "lucide-react": "^0.534.0",
