@@ -1,5 +1,5 @@
 // src/app/api/playlist/route.ts
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { getTopTracks } from '@/lib/database'
 

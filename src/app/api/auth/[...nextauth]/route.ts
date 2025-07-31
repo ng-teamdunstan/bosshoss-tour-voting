@@ -32,7 +32,7 @@ const handler = NextAuth({
       return token
     },
     async session({ session, token }) {
-      // @ts-ignore
+      // @ts-expect-error - NextAuth session type doesn't include accessToken by default
       session.accessToken = token.accessToken
       return session
     }
