@@ -1,4 +1,4 @@
-// src/app/api/vote/route.ts - GEFIXTE VERSION MIT BULK VOTING
+// src/app/api/vote/route.ts - VERBESSERTE VERSION MIT TRACK-NAMEN
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { submitVote, canUserVoteToday, getUserTodayVotes } from '@/lib/database'
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     // Check if this is bulk voting (new format) or single vote (old format)
     if (body.votes && Array.isArray(body.votes)) {
       // BULK VOTING - NEW FORMAT
-      return await processBulkVotes(body as BulkVoteRequest, userId)
+      return await processBulkVotesWithTrackLookup(body as BulkVoteRequest, userId, session.accessToken)
     } else {
       // SINGLE VOTING - OLD FORMAT (backward compatibility)
       return await processSingleVote(body as VoteRequest, userId)
@@ -52,9 +52,9 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// NEUE FUNKTION: Bulk Votes verarbeiten
-async function processBulkVotes(request: BulkVoteRequest, userId: string): Promise<Response> {
-  console.log('📦 Processing bulk votes:', request.votes.length, 'votes')
+// VERBESSERTE FUNKTION: Bulk Votes mit Track-Namen Lookup
+async function processBulkVotesWithTrackLookup(request: BulkVoteRequest, userId: string, accessToken?: string): Promise<Response> {
+  console.log('📦 Processing bulk votes with track lookup:', request.votes.length, 'votes')
   
   // Check voting limits first
   const { canVote, votesRemaining } = await canUserVoteToday(userId)
@@ -67,6 +67,9 @@ async function processBulkVotes(request: BulkVoteRequest, userId: string): Promi
       votesRemaining
     })
   }
+  
+  // Lookup track info for tracks that don't have names
+  const trackInfoMap = await lookupTrackInfo(request.votes, accessToken)
   
   const results = []
   let successCount = 0
@@ -88,18 +91,28 @@ async function processBulkVotes(request: BulkVoteRequest, userId: string): Promi
         continue
       }
       
-      // For bulk votes, we need to get track info from somewhere
-      // Since frontend doesn't send track names, we'll use placeholder values
-      // TODO: In a real app, you'd lookup track info from Spotify API or database
+      // Get track info (from request or lookup)
+      const trackInfo = trackInfoMap.get(voteRequest.trackId) || {
+        trackName: voteRequest.trackName || 'Unknown Track',
+        artistName: voteRequest.artistName || 'The BossHoss',
+        albumName: voteRequest.albumName || 'Unknown Album'
+      }
+      
       const vote = {
         userId,
         trackId: voteRequest.trackId,
         points: Number(voteRequest.points),
-        trackName: voteRequest.trackName || 'Unknown Track',
-        artistName: voteRequest.artistName || 'The BossHoss',
-        albumName: voteRequest.albumName || 'Unknown Album',
+        trackName: trackInfo.trackName,
+        artistName: trackInfo.artistName,
+        albumName: trackInfo.albumName,
         timestamp: Date.now()
       }
+      
+      console.log('🎵 Vote with track info:', {
+        trackId: vote.trackId,
+        trackName: vote.trackName,
+        points: vote.points
+      })
       
       const result = await submitVote(vote)
       
@@ -115,7 +128,8 @@ async function processBulkVotes(request: BulkVoteRequest, userId: string): Promi
         trackId: voteRequest.trackId,
         success: result.success,
         message: result.message,
-        points: vote.points
+        points: vote.points,
+        trackName: vote.trackName // Include in response for debugging
       })
       
     } catch (error) {
@@ -140,6 +154,73 @@ async function processBulkVotes(request: BulkVoteRequest, userId: string): Promi
     votesRemaining: finalVotesRemaining,
     results: results.filter(r => r.success) // Only return successful votes for frontend
   })
+}
+
+// Helper: Lookup track information from Spotify
+async function lookupTrackInfo(votes: VoteRequest[], accessToken?: string): Promise<Map<string, {
+  trackName: string
+  artistName: string
+  albumName: string
+}>> {
+  const trackInfoMap = new Map()
+  
+  // If no access token, return empty map (will use fallback names)
+  if (!accessToken) {
+    console.log('⚠️ No access token for track lookup, using fallback names')
+    return trackInfoMap
+  }
+  
+  // Get track IDs that need lookup (don't have trackName)
+  const trackIdsToLookup = votes
+    .filter(vote => !vote.trackName)
+    .map(vote => vote.trackId)
+  
+  if (trackIdsToLookup.length === 0) {
+    console.log('✅ All votes have track names, no lookup needed')
+    return trackInfoMap
+  }
+  
+  console.log('🔍 Looking up track info for', trackIdsToLookup.length, 'tracks')
+  
+  try {
+    // Batch lookup (up to 50 tracks per request)
+    const batchSize = 50
+    
+    for (let i = 0; i < trackIdsToLookup.length; i += batchSize) {
+      const batch = trackIdsToLookup.slice(i, i + batchSize)
+      const idsParam = batch.join(',')
+      
+      const response = await fetch(`https://api.spotify.com/v1/tracks?ids=${idsParam}`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        
+        data.tracks?.forEach((track: any) => {
+          if (track && track.id) {
+            trackInfoMap.set(track.id, {
+              trackName: track.name,
+              artistName: track.artists.map((a: any) => a.name).join(', '),
+              albumName: track.album.name
+            })
+            console.log('🎵 Looked up:', track.id, '→', track.name)
+          }
+        })
+      } else {
+        console.log('⚠️ Spotify API error:', response.status)
+      }
+    }
+    
+    console.log('✅ Track lookup complete:', trackInfoMap.size, 'tracks found')
+    
+  } catch (error) {
+    console.error('❌ Error in track lookup:', error)
+  }
+  
+  return trackInfoMap
 }
 
 // ALTE FUNKTION: Single Vote (backward compatibility)
