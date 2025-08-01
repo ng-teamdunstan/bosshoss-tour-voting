@@ -63,3 +63,50 @@ export async function GET(request: NextRequest) {
     }, { status: 500 })
   }
 }
+
+// Debug endpoint
+export async function POST(request: NextRequest) {
+  try {
+    const { action } = await request.json()
+    
+    if (action === 'debug_leaderboard') {
+      // Debug entire leaderboard
+      const { kv } = await import('@vercel/kv')
+      const leaderboard = await kv.get('track_leaderboard')
+      
+      // Also get a few track results for detailed inspection
+      const trackResults = []
+      if (Array.isArray(leaderboard) && leaderboard.length > 0) {
+        for (let i = 0; i < Math.min(3, leaderboard.length); i++) {
+          const trackId = leaderboard[i].trackId
+          const trackData = await kv.get(`track_results:${trackId}`)
+          trackResults.push({
+            trackId: trackId.substring(0, 8) + '...',
+            points: leaderboard[i].points,
+            trackData
+          })
+        }
+      }
+      
+      return NextResponse.json({
+        success: true,
+        leaderboard,
+        leaderboardSize: Array.isArray(leaderboard) ? leaderboard.length : 0,
+        sampleTrackResults: trackResults,
+        timestamp: new Date().toISOString()
+      })
+    }
+    
+    return NextResponse.json({ 
+      error: 'Invalid action',
+      availableActions: ['debug_leaderboard']
+    }, { status: 400 })
+    
+  } catch (error) {
+    console.error('Debug endpoint error:', error)
+    return NextResponse.json({ 
+      error: 'Debug failed',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
+  }
+}
