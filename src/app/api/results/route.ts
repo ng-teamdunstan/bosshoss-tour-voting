@@ -1,109 +1,65 @@
-// Enhanced /api/results/route.ts - Fixes Unknown Tracks Problem
+// Compatible /api/results/route.ts - Uses existing database functions
 import { NextRequest, NextResponse } from 'next/server'
-import { getTopTracksEnhanced, getVotingStats, cleanupUnavailableTracks } from '@/lib/database'
-import { getServerSession } from 'next-auth'
+import { getTopTracks, getVotingStats } from '@/lib/database'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '15')
-    const cleanup = searchParams.get('cleanup') === 'true' // Optional cleanup parameter
     
-    // Get session for access token (if available)
-    const session: any = await getServerSession()
-    const accessToken = session?.accessToken
+    console.log(`🏆 Getting top ${limit} tracks for leaderboard...`)
     
-    let cleanupStats = null
+    // Use standard getTopTracks function (now enhanced internally)
+    const topTracks = await getTopTracks(limit)
     
-    // Optional: Clean up unavailable tracks if requested and access token available
-    if (cleanup && accessToken) {
-      console.log('🧹 Cleaning up unavailable tracks...')
-      cleanupStats = await cleanupUnavailableTracks(accessToken)
-      console.log(`🧹 Cleanup complete: ${cleanupStats.removedCount} tracks removed out of ${cleanupStats.totalChecked} checked`)
-    }
-    
-    // Get top tracks with enhanced availability checking
-    const topTracks = await getTopTracksEnhanced(limit, accessToken)
+    console.log(`✅ Retrieved ${topTracks.length} tracks:`)
+    topTracks.forEach((track, index) => {
+      console.log(`   ${index + 1}. ${track.trackName} by ${track.artistName} (${track.totalPoints} points)`)
+    })
     
     // Get voting statistics
     const stats = await getVotingStats()
     
-    // Add availability info to response
-    const availableTracks = topTracks.filter(track => track.isAvailable !== false)
-    const unavailableCount = topTracks.length - availableTracks.length
-    
+    // Enhanced response with debugging info
     const response = {
-      topTracks: availableTracks, // Only return available tracks
+      topTracks: topTracks.map(track => ({
+        ...track,
+        // Ensure no track has "Unknown" in the name
+        trackName: track.trackName || 'Unknown Track',
+        artistName: track.artistName || 'Unknown Artist', 
+        albumName: track.albumName || 'Unknown Album',
+      })),
       stats: {
         ...stats,
-        availableTracksCount: availableTracks.length,
-        unavailableTracksCount: unavailableCount,
-        totalTracksInLeaderboard: stats.totalTracks
+        availableTracksCount: topTracks.length,
+        tracksWithNames: topTracks.filter(t => t.trackName && t.trackName !== 'Unknown Track').length,
+        tracksWithoutNames: topTracks.filter(t => !t.trackName || t.trackName === 'Unknown Track').length
       },
       lastUpdated: new Date().toISOString(),
-      trackVerification: {
-        enabled: !!accessToken,
-        lastCleanup: cleanup ? new Date().toISOString() : null,
-        cleanupStats
+      meta: {
+        totalRequested: limit,
+        totalReturned: topTracks.length,
+        allTracksHaveNames: topTracks.every(t => t.trackName && t.trackName !== 'Unknown Track')
       }
     }
     
-    // If we have very few available tracks, suggest cleanup
-    if (availableTracks.length < Math.min(limit, 10) && accessToken) {
-      response.suggestion = {
-        action: 'cleanup_recommended',
-        message: 'Es wurden wenige verfügbare Tracks gefunden. Ein Cleanup könnte helfen.',
-        cleanupUrl: `/api/results?cleanup=true&limit=${limit}`
-      }
+    // Log any issues
+    const tracksWithoutNames = topTracks.filter(t => !t.trackName || t.trackName === 'Unknown Track')
+    if (tracksWithoutNames.length > 0) {
+      console.warn(`⚠️ Found ${tracksWithoutNames.length} tracks without proper names:`)
+      tracksWithoutNames.forEach(track => {
+        console.warn(`   - Track ID: ${track.trackId}, Name: '${track.trackName}', Artist: '${track.artistName}'`)
+      })
     }
     
     return NextResponse.json(response)
     
   } catch (error) {
-    console.error('Get results error:', error)
+    console.error('❌ Get results error:', error)
     return NextResponse.json({ 
       error: 'Internal server error',
-      message: 'Fehler beim Laden der Ergebnisse'
-    }, { status: 500 })
-  }
-}
-
-// NEW: POST endpoint for manual cleanup
-export async function POST(request: NextRequest) {
-  try {
-    const session: any = await getServerSession()
-    
-    if (!session?.accessToken) {
-      return NextResponse.json({ 
-        error: 'Authentication required',
-        message: 'Spotify-Zugang erforderlich für Track-Cleanup'
-      }, { status: 401 })
-    }
-    
-    const { action } = await request.json()
-    
-    if (action === 'cleanup') {
-      console.log('🧹 Manual cleanup requested...')
-      const cleanupStats = await cleanupUnavailableTracks(session.accessToken)
-      
-      return NextResponse.json({
-        success: true,
-        message: `Cleanup abgeschlossen: ${cleanupStats.removedCount} nicht verfügbare Tracks entfernt`,
-        stats: cleanupStats,
-        timestamp: new Date().toISOString()
-      })
-    }
-    
-    return NextResponse.json({ 
-      error: 'Invalid action',
-      availableActions: ['cleanup']
-    }, { status: 400 })
-    
-  } catch (error) {
-    console.error('Manual cleanup error:', error)
-    return NextResponse.json({ 
-      error: 'Cleanup failed',
-      message: 'Fehler beim Cleanup der nicht verfügbaren Tracks'
+      message: 'Fehler beim Laden der Ergebnisse',
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 })
   }
 }

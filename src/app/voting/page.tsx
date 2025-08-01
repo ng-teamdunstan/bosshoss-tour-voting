@@ -41,7 +41,7 @@ interface ExpandedAlbums {
   [key: string]: boolean
 }
 
-// ENHANCED: Interface for Enhanced Results API Response
+// ENHANCED: Interface for Results API Response (simplified)
 interface VoteResult {
   trackId: string
   totalPoints: number
@@ -50,16 +50,9 @@ interface VoteResult {
   artistName: string
   albumName: string
   rank: number
-  isAvailable?: boolean
-  _debug?: {
-    hasTrackName: boolean
-    hasArtistName: boolean
-    hasAlbumName: boolean
-    trackNameLength: number
-  }
 }
 
-interface EnhancedResultsResponse {
+interface ResultsResponse {
   topTracks: VoteResult[]
   stats: {
     availableTracksCount: number
@@ -345,14 +338,14 @@ export default function VotingPage() {
     }
   }
 
-  // ENHANCED: Load community results (compatible with Enhanced Results API)
+  // Load community results (simplified)
   const loadCommunityResults = async () => {
     try {
       const response = await fetch('/api/results?limit=15')
-      const data: EnhancedResultsResponse = await response.json()
+      const data: ResultsResponse = await response.json()
       
       if (response.ok) {
-        console.log('🏆 Enhanced Results loaded:', data)
+        console.log('🏆 Results loaded:', data)
         setVotingResults(data.topTracks)
         setShowResults(true)
         
@@ -674,13 +667,6 @@ export default function VotingPage() {
                       <h3 className="font-bold text-gray-900">{result.trackName}</h3>
                       <p className="text-sm text-gray-600">{result.artistName}</p>
                       <p className="text-xs text-gray-500">{result.albumName}</p>
-                      
-                      {/* ENHANCED: Debug info for Unknown Tracks */}
-                      {result._debug && !result._debug.hasTrackName && (
-                        <div className="text-xs text-red-500 mt-1">
-                          ⚠️ Debug: Missing track name (ID: {result.trackId.substring(0, 8)}...)
-                        </div>
-                      )}
                     </div>
                   </div>
                   <div className="text-right">
