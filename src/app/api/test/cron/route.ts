@@ -1,4 +1,4 @@
-// src/app/api/test/cron/route.ts - Für Development Testing
+// src/app/api/test/cron/route.ts - NEUE DATEI ERSTELLEN
 import { NextRequest, NextResponse } from 'next/server'
 import { getTopTracks } from '@/lib/database'
 import { getPlaylistSubscribers, getValidAccessToken } from '@/lib/spotify-tokens'
@@ -20,7 +20,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ 
         success: false, 
         message: 'No voting results to test with',
-        debug: 'Füge erst einige Votes hinzu, bevor du die automatische Aktualisierung testest'
+        debug: 'Füge erst einige Votes hinzu, bevor du die automatische Aktualisierung testest',
+        instructions: 'Gehe zur Voting-Seite und stimme für einige Songs ab.'
       })
     }
     
@@ -31,7 +32,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: false,
         message: 'No playlist subscribers found',
-        debug: 'Erstelle erst eine Playlist über die normale UI, bevor du automatische Updates testest'
+        debug: 'Erstelle erst eine Playlist über die normale UI, bevor du automatische Updates testest',
+        instructions: 'Gehe zur Voting-Seite und erstelle eine Playlist mit dem "Playlist erstellen" Button.'
       })
     }
     
@@ -108,7 +110,8 @@ export async function GET(request: NextRequest) {
           status: 'ready',
           playlistId: existingPlaylist.id,
           playlistUrl: existingPlaylist.external_urls.spotify,
-          tracksToUpdate: topTracks.length
+          tracksToUpdate: topTracks.length,
+          userProfile: profile.display_name || profile.id
         })
         
       } catch (error) {
@@ -138,12 +141,16 @@ export async function GET(request: NextRequest) {
       topTracks: topTracks.map(t => ({
         rank: t.rank,
         name: t.trackName,
+        artist: t.artistName,
         points: t.totalPoints,
         votes: t.totalVotes
       })),
       nextSteps: summary.ready > 0 
-        ? 'Automatische Updates sollten funktionieren! 🎉'
-        : 'Erst Playlists erstellen oder User re-authentifizieren'
+        ? '🎉 Automatische Updates sollten funktionieren! Du kannst jetzt den echten Cron-Job testen.'
+        : '❌ Erst Playlists erstellen oder User re-authentifizieren, bevor automatische Updates funktionieren.',
+      testCronJobUrl: summary.ready > 0 
+        ? `${request.nextUrl.origin}/api/test/cron` 
+        : null
     })
     
   } catch (error) {
@@ -155,7 +162,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST endpoint um einen echten Test-Update zu machen
+// POST endpoint um einen echten Test-Update zu machen (nur für Development)
 export async function POST(request: NextRequest) {
   // Nur in Development verfügbar
   if (process.env.NODE_ENV === 'production') {
@@ -201,7 +208,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Test-Version der Update-Funktion
+// Test-Version der Update-Funktion (nur Description-Update)
 async function testUpdateUserPlaylist(accessToken: string, topTracks: any[], userId: string): Promise<boolean> {
   try {
     // Get user profile
@@ -232,7 +239,7 @@ async function testUpdateUserPlaylist(accessToken: string, topTracks: any[], use
     // Update description mit Test-Hinweis
     const description = `[TEST UPDATE] Die beliebtesten BossHoss Songs basierend auf Community Voting für die Back to the Boots Tour 2025. Test-Update: ${new Date().toLocaleString('de-DE')}`
     
-    await fetch(`https://api.spotify.com/v1/playlists/${existingPlaylist.id}`, {
+    const updateResponse = await fetch(`https://api.spotify.com/v1/playlists/${existingPlaylist.id}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -241,8 +248,13 @@ async function testUpdateUserPlaylist(accessToken: string, topTracks: any[], use
       body: JSON.stringify({ description })
     })
     
-    console.log(`✅ Test update successful for user ${userId}`)
-    return true
+    if (updateResponse.ok) {
+      console.log(`✅ Test update successful for user ${userId}`)
+      return true
+    } else {
+      console.log(`❌ Test update failed for user ${userId}:`, updateResponse.status)
+      return false
+    }
     
   } catch (error) {
     console.error(`❌ Test update failed for user ${userId}:`, error)

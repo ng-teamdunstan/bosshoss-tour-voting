@@ -1,4 +1,4 @@
-// src/app/api/playlist/route.ts - ERWEITERTE VERSION
+// src/app/api/playlist/route.ts - KOMPLETT ERSETZEN
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { getTopTracks } from '@/lib/database'
@@ -43,16 +43,20 @@ export async function POST(request: NextRequest) {
     const userId = profile.id
     
     // WICHTIG: Speichere Tokens für automatische Updates
-    // Wir brauchen refreshToken von der Session
     if (session.refreshToken) {
-      await storeUserTokens(
-        userId,
-        session.user.email,
-        session.accessToken,
-        session.refreshToken,
-        3600 // Spotify tokens laufen normalerweise nach 1h ab
-      )
-      console.log(`💾 Tokens gespeichert für automatische Updates: ${userId}`)
+      try {
+        await storeUserTokens(
+          userId,
+          session.user.email,
+          session.accessToken,
+          session.refreshToken,
+          3600 // Spotify tokens laufen normalerweise nach 1h ab
+        )
+        console.log(`💾 Tokens gespeichert für automatische Updates: ${userId}`)
+      } catch (error) {
+        console.error('Error storing tokens:', error)
+        // Continue anyway - playlist creation shouldn't fail because of token storage
+      }
     } else {
       console.warn(`⚠️ Kein refresh token verfügbar für ${userId} - automatische Updates werden nicht funktionieren`)
     }

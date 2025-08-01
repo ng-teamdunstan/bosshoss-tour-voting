@@ -1,4 +1,4 @@
-// src/app/api/cron/update-playlists/route.ts - VERBESSERTE VERSION
+// src/app/api/cron/update-playlists/route.ts - KOMPLETT ERSETZEN
 import { NextRequest, NextResponse } from 'next/server'
 import { getTopTracks } from '@/lib/database'
 import { getPlaylistSubscribers, getValidAccessToken, removeUserFromUpdates } from '@/lib/spotify-tokens'
