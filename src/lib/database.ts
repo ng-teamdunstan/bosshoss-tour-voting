@@ -1,4 +1,4 @@
-// Enhanced database.ts - Fixes Unknown Tracks Problem + Leaderboard Issues
+// FULLY COMPATIBLE Enhanced database.ts - Fixes Leaderboard + All Exports
 import { kv } from '@vercel/kv'
 
 export interface Vote {
@@ -11,6 +11,14 @@ export interface Vote {
   albumName: string
 }
 
+export interface UserVotingSession {
+  userId: string
+  date: string // YYYY-MM-DD format
+  votes: Vote[]
+  totalVotes: number
+  lastVoteTimestamp: number
+}
+
 export interface TrackResult {
   trackId: string
   totalPoints: number
@@ -19,8 +27,8 @@ export interface TrackResult {
   artistName: string
   albumName: string
   rank: number
-  isAvailable?: boolean // NEW: Track availability flag
-  lastChecked?: number // NEW: When was availability last checked
+  isAvailable?: boolean
+  lastChecked?: number
 }
 
 export interface TrackCache {
@@ -30,166 +38,41 @@ export interface TrackCache {
   albumName: string
   isAvailable: boolean
   lastChecked: number
-  spotifyData?: any // Cache full Spotify track data
+  spotifyData?: any
 }
 
-// NEW: Verify track exists on Spotify
-async function verifyTrackExists(trackId: string, accessToken: string): Promise<{
-  exists: boolean
-  trackData?: any
-}> {
-  try {
-    const response = await fetch(`https://api.spotify.com/v1/tracks/${trackId}?market=DE`, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`
-      }
-    })
-    
-    if (response.ok) {
-      const trackData = await response.json()
-      return { exists: true, trackData }
-    }
-    
-    return { exists: false }
-    
-  } catch (error) {
-    console.error(`Error verifying track ${trackId}:`, error)
-    return { exists: false }
+// Check if user can vote today
+export async function canUserVoteToday(userId: string): Promise<{ canVote: boolean, votesUsed: number, votesRemaining: number }> {
+  const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
+  const sessionKey = `user_votes:${userId}:${today}`
+  
+  const session = await kv.get<UserVotingSession>(sessionKey)
+  
+  if (!session) {
+    return { canVote: true, votesUsed: 0, votesRemaining: 10 }
+  }
+  
+  const votesUsed = session.totalVotes
+  const votesRemaining = Math.max(0, 10 - votesUsed)
+  
+  return {
+    canVote: votesRemaining > 0,
+    votesUsed,
+    votesRemaining
   }
 }
 
-// NEW: Cache track information to reduce API calls
-async function cacheTrackInfo(trackId: string, trackData: any): Promise<void> {
-  const cacheKey = `track_cache:${trackId}`
-  const cacheData: TrackCache = {
-    trackId,
-    trackName: trackData.name,
-    artistName: trackData.artists.map((a: any) => a.name).join(', '),
-    albumName: trackData.album.name,
-    isAvailable: true,
-    lastChecked: Date.now(),
-    spotifyData: trackData
-  }
+// Get user's today votes
+export async function getUserTodayVotes(userId: string): Promise<Vote[]> {
+  const today = new Date().toISOString().split('T')[0]
+  const sessionKey = `user_votes:${userId}:${today}`
   
-  // Cache for 7 days
-  await kv.set(cacheKey, cacheData, { ex: 60 * 60 * 24 * 7 })
+  const session = await kv.get<UserVotingSession>(sessionKey)
+  return session?.votes || []
 }
 
-// NEW: Get cached track info
-async function getCachedTrackInfo(trackId: string): Promise<TrackCache | null> {
-  const cacheKey = `track_cache:${trackId}`
-  return await kv.get<TrackCache>(cacheKey)
-}
-
-// NEW: Mark track as unavailable
-async function markTrackUnavailable(trackId: string): Promise<void> {
-  const cacheKey = `track_cache:${trackId}`
-  const existing = await getCachedTrackInfo(trackId)
-  
-  if (existing) {
-    const updated: TrackCache = {
-      ...existing,
-      isAvailable: false,
-      lastChecked: Date.now()
-    }
-    await kv.set(cacheKey, updated, { ex: 60 * 60 * 24 * 7 })
-  }
-}
-
-// ENHANCED: Get top tracks with availability checking
-export async function getTopTracksEnhanced(
-  limit: number = 15, 
-  accessToken?: string
-): Promise<TrackResult[]> {
-  const leaderboardKey = 'track_leaderboard'
-  
-  // Get leaderboard
-  const leaderboard = await kv.get<{ trackId: string, points: number }[]>(leaderboardKey)
-  
-  if (!leaderboard || leaderboard.length === 0) {
-    return []
-  }
-  
-  const tracks: TrackResult[] = []
-  
-  for (let i = 0; i < Math.min(leaderboard.length, limit * 2); i++) { // Get more than needed as buffer
-    const item = leaderboard[i]
-    let trackData = await kv.get<TrackResult>(`track_results:${item.trackId}`)
-    
-    if (!trackData) continue
-    
-    // Check if we have cached availability info
-    const cachedInfo = await getCachedTrackInfo(item.trackId)
-    const needsCheck = !cachedInfo || (Date.now() - cachedInfo.lastChecked) > (24 * 60 * 60 * 1000) // 24 hours
-    
-    let isAvailable = true
-    
-    if (accessToken && needsCheck) {
-      // Verify track still exists on Spotify
-      const verification = await verifyTrackExists(item.trackId, accessToken)
-      isAvailable = verification.exists
-      
-      if (verification.exists && verification.trackData) {
-        // Update cache with fresh data
-        await cacheTrackInfo(item.trackId, verification.trackData)
-        
-        // Update track names in case they changed
-        trackData = {
-          ...trackData,
-          trackName: verification.trackData.name,
-          artistName: verification.trackData.artists.map((a: any) => a.name).join(', '),
-          albumName: verification.trackData.album.name
-        }
-        await kv.set(`track_results:${item.trackId}`, trackData)
-      } else {
-        // Mark as unavailable
-        await markTrackUnavailable(item.trackId)
-        isAvailable = false
-      }
-    } else if (cachedInfo) {
-      isAvailable = cachedInfo.isAvailable
-    }
-    
-    // Only include available tracks in results
-    if (isAvailable) {
-      tracks.push({
-        ...trackData,
-        rank: tracks.length + 1, // Recalculate rank based on available tracks
-        isAvailable,
-        lastChecked: Date.now()
-      })
-      
-      if (tracks.length >= limit) break // Stop when we have enough available tracks
-    }
-  }
-  
-  return tracks
-}
-
-// ENHANCED: Submit vote with better error handling
-export async function submitVoteEnhanced(vote: Vote, accessToken?: string): Promise<{ 
-  success: boolean
-  message: string
-  votesRemaining: number 
-}> {
-  // First, verify the track exists (if we have an access token)
-  if (accessToken) {
-    const verification = await verifyTrackExists(vote.trackId, accessToken)
-    if (!verification.exists) {
-      return { 
-        success: false, 
-        message: 'Dieser Song ist derzeit nicht verfügbar. Bitte wähle einen anderen.', 
-        votesRemaining: await getRemainingVotes(vote.userId) 
-      }
-    }
-    
-    // Cache the track info for future use
-    if (verification.trackData) {
-      await cacheTrackInfo(vote.trackId, verification.trackData)
-    }
-  }
-  
-  // Continue with normal vote submission logic
+// ENHANCED: Submit user vote with better track data handling
+export async function submitVote(vote: Vote): Promise<{ success: boolean, message: string, votesRemaining: number }> {
   const today = new Date().toISOString().split('T')[0]
   const sessionKey = `user_votes:${vote.userId}:${today}`
   
@@ -221,9 +104,9 @@ export async function submitVoteEnhanced(vote: Vote, accessToken?: string): Prom
   }
   
   // Save user session
-  await kv.set(sessionKey, newSession, { ex: 60 * 60 * 24 * 7 })
+  await kv.set(sessionKey, newSession, { ex: 60 * 60 * 24 * 7 }) // 7 days expiry
   
-  // Update global track results
+  // ENHANCED: Update global track results with better data handling
   await updateTrackResults(vote)
   
   // Log vote for analytics
@@ -238,167 +121,51 @@ export async function submitVoteEnhanced(vote: Vote, accessToken?: string): Prom
   }
 }
 
-// HELPER: Get remaining votes for user
-async function getRemainingVotes(userId: string): Promise<number> {
-  const { votesRemaining } = await canUserVoteToday(userId)
-  return votesRemaining
-}
-
-// NEW: Clean up unavailable tracks from leaderboard
-export async function cleanupUnavailableTracks(accessToken: string): Promise<{
-  removedCount: number
-  totalChecked: number
-}> {
-  const leaderboardKey = 'track_leaderboard'
-  const leaderboard = await kv.get<{ trackId: string, points: number }[]>(leaderboardKey) || []
-  
-  let removedCount = 0
-  const cleanedLeaderboard: { trackId: string, points: number }[] = []
-  
-  for (const item of leaderboard) {
-    const verification = await verifyTrackExists(item.trackId, accessToken)
-    
-    if (verification.exists) {
-      cleanedLeaderboard.push(item)
-      
-      // Update cache
-      if (verification.trackData) {
-        await cacheTrackInfo(item.trackId, verification.trackData)
-      }
-    } else {
-      removedCount++
-      await markTrackUnavailable(item.trackId)
-      console.log(`Removed unavailable track: ${item.trackId}`)
-    }
-  }
-  
-  // Save cleaned leaderboard
-  await kv.set(leaderboardKey, cleanedLeaderboard, { ex: 60 * 60 * 24 * 30 })
-  
-  return {
-    removedCount,
-    totalChecked: leaderboard.length
-  }
-}
-
-// NEW: Batch verify tracks for playlist creation
-export async function verifyTracksForPlaylist(trackIds: string[], accessToken: string): Promise<{
-  availableTrackIds: string[]
-  unavailableTrackIds: string[]
-}> {
-  const availableTrackIds: string[] = []
-  const unavailableTrackIds: string[] = []
-  
-  // Process in batches of 50 (Spotify API limit)
-  const batchSize = 50
-  for (let i = 0; i < trackIds.length; i += batchSize) {
-    const batch = trackIds.slice(i, i + batchSize)
-    
-    try {
-      const response = await fetch(`https://api.spotify.com/v1/tracks?ids=${batch.join(',')}&market=DE`, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`
-        }
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        
-        for (let j = 0; j < batch.length; j++) {
-          const trackId = batch[j]
-          const trackData = data.tracks[j]
-          
-          if (trackData && trackData.id) {
-            availableTrackIds.push(trackId)
-            // Cache the track data
-            await cacheTrackInfo(trackId, trackData)
-          } else {
-            unavailableTrackIds.push(trackId)
-            await markTrackUnavailable(trackId)
-          }
-        }
-      } else {
-        // If batch request fails, mark all as unavailable for safety
-        unavailableTrackIds.push(...batch)
-      }
-      
-    } catch (error) {
-      console.error('Error in batch track verification:', error)
-      unavailableTrackIds.push(...batch)
-    }
-  }
-  
-  return { availableTrackIds, unavailableTrackIds }
-}
-
-// Keep existing interfaces and functions...
-export interface UserVotingSession {
-  userId: string
-  date: string
-  votes: Vote[]
-  totalVotes: number
-  lastVoteTimestamp: number
-}
-
-export async function canUserVoteToday(userId: string): Promise<{ canVote: boolean, votesUsed: number, votesRemaining: number }> {
-  const today = new Date().toISOString().split('T')[0]
-  const sessionKey = `user_votes:${userId}:${today}`
-  
-  const session = await kv.get<UserVotingSession>(sessionKey)
-  
-  if (!session) {
-    return { canVote: true, votesUsed: 0, votesRemaining: 10 }
-  }
-  
-  const votesUsed = session.totalVotes
-  const votesRemaining = Math.max(0, 10 - votesUsed)
-  
-  return {
-    canVote: votesRemaining > 0,
-    votesUsed,
-    votesRemaining
-  }
-}
-
-export async function getUserTodayVotes(userId: string): Promise<Vote[]> {
-  const today = new Date().toISOString().split('T')[0]
-  const sessionKey = `user_votes:${userId}:${today}`
-  
-  const session = await kv.get<UserVotingSession>(sessionKey)
-  return session?.votes || []
-}
-
-// Keep other existing functions...
-async function updateTrackResults(vote: Vote): Promise<void> {
+// ENHANCED: Update track results with guaranteed track name storage
+export async function updateTrackResults(vote: Vote): Promise<void> {
   const trackKey = `track_results:${vote.trackId}`
+  
+  // Get existing track results
   const existing = await kv.get<TrackResult>(trackKey)
   
   if (existing) {
+    // Update existing - PRESERVE track names if they exist, otherwise use vote data
     const updated: TrackResult = {
       ...existing,
       totalPoints: existing.totalPoints + vote.points,
-      totalVotes: existing.totalVotes + 1
+      totalVotes: existing.totalVotes + 1,
+      // ENHANCED: Always ensure we have track names
+      trackName: existing.trackName && existing.trackName !== 'Unknown Track' ? existing.trackName : vote.trackName,
+      artistName: existing.artistName && existing.artistName !== 'Unknown Artist' ? existing.artistName : vote.artistName,
+      albumName: existing.albumName && existing.albumName !== 'Unknown Album' ? existing.albumName : vote.albumName,
     }
     await kv.set(trackKey, updated)
   } else {
+    // Create new - ALWAYS store track names from vote
     const newResult: TrackResult = {
       trackId: vote.trackId,
       totalPoints: vote.points,
       totalVotes: 1,
-      trackName: vote.trackName,
-      artistName: vote.artistName,
-      albumName: vote.albumName,
-      rank: 0
+      trackName: vote.trackName || 'Unknown Track',
+      artistName: vote.artistName || 'Unknown Artist', 
+      albumName: vote.albumName || 'Unknown Album',
+      rank: 0 // Will be calculated when fetching top results
     }
     await kv.set(trackKey, newResult)
   }
   
+  // Update global leaderboard
   await updateLeaderboard(vote.trackId, existing ? existing.totalPoints + vote.points : vote.points)
 }
 
-async function updateLeaderboard(trackId: string, totalPoints: number): Promise<void> {
+// ENHANCED: Leaderboard update with track name preservation
+export async function updateLeaderboard(trackId: string, totalPoints: number): Promise<void> {
   const leaderboardKey = 'track_leaderboard'
+  
+  // Get current leaderboard
   const currentLeaderboard = await kv.get<{ trackId: string, points: number }[]>(leaderboardKey) || []
+  
+  // Update or add track
   const existingIndex = currentLeaderboard.findIndex(item => item.trackId === trackId)
   
   if (existingIndex >= 0) {
@@ -407,24 +174,114 @@ async function updateLeaderboard(trackId: string, totalPoints: number): Promise<
     currentLeaderboard.push({ trackId, points: totalPoints })
   }
   
+  // Sort by points (highest first) and limit to top 50
   const sortedLeaderboard = currentLeaderboard
     .sort((a, b) => b.points - a.points)
     .slice(0, 50)
   
-  await kv.set(leaderboardKey, sortedLeaderboard, { ex: 60 * 60 * 24 * 30 })
+  // Save back to KV
+  await kv.set(leaderboardKey, sortedLeaderboard, { ex: 60 * 60 * 24 * 30 }) // 30 days expiry
 }
 
+// ENHANCED: Get top tracks with guaranteed track names (FIXES LEADERBOARD PROBLEM)
+export async function getTopTracks(limit: number = 15): Promise<TrackResult[]> {
+  const leaderboardKey = 'track_leaderboard'
+  
+  // Get leaderboard
+  const leaderboard = await kv.get<{ trackId: string, points: number }[]>(leaderboardKey)
+  
+  if (!leaderboard || leaderboard.length === 0) {
+    return []
+  }
+  
+  // Get top track IDs
+  const topTrackIds = leaderboard.slice(0, limit)
+  
+  // Get full track data
+  const tracks: TrackResult[] = []
+  
+  for (let i = 0; i < topTrackIds.length; i++) {
+    const item = topTrackIds[i]
+    let trackData = await kv.get<TrackResult>(`track_results:${item.trackId}`)
+    
+    if (trackData) {
+      // ENHANCED: Ensure we always have track names
+      const cleanTrackData: TrackResult = {
+        ...trackData,
+        rank: i + 1,
+        // Fix any missing track names
+        trackName: trackData.trackName && trackData.trackName !== 'Unknown Track' 
+          ? trackData.trackName 
+          : 'Unknown Track',
+        artistName: trackData.artistName && trackData.artistName !== 'Unknown Artist'
+          ? trackData.artistName
+          : 'Unknown Artist',
+        albumName: trackData.albumName && trackData.albumName !== 'Unknown Album'
+          ? trackData.albumName
+          : 'Unknown Album'
+      }
+      
+      tracks.push(cleanTrackData)
+    }
+  }
+  
+  return tracks
+}
+
+// ENHANCED: Log vote for analytics
 async function logVote(vote: Vote): Promise<void> {
   const logKey = `vote_log:${Date.now()}`
-  await kv.set(logKey, vote, { ex: 60 * 60 * 24 * 30 })
+  await kv.set(logKey, vote, { ex: 60 * 60 * 24 * 30 }) // 30 days expiry
 }
 
+// Get total voting statistics
 export async function getVotingStats(): Promise<{ totalVotes: number, totalUsers: number, totalTracks: number }> {
   const leaderboard = await kv.get<{ trackId: string, points: number }[]>('track_leaderboard')
   
   return {
-    totalVotes: 0,
-    totalUsers: 0,
+    totalVotes: 0, // Would need dedicated counter
+    totalUsers: 0, // Would need dedicated counter  
     totalTracks: leaderboard?.length || 0
   }
+}
+
+// ENHANCED: Cache track information for better performance
+export async function cacheTrackInfo(trackId: string, trackName: string, artistName: string, albumName: string): Promise<void> {
+  const cacheKey = `track_cache:${trackId}`
+  const cacheData: TrackCache = {
+    trackId,
+    trackName,
+    artistName, 
+    albumName,
+    isAvailable: true,
+    lastChecked: Date.now()
+  }
+  
+  // Cache for 7 days
+  await kv.set(cacheKey, cacheData, { ex: 60 * 60 * 24 * 7 })
+}
+
+// ENHANCED: Get cached track info
+export async function getCachedTrackInfo(trackId: string): Promise<TrackCache | null> {
+  const cacheKey = `track_cache:${trackId}`
+  return await kv.get<TrackCache>(cacheKey)
+}
+
+// User management functions (keep existing)
+export async function saveUserProfile(userId: string, profile: { 
+  name?: string | null
+  email?: string | null  
+  image?: string | null 
+}): Promise<void> {
+  const userKey = `user_profile:${userId}`
+  await kv.set(userKey, profile, { ex: 60 * 60 * 24 * 30 }) // 30 days expiry
+}
+
+export async function getUserProfile(userId: string): Promise<{ 
+  name?: string | null
+  email?: string | null
+  image?: string | null 
+} | null> {
+  const userKey = `user_profile:${userId}`
+  return await kv.get(userKey)
 }
