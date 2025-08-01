@@ -1,4 +1,4 @@
-// src/lib/auth.ts - NextAuth Konfiguration mit Refresh Token Support
+// src/lib/auth.ts - ERSTELLE DIESE DATEI
 import { NextAuthOptions } from 'next-auth'
 import SpotifyProvider from 'next-auth/providers/spotify'
 
@@ -32,7 +32,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, account, user }) {
       // Beim ersten Login: Account-Daten speichern
       if (account && user) {
-        console.log('🔐 New login, storing tokens')
+        console.log('🔐 New login, storing tokens for', user.email)
         return {
           ...token,
           accessToken: account.access_token,
@@ -44,7 +44,6 @@ export const authOptions: NextAuthOptions = {
       
       // Prüfen ob Token noch gültig ist
       if (Date.now() < (token.expiresAt as number)) {
-        console.log('🟢 Token still valid')
         return token
       }
       

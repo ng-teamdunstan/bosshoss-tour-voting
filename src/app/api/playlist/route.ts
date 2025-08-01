@@ -1,8 +1,11 @@
-// src/app/api/playlist/route.ts - KOMPLETT ERSETZEN
+// src/app/api/playlist/route.ts - MIT KORREKTER SESSION
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
+import { getServerSession } from 'next-auth'
 import { getTopTracks } from '@/lib/database'
 import { storeUserTokens } from '@/lib/spotify-tokens'
+
+// Import the NextAuth options
+import { authOptions } from '@/lib/auth'
 
 interface SpotifyPlaylist {
   id: string
@@ -15,9 +18,23 @@ interface SpotifyPlaylist {
 // Create or update BossHoss voting playlist for user
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession() as any
+    // WICHTIG: NextAuth-Optionen übergeben
+    const session = await getServerSession(authOptions) as any
+    
+    console.log('Session check:', {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      hasEmail: !!session?.user?.email,
+      hasAccessToken: !!session?.accessToken
+    })
     
     if (!session?.user?.email || !session?.accessToken) {
+      console.error('Authentication failed:', {
+        session: !!session,
+        user: !!session?.user,
+        email: session?.user?.email,
+        accessToken: !!session?.accessToken
+      })
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
     
@@ -28,6 +45,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No voting results yet' }, { status: 400 })
     }
     
+    console.log(`Creating/updating playlist with ${topTracks.length} tracks`)
+    
     // Get user's Spotify profile
     const profileResponse = await fetch('https://api.spotify.com/v1/me', {
       headers: {
@@ -36,11 +55,14 @@ export async function POST(request: NextRequest) {
     })
     
     if (!profileResponse.ok) {
+      console.error('Spotify profile request failed:', profileResponse.status)
       return NextResponse.json({ error: 'Failed to get Spotify profile' }, { status: 400 })
     }
     
     const profile = await profileResponse.json()
     const userId = profile.id
+    
+    console.log(`Processing for Spotify user: ${userId}`)
     
     // WICHTIG: Speichere Tokens für automatische Updates
     if (session.refreshToken) {
@@ -67,9 +89,11 @@ export async function POST(request: NextRequest) {
     let playlist: SpotifyPlaylist
     
     if (existingPlaylist) {
+      console.log(`Updating existing playlist: ${existingPlaylist.id}`)
       // Update existing playlist
       playlist = await updatePlaylist(session.accessToken, existingPlaylist.id, topTracks)
     } else {
+      console.log('Creating new playlist')
       // Create new playlist
       playlist = await createNewPlaylist(session.accessToken, userId, topTracks)
     }
@@ -88,14 +112,17 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     console.error('Error in playlist creation:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Internal server error', 
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }
 
 // Get user's playlist status
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession() as any
+    const session = await getServerSession(authOptions) as any
     
     if (!session?.accessToken) {
       return NextResponse.json({ hasPlaylist: false })
@@ -139,20 +166,25 @@ export async function GET(request: NextRequest) {
 
 // Helper: Find existing playlist
 async function findExistingPlaylist(accessToken: string, userId: string): Promise<SpotifyPlaylist | null> {
-  const playlistsResponse = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists?limit=50`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
-  })
-  
-  if (!playlistsResponse.ok) return null
-  
-  const playlistsData = await playlistsResponse.json()
-  const playlistName = '🤠 BossHoss - Back to the Boots (Community Top 15)'
-  
-  return playlistsData.items?.find((playlist: SpotifyPlaylist) => 
-    playlist.name === playlistName
-  ) || null
+  try {
+    const playlistsResponse = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists?limit=50`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    })
+    
+    if (!playlistsResponse.ok) return null
+    
+    const playlistsData = await playlistsResponse.json()
+    const playlistName = '🤠 BossHoss - Back to the Boots (Community Top 15)'
+    
+    return playlistsData.items?.find((playlist: SpotifyPlaylist) => 
+      playlist.name === playlistName
+    ) || null
+  } catch (error) {
+    console.error('Error finding existing playlist:', error)
+    return null
+  }
 }
 
 // Helper: Create new playlist
@@ -184,7 +216,9 @@ async function createNewPlaylist(accessToken: string, userId: string, topTracks:
   })
   
   if (!createResponse.ok) {
-    throw new Error('Failed to create playlist')
+    const errorText = await createResponse.text()
+    console.error('Failed to create playlist:', createResponse.status, errorText)
+    throw new Error(`Failed to create playlist: ${createResponse.status}`)
   }
   
   const playlist = await createResponse.json()
