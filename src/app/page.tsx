@@ -247,16 +247,16 @@ export default function Home() {
                       e.currentTarget.style.color = '#000'
                     }}
                   >
-                    {/* Badge für Mobile - links oben statt rechts */}
+                    {/* Badge für Mobile - oben mittig */}
                     {show.status === 'sold_out' && (
-                      <div className="absolute top-1 left-2 transform -rotate-12 z-10">
+                      <div className="absolute top-1 left-1/2 transform -translate-x-1/2 -rotate-12 z-10">
                         <span className="font-helltown text-xs bg-red-600 text-white px-2 py-1 uppercase shadow-lg">
                           SOLD OUT
                         </span>
                       </div>
                     )}
                     {show.status === 'few_left' && (
-                      <div className="absolute top-1 left-2 transform -rotate-12 z-10">
+                      <div className="absolute top-1 left-1/2 transform -translate-x-1/2 -rotate-12 z-10">
                         <span className="font-helltown text-xs bg-green-600 text-white px-2 py-1 uppercase shadow-lg">
                           FEW LEFT
                         </span>
