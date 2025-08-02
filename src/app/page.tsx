@@ -168,8 +168,18 @@ export default function Home() {
                     href="https://shop.thebosshoss.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="relative grid grid-cols-12 gap-2 p-3 transition-all duration-300 hover:bg-black hover:bg-opacity-80 hover:text-[#ceae79] items-center block overflow-hidden"
-                    style={{ backgroundColor: '#ceae79' }}
+                    className="relative grid grid-cols-12 gap-2 p-3 transition-all duration-300 items-center block overflow-hidden group"
+                    style={{ 
+                      backgroundColor: '#ceae79'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)'
+                      e.currentTarget.style.color = '#ceae79'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#ceae79'
+                      e.currentTarget.style.color = '#000'
+                    }}
                   >
                     {/* Schräger Badge */}
                     {show.status === 'sold_out' && (
@@ -224,19 +234,29 @@ export default function Home() {
                     href="https://shop.thebosshoss.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="relative p-3 transition-all duration-300 hover:bg-black hover:bg-opacity-80 hover:text-[#ceae79] block overflow-hidden"
-                    style={{ backgroundColor: '#ceae79' }}
+                    className="relative p-3 transition-all duration-300 block overflow-hidden"
+                    style={{ 
+                      backgroundColor: '#ceae79'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)'
+                      e.currentTarget.style.color = '#ceae79'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#ceae79'
+                      e.currentTarget.style.color = '#000'
+                    }}
                   >
-                    {/* Schräger Badge für Mobile */}
+                    {/* Badge für Mobile - links oben statt rechts */}
                     {show.status === 'sold_out' && (
-                      <div className="absolute top-1 right-4 transform rotate-12 z-10">
+                      <div className="absolute top-1 left-2 transform -rotate-12 z-10">
                         <span className="font-helltown text-xs bg-red-600 text-white px-2 py-1 uppercase shadow-lg">
                           SOLD OUT
                         </span>
                       </div>
                     )}
                     {show.status === 'few_left' && (
-                      <div className="absolute top-1 right-4 transform rotate-12 z-10">
+                      <div className="absolute top-1 left-2 transform -rotate-12 z-10">
                         <span className="font-helltown text-xs bg-green-600 text-white px-2 py-1 uppercase shadow-lg">
                           FEW LEFT
                         </span>
