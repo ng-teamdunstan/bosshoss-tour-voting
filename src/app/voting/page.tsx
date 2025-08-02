@@ -5,6 +5,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { ArrowLeft, Music, Star, Clock, TrendingUp } from 'lucide-react'
+import Image from 'next/image'
 
 interface ExpandedAlbums {
   [key: string]: boolean
@@ -473,7 +474,7 @@ export default function VotingPage() {
                   </div>
                   
                   <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
-                    <strong>📱 Playlist Name:</strong> "The BossHoss - Back to the Clubs Community Voting Top 15 Songs"<br />
+                    <strong>📱 Playlist Name:</strong> &quot;The BossHoss - Back to the Clubs Community Voting Top 15 Songs&quot;<br />
                     <strong>🔄 Updates:</strong> Täglich automatisch um 8:00 Uhr MESZ<br />
                     <strong>📊 Ranking:</strong> Basiert auf Community Voting-Ergebnissen<br />
                     <strong>🖼️ Cover:</strong> Automatisches BossHoss Cover
@@ -490,7 +491,7 @@ export default function VotingPage() {
                     <ul className="mt-2 space-y-1">
                       <li>• Die aktuellen Top 15 Songs basierend auf Community Voting</li>
                       <li>• Tägliche automatische Updates um 8:00 Uhr MESZ</li>
-                      <li>• Automatisches BossHoss "Back to the Clubs" Cover</li>
+                      <li>• Automatisches BossHoss &quot;Back to the Clubs&quot; Cover</li>
                       <li>• Direkter Link zu deiner Spotify Library</li>
                     </ul>
                   </div>
@@ -514,7 +515,7 @@ export default function VotingPage() {
                   </button>
                   
                   <div className="text-xs text-center text-gray-500 bg-amber-50 p-2 rounded">
-                    🖼️ Playlist bekommt automatisch das offizielle BossHoss "Back to the Clubs" Cover
+                    🖼️ Playlist bekommt automatisch das offizielle BossHoss &quot;Back to the Clubs&quot; Cover
                   </div>
                 </div>
               )}
@@ -532,10 +533,12 @@ export default function VotingPage() {
                     className="flex items-center space-x-4 p-4 cursor-pointer hover:bg-amber-50 transition-colors"
                     onClick={() => toggleAlbum(album.id)}
                   >
-                    <img 
+                    <Image 
                       src={album.images[0]?.url || '/placeholder-album.jpg'} 
                       alt={album.name}
-                      className="w-16 h-16 rounded-lg shadow-md"
+                      width={64}
+                      height={64}
+                      className="w-16 h-16 rounded-lg shadow-md object-cover"
                     />
                     <div className="flex-1">
                       <h3 className="text-lg font-bold text-gray-900">{album.name}</h3>
