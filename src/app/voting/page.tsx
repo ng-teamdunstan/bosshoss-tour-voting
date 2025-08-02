@@ -560,12 +560,32 @@ export default function VotingPage() {
                           className="flex items-center justify-between p-4 hover:bg-amber-50/50 transition-colors border-b border-amber-100 last:border-b-0"
                         >
                           <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900">{track.name}</h4>
+                            <div className="flex items-center space-x-2 mb-1">
+                              <h4 className="font-semibold text-gray-900">{track.name}</h4>
+                              {getVoteMultiplier(track.id) === 5 && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                  🔥 DEIN TOP TRACK
+                                </span>
+                              )}
+                              {getVoteMultiplier(track.id) === 3 && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  🎵 KÜRZLICH GEHÖRT
+                                </span>
+                              )}
+                            </div>
                             <p className="text-sm text-gray-600">
                               {track.artists.map(artist => artist.name).join(', ')}
                             </p>
-                            <div className="text-xs text-gray-500 mt-1">
-                              {getVoteLabel(track.id)}
+                            <div className="flex items-center space-x-2 mt-1">
+                              <span className={`text-xs font-medium ${
+                                getVoteMultiplier(track.id) === 5 ? 'text-red-600' :
+                                getVoteMultiplier(track.id) === 3 ? 'text-blue-600' :
+                                'text-gray-500'
+                              }`}>
+                                {getVoteMultiplier(track.id) === 5 ? '🔥 5 Punkte - Meistgehört' :
+                                 getVoteMultiplier(track.id) === 3 ? '🎵 3 Punkte - Kürzlich gespielt' :
+                                 '⭐ 1 Punkt - Standard Vote'}
+                              </span>
                             </div>
                           </div>
                           
