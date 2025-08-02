@@ -77,7 +77,7 @@ export default function Home() {
               </h1>
 
               <p className="font-rama mb-8 text-base md:text-lg tracking-[0.05em] max-w-[60rem] mx-auto">
-                Vote für deine Lieblingssongs und bestimme die Setlist für die exklusive Club Tour.
+                Vote für deine Lieblingssongs und bestimme welche Songs auf der Club Tour auf keinen Fall fehlen dürfen.
               </p>
 
               {/* Spotify CTA Button mit Logo */}
@@ -305,11 +305,18 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-20 text-center py-8 mt-8">
+       <footer className="relative z-20 text-center py-8 mt-8">
         <div className="max-w-6xl mx-auto px-4">
           <p className="font-rama opacity-80 text-sm">
             © 2025 The BossHoss • Back to the Boots Tour • 
-            <span className="font-blackbetty ml-2">Powered by Fan Votes</span>
+            <a 
+              href="https://dunstan.media" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="font-blackbetty ml-2 hover:opacity-50 transition-opacity duration-300"
+            >
+              Powered with 💪 by Dunstan Media
+            </a>
           </p>
         </div>
       </footer>
