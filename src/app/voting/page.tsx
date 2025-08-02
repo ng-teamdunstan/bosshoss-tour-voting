@@ -1,75 +1,73 @@
-// src/app/voting/page.tsx - KOMPLETTE DATEI
 'use client'
 
 import { useSession, signOut } from 'next-auth/react'
+import { useState, useEffect } from 'react'
+import { Music, Star, Clock, TrendingUp, ArrowLeft, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { ArrowLeft, Music, Star, Clock, TrendingUp } from 'lucide-react'
 import Image from 'next/image'
-
-interface ExpandedAlbums {
-  [key: string]: boolean
-}
 
 interface SpotifyArtist {
   name: string
+}
+
+interface SpotifyImage {
+  url: string
+}
+
+interface SpotifyAlbumInfo {
+  name: string
+  images: SpotifyImage[]
+  release_date: string
 }
 
 interface SpotifyTrack {
   id: string
   name: string
   artists: SpotifyArtist[]
-  album: {
-    name: string
-    images: { url: string }[]
-    release_date: string
-  }
+  album: SpotifyAlbumInfo
+  preview_url: string | null
 }
 
-interface AlbumWithTracks {
+interface Album {
   id: string
   name: string
   release_date: string
-  images: { url: string }[]
-  album_type: string
+  images: SpotifyImage[]
+  album_type: string // 'album', 'single', 'compilation'
   tracks: SpotifyTrack[]
 }
 
-interface VotingResult {
+interface ExpandedAlbums {
+  [key: string]: boolean
+}
+
+interface VoteResult {
   trackId: string
+  totalPoints: number
+  totalVotes: number
   trackName: string
   artistName: string
   albumName: string
-  totalPoints: number
-  totalVotes: number
-  rank: number
-}
-
-interface PlaylistStatus {
-  hasPlaylist: boolean
-  playlist?: {
-    id: string
-    name: string
-    url: string
-  }
 }
 
 export default function VotingPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-
-  // States
-  const [loading, setLoading] = useState(true)
-  const [bosshossAlbums, setBosshossAlbums] = useState<AlbumWithTracks[]>([])
-  const [expandedAlbums, setExpandedAlbums] = useState<ExpandedAlbums>({})
-  const [remainingVotes, setRemainingVotes] = useState(10)
-  const [votedTracks, setVotedTracks] = useState<string[]>([])
-  const [submitting, setSubmitting] = useState(false)
+  
+  const [bosshossAlbums, setBosshossAlbums] = useState<Album[]>([])
   const [recentTracks, setRecentTracks] = useState<string[]>([])
   const [topTracks, setTopTracks] = useState<string[]>([])
+  const [votedTracks, setVotedTracks] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
+  const [votingResults, setVotingResults] = useState<VoteResult[]>([])
   const [showResults, setShowResults] = useState(false)
-  const [votingResults, setVotingResults] = useState<VotingResult[]>([])
-  const [playlistStatus, setPlaylistStatus] = useState<PlaylistStatus>({ hasPlaylist: false })
+  const [remainingVotes, setRemainingVotes] = useState(10)
+  const [expandedAlbums, setExpandedAlbums] = useState<ExpandedAlbums>({})
+  const [submitting, setSubmitting] = useState(false)
+  const [playlistStatus, setPlaylistStatus] = useState<{
+    hasPlaylist: boolean
+    playlist?: { id: string; name: string; url: string }
+  }>({ hasPlaylist: false })
   const [creatingPlaylist, setCreatingPlaylist] = useState(false)
 
   // Redirect if not authenticated
@@ -77,97 +75,31 @@ export default function VotingPage() {
     if (status === 'loading') return
     if (!session) {
       router.push('/')
-      return
     }
   }, [session, status, router])
 
-  // Load data when component mounts
+  // Load all data when component mounts and user is authenticated
   useEffect(() => {
-    if (!session) return
-
-    const userSession = session as any
+    if (!session?.user) return
 
     const loadBossHossData = async () => {
       try {
-        // Search for The BossHoss on Spotify
-        const searchResponse = await fetch('https://api.spotify.com/v1/search?q=artist:The BossHoss&type=artist&limit=1', {
-          headers: {
-            'Authorization': `Bearer ${userSession.accessToken}`
-          }
-        })
-        const searchData = await searchResponse.json()
+        const response = await fetch('/api/bosshoss-albums')
+        const data = await response.json()
         
-        if (!searchData.artists?.items?.length) {
-          console.error('BossHoss artist not found')
-          return
+        if (response.ok) {
+          setBosshossAlbums(data.albums)
         }
-
-        const artistId = searchData.artists.items[0].id
-
-        // Get all albums
-        const albumsResponse = await fetch(`https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album,single&market=DE&limit=50`, {
-          headers: {
-            'Authorization': `Bearer ${userSession.accessToken}`
-          }
-        })
-        const albumsData = await albumsResponse.json()
-
-        // Get tracks for each album
-        const albumsWithTracks = await Promise.all(
-          albumsData.items.map(async (album: any) => {
-            const tracksResponse = await fetch(`https://api.spotify.com/v1/albums/${album.id}/tracks`, {
-              headers: {
-                'Authorization': `Bearer ${userSession.accessToken}`
-              }
-            })
-            const tracksData = await tracksResponse.json()
-            
-            return {
-              id: album.id,
-              name: album.name,
-              release_date: album.release_date,
-              images: album.images,
-              album_type: album.album_type,
-              tracks: tracksData.items.map((track: {
-                id: string
-                name: string
-                artists: SpotifyArtist[]
-              }) => ({
-                ...track,
-                album: {
-                  name: album.name,
-                  images: album.images,
-                  release_date: album.release_date
-                }
-              }))
-            }
-          })
-        )
-
-        // Sort by release date (newest first)
-        const sortedAlbums = albumsWithTracks.sort((a, b) => {
-          return new Date(b.release_date).getTime() - new Date(a.release_date).getTime()
-        })
-
-        setBosshossAlbums(sortedAlbums)
-        
-        // Expand first 2 releases by default
-        const initialExpanded: ExpandedAlbums = {}
-        sortedAlbums.slice(0, 2).forEach(album => {
-          initialExpanded[album.id] = true
-        })
-        setExpandedAlbums(initialExpanded)
-        
-        setLoading(false)
       } catch (error) {
-        console.error('Error loading BossHoss data:', error)
-        setLoading(false)
+        console.error('Error loading BossHoss albums:', error)
       }
     }
 
     const loadUserListeningHistory = async () => {
       try {
-        // Get recently played tracks (last 50)
+        const userSession = session as any
+        
+        // Get recently played tracks
         const recentResponse = await fetch('https://api.spotify.com/v1/me/player/recently-played?limit=50', {
           headers: {
             'Authorization': `Bearer ${userSession.accessToken}`
@@ -226,6 +158,7 @@ export default function VotingPage() {
       await loadUserListeningHistory()
       await loadUserVotingStatus()
       await loadPlaylistStatus()
+      setLoading(false)
     }
     
     loadData()
@@ -239,61 +172,43 @@ export default function VotingPage() {
 
   const getVoteLabel = (trackId: string) => {
     const multiplier = getVoteMultiplier(trackId)
-    if (multiplier === 5) return '🔥 DEIN TOP TRACK (5 Punkte)'
-    if (multiplier === 3) return '🎵 KÜRZLICH GEHÖRT (3 Punkte)'
-    return '⭐ STANDARD VOTE (1 Punkt)'
-  }
-
-  const toggleAlbum = (albumId: string) => {
-    setExpandedAlbums(prev => ({
-      ...prev,
-      [albumId]: !prev[albumId]
-    }))
-  }
-
-  const handleVote = async (track: SpotifyTrack) => {
-    if (submitting || remainingVotes <= 0 || hasVoted(track.id)) return
-
-    setSubmitting(true)
-
-    try {
-      const points = getVoteMultiplier(track.id)
-      
-      const response = await fetch('/api/vote', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          trackId: track.id,
-          points: points,
-          trackName: track.name,
-          artistName: track.artists[0]?.name || 'The BossHoss',
-          albumName: track.album.name
-        })
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        setRemainingVotes(data.votesRemaining)
-        setVotedTracks(prev => [...prev, track.id])
-        
-        // Show success message
-        alert(`✅ Vote abgegeben!\n🎵 ${track.name}\n⭐ ${points} ${points === 1 ? 'Punkt' : 'Punkte'}\n\n${data.votesRemaining} Votes verbleibend.`)
-      } else {
-        alert(`❌ ${data.message}`)
-      }
-    } catch (error) {
-      console.error('Error submitting vote:', error)
-      alert('❌ Fehler beim Voting. Bitte versuche es nochmal.')
-    } finally {
-      setSubmitting(false)
-    }
+    if (multiplier === 5) return '🔥 DEIN FAVORIT'
+    if (multiplier === 3) return '📻 RECENTLY PLAYED'
+    return '🎵 STANDARD'
   }
 
   const hasVoted = (trackId: string) => {
     return votedTracks.includes(trackId)
+  }
+
+  const handleVote = async (trackId: string) => {
+    if (remainingVotes <= 0 || hasVoted(trackId) || submitting) return
+
+    setSubmitting(true)
+    
+    try {
+      const response = await fetch('/api/vote', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ trackId }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setVotedTracks([...votedTracks, trackId])
+        setRemainingVotes(data.votesRemaining)
+      } else {
+        alert(data.error || 'Voting failed')
+      }
+    } catch (error) {
+      console.error('Voting error:', error)
+      alert('Voting failed. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const loadCommunityResults = async () => {
@@ -302,94 +217,114 @@ export default function VotingPage() {
       const data = await response.json()
       
       if (response.ok) {
-        setVotingResults(data.topTracks)
+        setVotingResults(data.results)
         setShowResults(true)
+      } else {
+        alert('Failed to load results')
       }
     } catch (error) {
-      console.error('Error loading community results:', error)
+      console.error('Error loading results:', error)
+      alert('Failed to load results')
     }
   }
 
   const createOrUpdatePlaylist = async () => {
-    if (creatingPlaylist) return
-    
     setCreatingPlaylist(true)
     
     try {
       const response = await fetch('/api/playlist', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       })
-      
-      const result = await response.json()
-      
-      if (result.success) {
+
+      const data = await response.json()
+
+      if (response.ok) {
         setPlaylistStatus({
           hasPlaylist: true,
-          playlist: result.playlist
+          playlist: data.playlist
         })
-        
-        const successMessage = [
-          `🎉 ${result.message}`,
-          `🎵 ${result.tracksCount} Songs hinzugefügt!`,
-          result.coverSet ? '🖼️ BossHoss Cover automatisch gesetzt!' : '',
-          result.automaticUpdates ? '🔄 Automatische Updates aktiviert!' : '⚠️ Automatische Updates nicht verfügbar',
-          '',
-          '🔗 Öffne Spotify um deine Playlist zu sehen.'
-        ].filter(Boolean).join('\n')
-        
-        alert(successMessage)
+        alert(data.message)
       } else {
-        alert(`❌ ${result.error || 'Fehler beim Erstellen der Playlist'}`)
+        alert(data.error || 'Failed to create/update playlist')
       }
-      
     } catch (error) {
-      console.error('Error creating playlist:', error)
-      alert('Fehler beim Erstellen der Playlist. Bitte versuche es nochmal.')
+      console.error('Playlist creation error:', error)
+      alert('Failed to create/update playlist')
     } finally {
       setCreatingPlaylist(false)
     }
   }
 
+  const toggleAlbumExpansion = (albumId: string) => {
+    setExpandedAlbums(prev => ({
+      ...prev,
+      [albumId]: !prev[albumId]
+    }))
+  }
+
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-amber-100 flex items-center justify-center">
+      <div 
+        className="min-h-screen flex items-center justify-center"
+        style={{
+          backgroundImage: 'url(https://thebosshoss.com/paper-texture.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      >
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-amber-800 font-semibold">Loading BossHoss Songs...</p>
+          <p className="text-amber-800 font-semibold">Loading...</p>
         </div>
       </div>
     )
   }
 
   if (!session) {
-    return null // Will redirect via useEffect
+    return null
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50 to-red-50">
-      {/* Header */}
-      <header className="bg-black/90 backdrop-blur-sm border-b-4 border-amber-500 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <button 
+    <div 
+      className="min-h-screen"
+      style={{
+        backgroundImage: 'url(https://thebosshoss.com/paper-texture.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
+      {/* Header mit Logo */}
+      <header className="bg-black/90 backdrop-blur-sm text-white p-4 shadow-lg">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <button
               onClick={() => router.push('/')}
-              className="text-white hover:text-amber-400 transition-colors mr-3"
+              className="flex items-center space-x-2 text-amber-400 hover:text-amber-300 transition-colors"
             >
-              <ArrowLeft className="w-6 h-6" />
+              <ArrowLeft className="w-5 h-5" />
+              <span className="font-semibold">Back</span>
             </button>
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
-              <Music className="w-5 h-5 text-black" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">SONG VOTING</h1>
-              <p className="text-amber-400 text-sm">Hey {session.user?.name}! 🤠</p>
-            </div>
+            
+            {/* BossHoss Logo */}
+            <Image
+              src="https://thebosshoss.com/_next/static/media/tbh_bttb.cb9d83ef.webp"
+              alt="The BossHoss - Back to the Boots"
+              width={200}
+              height={80}
+              className="h-16 w-auto"
+            />
           </div>
           
           <div className="flex items-center space-x-4">
+            <div className="text-right">
+              <p className="text-amber-400 font-semibold">Welcome back, {session.user?.name}</p>
+              <p className="text-gray-300 text-sm">Ready to rock the vote? 🤠</p>
+            </div>
             <div className="text-white text-sm">
               <span className="font-bold text-amber-400">{remainingVotes}</span> Votes left
             </div>
@@ -409,7 +344,7 @@ export default function VotingPage() {
             {/* Voting Instructions */}
             <div className="bg-white/80 rounded-2xl p-6 shadow-xl border border-amber-200 mb-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                🗳️ Vote für die Back to the Clubs Setlist!
+                🗳️ Vote für die Back to the Boots Setlist!
               </h2>
               <p className="text-gray-600 mb-4">
                 <strong>Smart Voting:</strong> Deine Stimme zählt mehr, wenn du die Songs auch wirklich hörst! 
@@ -439,226 +374,210 @@ export default function VotingPage() {
                     Community Results anzeigen ({votedTracks.length} Votes abgegeben)
                   </button>
                 )}
-              </div>
-            </div>
-
-            {/* Playlist Feature */}
-            <div className="bg-white/90 rounded-2xl p-6 shadow-xl border border-amber-200 mb-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <Music className="w-5 h-5 mr-2 text-amber-600" />
-                Deine Community Playlist
-              </h3>
-              
-              {playlistStatus.hasPlaylist ? (
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex items-center space-x-2 bg-green-100 px-4 py-2 rounded-full">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-green-800 font-semibold text-sm">Playlist aktiv</span>
+                
+                {/* Playlist Feature */}
+                <div className="flex items-center space-x-4">
+                  {playlistStatus.hasPlaylist ? (
+                    <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-2 bg-green-100 px-4 py-2 rounded-full">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-green-800 font-semibold text-sm">Playlist aktiv</span>
+                      </div>
+                      <a
+                        href={playlistStatus.playlist?.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full text-sm transition-all duration-300 transform hover:scale-105"
+                      >
+                        🎵 In Spotify öffnen
+                      </a>
+                      <button
+                        onClick={createOrUpdatePlaylist}
+                        disabled={creatingPlaylist}
+                        className="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-full text-sm transition-all duration-300 transform hover:scale-105 disabled:opacity-50"
+                      >
+                        {creatingPlaylist ? 'Updating...' : '🔄 Update'}
+                      </button>
                     </div>
-                    <a
-                      href={playlistStatus.playlist?.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full text-sm transition-all duration-300 transform hover:scale-105"
-                    >
-                      🎵 In Spotify öffnen
-                    </a>
+                  ) : (
                     <button
                       onClick={createOrUpdatePlaylist}
                       disabled={creatingPlaylist}
-                      className="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-full text-sm transition-all duration-300 transform hover:scale-105 disabled:opacity-50"
+                      className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {creatingPlaylist ? 'Updating...' : '🔄 Update'}
+                      {creatingPlaylist ? 'Creating Playlist...' : '🎵 Create Spotify Playlist'}
                     </button>
-                  </div>
-                  
-                  <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
-                    <strong>📱 Playlist Name:</strong> &quot;The BossHoss - Back to the Clubs Community Voting Top 15 Songs&quot;<br />
-                    <strong>🔄 Updates:</strong> Täglich automatisch um 8:00 Uhr MESZ<br />
-                    <strong>📊 Ranking:</strong> Basiert auf Community Voting-Ergebnissen<br />
-                    <strong>🖼️ Cover:</strong> Automatisches BossHoss Cover
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-gray-600">
-                    Erstelle deine persönliche Spotify-Playlist mit den aktuellen Top 15 Community-Voting Songs!
-                  </p>
-                  
-                  <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-800">
-                    <strong>✨ Deine Playlist wird enthalten:</strong>
-                    <ul className="mt-2 space-y-1">
-                      <li>• Die aktuellen Top 15 Songs basierend auf Community Voting</li>
-                      <li>• Tägliche automatische Updates um 8:00 Uhr MESZ</li>
-                      <li>• Automatisches BossHoss &quot;Back to the Clubs&quot; Cover</li>
-                      <li>• Direkter Link zu deiner Spotify Library</li>
-                    </ul>
-                  </div>
-                  
-                  <button
-                    onClick={createOrUpdatePlaylist}
-                    disabled={creatingPlaylist}
-                    className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {creatingPlaylist ? (
-                      <div className="flex items-center justify-center space-x-2">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span>Erstelle Playlist...</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center space-x-2">
-                        <Music className="w-5 h-5" />
-                        <span>🎵 Playlist erstellen</span>
-                      </div>
-                    )}
-                  </button>
-                  
-                  <div className="text-xs text-center text-gray-500 bg-amber-50 p-2 rounded">
-                    🖼️ Playlist bekommt automatisch das offizielle BossHoss &quot;Back to the Clubs&quot; Cover
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Albums and Songs */}
-            <div className="space-y-6">
-              {bosshossAlbums.map((album) => (
-                <div 
-                  key={album.id} 
-                  className="bg-white/90 rounded-2xl shadow-xl border border-amber-200 overflow-hidden"
-                >
-                  {/* Album Header */}
-                  <div 
-                    className="flex items-center space-x-4 p-4 cursor-pointer hover:bg-amber-50 transition-colors"
-                    onClick={() => toggleAlbum(album.id)}
-                  >
-                    <Image 
-                      src={album.images[0]?.url || '/placeholder-album.jpg'} 
-                      alt={album.name}
-                      width={64}
-                      height={64}
-                      className="w-16 h-16 rounded-lg shadow-md object-cover"
-                    />
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-gray-900">{album.name}</h3>
-                      <p className="text-gray-600">
-                        {new Date(album.release_date).getFullYear()} • {album.tracks.length} Songs
-                      </p>
-                    </div>
-                    <div className="text-gray-400">
-                      {expandedAlbums[album.id] ? '−' : '+'}
-                    </div>
-                  </div>
-
-                  {/* Songs List */}
-                  {expandedAlbums[album.id] && (
-                    <div className="border-t border-amber-200">
-                      {album.tracks.map((track) => (
-                        <div 
-                          key={track.id}
-                          className="flex items-center justify-between p-4 hover:bg-amber-50/50 transition-colors border-b border-amber-100 last:border-b-0"
-                        >
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <h4 className="font-semibold text-gray-900">{track.name}</h4>
-                              {getVoteMultiplier(track.id) === 5 && (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                  🔥 DEIN TOP TRACK
-                                </span>
-                              )}
-                              {getVoteMultiplier(track.id) === 3 && (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                  🎵 KÜRZLICH GEHÖRT
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-sm text-gray-600">
-                              {track.artists.map(artist => artist.name).join(', ')}
-                            </p>
-                            <div className="flex items-center space-x-2 mt-1">
-                              <span className={`text-xs font-medium ${
-                                getVoteMultiplier(track.id) === 5 ? 'text-red-600' :
-                                getVoteMultiplier(track.id) === 3 ? 'text-blue-600' :
-                                'text-gray-500'
-                              }`}>
-                                {getVoteMultiplier(track.id) === 5 ? '🔥 5 Punkte - Meistgehört' :
-                                 getVoteMultiplier(track.id) === 3 ? '🎵 3 Punkte - Kürzlich gespielt' :
-                                 '⭐ 1 Punkt - Standard Vote'}
-                              </span>
-                            </div>
-                          </div>
-                          
-                          <button
-                            onClick={() => handleVote(track)}
-                            disabled={submitting || remainingVotes <= 0 || hasVoted(track.id)}
-                            className={`px-4 py-2 rounded-full font-medium text-sm transition-all duration-300 transform hover:scale-105 disabled:scale-100 ${
-                              hasVoted(track.id)
-                                ? 'bg-green-500 text-white cursor-default'
-                                : remainingVotes <= 0
-                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                : getVoteMultiplier(track.id) === 5
-                                ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white'
-                                : getVoteMultiplier(track.id) === 3
-                                ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white'
-                                : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white'
-                            }`}
-                          >
-                            {hasVoted(track.id) 
-                              ? '✓ Voted' 
-                              : submitting 
-                              ? '...' 
-                              : `Vote (${getVoteMultiplier(track.id)})`
-                            }
-                          </button>
-                        </div>
-                      ))}
-                    </div>
                   )}
                 </div>
-              ))}
+              </div>
+            </div>
+
+            {/* Albums */}
+            <div className="grid gap-6">
+              {bosshossAlbums.map((album) => {
+                const isExpanded = expandedAlbums[album.id]
+                const albumVotes = album.tracks.filter(track => hasVoted(track.id)).length
+                
+                return (
+                  <div key={album.id} className="bg-white/80 rounded-2xl shadow-xl border border-amber-200 overflow-hidden">
+                    {/* Album Header */}
+                    <button
+                      onClick={() => toggleAlbumExpansion(album.id)}
+                      className="w-full p-6 bg-gradient-to-r from-black/90 to-gray-900 text-white hover:from-black hover:to-gray-800 transition-all duration-300"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          {album.images[0] && (
+                            <Image
+                              src={album.images[0].url}
+                              alt={album.name}
+                              width={80}
+                              height={80}
+                              className="rounded-lg shadow-lg"
+                            />
+                          )}
+                          <div className="text-left">
+                            <h3 className="text-2xl font-bold text-amber-400 mb-1">{album.name}</h3>
+                            <p className="text-gray-300 text-sm">
+                              Released: {new Date(album.release_date).getFullYear()} • 
+                              {album.tracks.length} track{album.tracks.length !== 1 ? 's' : ''}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-3">
+                          {albumVotes > 0 && (
+                            <div className="bg-white/20 rounded-full px-3 py-1">
+                              <span className="text-white font-semibold">{albumVotes} voted</span>
+                            </div>
+                          )}
+                          <div className="text-white">
+                            {isExpanded ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                    
+                    {/* Album Tracks - Collapsible */}
+                    {isExpanded && (
+                      <div className="p-4 animate-in slide-in-from-top-2 duration-300">
+                        <div className="grid gap-3">
+                          {album.tracks.map((track) => (
+                            <div key={track.id} className="flex items-center justify-between p-3 bg-white/50 rounded-lg hover:bg-white/70 transition-colors">
+                              <div className="flex items-center space-x-3 flex-1">
+                                <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                                <div className="flex-1">
+                                  <h4 className="font-semibold text-gray-900">{track.name}</h4>
+                                  <p className="text-sm text-gray-600">
+                                    {track.artists.map(a => a.name).join(', ')}
+                                  </p>
+                                </div>
+                                
+                                {/* Vote multiplier indicator */}
+                                <div className="text-xs px-2 py-1 rounded-full bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 font-semibold">
+                                  {getVoteLabel(track.id)}
+                                </div>
+                              </div>
+                              
+                              <button
+                                onClick={() => handleVote(track.id)}
+                                disabled={remainingVotes <= 0 || hasVoted(track.id) || submitting}
+                                className={`ml-4 px-4 py-2 rounded-full font-semibold transition-all duration-300 ${
+                                  hasVoted(track.id)
+                                    ? 'bg-green-500 text-white cursor-default'
+                                    : remainingVotes <= 0
+                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    : submitting
+                                    ? 'bg-amber-400 text-white cursor-wait'
+                                    : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white transform hover:scale-105'
+                                }`}
+                              >
+                                {hasVoted(track.id) ? (
+                                  <span className="flex items-center space-x-1">
+                                    <CheckCircle className="w-4 h-4" />
+                                    <span>Voted</span>
+                                  </span>
+                                ) : submitting ? (
+                                  <span className="flex items-center space-x-1">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    <span>...</span>
+                                  </span>
+                                ) : (
+                                  `Vote (+${getVoteMultiplier(track.id)})`
+                                )}
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </>
         ) : (
           /* Community Results View */
-          <div className="space-y-6">
-            <div className="bg-white/90 rounded-2xl p-6 shadow-xl border border-amber-200">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  🏆 Community Voting Results - Top 15
-                </h2>
-                <button
-                  onClick={() => setShowResults(false)}
-                  className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition-colors"
-                >
-                  ← Zurück zum Voting
-                </button>
-              </div>
-              
-              <div className="space-y-3">
-                {votingResults.map((result, index) => (
-                  <div 
-                    key={result.trackId}
-                    className="flex items-center space-x-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200"
-                  >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-                      index === 0 ? 'bg-yellow-500 text-white' :
-                      index === 1 ? 'bg-gray-400 text-white' :
-                      index === 2 ? 'bg-orange-600 text-white' :
-                      'bg-gray-200 text-gray-700'
+          <div className="bg-white/80 rounded-2xl p-8 shadow-xl border border-amber-200">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">
+              🏆 Community Voting Results - Top 15
+            </h2>
+            
+            <div className="space-y-4 mb-8">
+              {votingResults.map((result, index) => (
+                <div key={result.trackId} className={`flex items-center justify-between p-4 rounded-lg ${
+                  index === 0 ? 'bg-gradient-to-r from-amber-100 to-orange-100 border-2 border-amber-300' :
+                  index < 3 ? 'bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200' :
+                  'bg-gray-50 border border-gray-200'
+                }`}>
+                  <div className="flex items-center space-x-4">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
+                      index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' :
+                      index === 1 ? 'bg-gradient-to-r from-gray-300 to-gray-500' :
+                      index === 2 ? 'bg-gradient-to-r from-amber-600 to-amber-800' :
+                      'bg-gradient-to-r from-amber-500 to-orange-500'
                     }`}>
-                      {result.rank}
+                      {index + 1}
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-gray-900">{result.trackName}</h3>
-                      <p className="text-sm text-gray-600">{result.artistName} • {result.albumName}</p>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-amber-600">{result.totalPoints} Punkte</div>
-                      <div className="text-xs text-gray-500">{result.totalVotes} Votes</div>
+                    <div>
+                      <h4 className="font-bold text-gray-900">{result.trackName}</h4>
+                      <p className="text-sm text-gray-600">{result.artistName}</p>
+                      {result.albumName && (
+                        <p className="text-xs text-gray-500">{result.albumName}</p>
+                      )}
                     </div>
                   </div>
-                ))}
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-amber-600">{result.totalPoints} Punkte</div>
+                    <div className="text-sm text-gray-500">{result.totalVotes} Votes</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="text-center space-y-4">
+              <p className="text-gray-600">
+                🎸 Das sind die beliebtesten BossHoss Songs der Community!
+              </p>
+              <p className="text-sm text-gray-500">
+                {votedTracks.length > 0 ? 
+                  `Du hast heute ${votedTracks.length} Stimme${votedTracks.length !== 1 ? 'n' : ''} abgegeben. Komm morgen wieder für neue Votes!` :
+                  'Gib deine Stimmen ab um die Setlist zu beeinflussen!'
+                }
+              </p>
+              <div className="flex justify-center space-x-4">
+                <button
+                  onClick={() => setShowResults(false)}
+                  className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105"
+                >
+                  Zurück zum Voting
+                </button>
+                <button
+                  onClick={() => router.push('/')}
+                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105"
+                >
+                  Zur Startseite
+                </button>
               </div>
             </div>
           </div>
