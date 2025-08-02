@@ -1,12 +1,13 @@
-// src/app/api/cron/update-playlists/route.ts - KOMPLETT ERSETZEN
+// src/app/api/cron/update-playlists/route.ts - MIT AUTO-COVER
 import { NextRequest, NextResponse } from 'next/server'
 import { getTopTracks } from '@/lib/database'
 import { getPlaylistSubscribers, getValidAccessToken, removeUserFromUpdates } from '@/lib/spotify-tokens'
+import { PLAYLIST_CONFIG, setDefaultPlaylistCover } from '@/lib/playlist-config'
 
 // This endpoint will be called daily by Vercel Cron
 export async function GET(request: NextRequest) {
   try {
-    // Verify this is a cron request (optional security)
+    // Verify this is a cron request
     const authHeader = request.headers.get('authorization')
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -44,6 +45,7 @@ export async function GET(request: NextRequest) {
     let updatedCount = 0
     let errorCount = 0
     let removedCount = 0
+    let coversSet = 0
     
     // Update each user's playlist
     for (const userId of playlistUsers) {
@@ -61,10 +63,11 @@ export async function GET(request: NextRequest) {
         }
         
         // Find and update user's playlist
-        const updated = await updateUserPlaylist(accessToken, topTracks, userId)
+        const updateResult = await updateUserPlaylist(accessToken, topTracks, userId)
         
-        if (updated) {
+        if (updateResult.success) {
           updatedCount++
+          if (updateResult.coverSet) coversSet++
           console.log(`✅ Updated playlist for user ${userId}`)
         } else {
           console.log(`⚠️ Failed to update playlist for user ${userId}`)
@@ -77,7 +80,7 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    const finalMessage = `🎉 Playlist update complete: ${updatedCount} updated, ${errorCount} errors, ${removedCount} removed`
+    const finalMessage = `🎉 Playlist update complete: ${updatedCount} updated, ${errorCount} errors, ${removedCount} removed, ${coversSet} covers set`
     console.log(finalMessage)
     
     return NextResponse.json({
@@ -88,6 +91,7 @@ export async function GET(request: NextRequest) {
         updatedCount,
         errorCount,
         removedCount,
+        coversSet,
         topTracksCount: topTracks.length
       }
     })
@@ -111,7 +115,7 @@ async function updateUserPlaylist(
     rank: number
   }>,
   userId: string
-): Promise<boolean> {
+): Promise<{ success: boolean; coverSet: boolean }> {
   try {
     // Get user profile to verify token works
     const profileResponse = await fetch('https://api.spotify.com/v1/me', {
@@ -122,12 +126,12 @@ async function updateUserPlaylist(
     
     if (!profileResponse.ok) {
       console.log(`❌ Invalid token for user ${userId}`)
-      return false
+      return { success: false, coverSet: false }
     }
     
     const profile = await profileResponse.json()
     
-    // Find existing BossHoss playlist
+    // Find existing BossHoss playlist (sucht nach altem UND neuem Namen)
     const playlistsResponse = await fetch(`https://api.spotify.com/v1/users/${profile.id}/playlists?limit=50`, {
       headers: {
         'Authorization': `Bearer ${accessToken}`
@@ -136,41 +140,61 @@ async function updateUserPlaylist(
     
     if (!playlistsResponse.ok) {
       console.log(`❌ Failed to get playlists for user ${userId}`)
-      return false
+      return { success: false, coverSet: false }
     }
     
     const playlistsData = await playlistsResponse.json()
-    const playlistName = '🤠 BossHoss - Back to the Boots (Community Top 15)'
     
-    const existingPlaylist = playlistsData.items?.find((playlist: {
+    // Suche nach neuem Namen
+    let existingPlaylist = playlistsData.items?.find((playlist: {
       id: string
       name: string
       external_urls: { spotify: string }
-    }) => playlist.name === playlistName)
+    }) => playlist.name === PLAYLIST_CONFIG.name)
+    
+    // Falls nicht gefunden, suche nach altem Namen
+    if (!existingPlaylist) {
+      const oldPlaylistName = '🤠 BossHoss - Back to the Boots (Community Top 15)'
+      existingPlaylist = playlistsData.items?.find((playlist: {
+        id: string
+        name: string
+        external_urls: { spotify: string }
+      }) => playlist.name === oldPlaylistName)
+      
+      // Wenn alte Playlist gefunden, erst umbenennen
+      if (existingPlaylist) {
+        console.log(`🔄 Migrating old playlist for user ${userId}`)
+        await fetch(`https://api.spotify.com/v1/playlists/${existingPlaylist.id}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: PLAYLIST_CONFIG.name
+          })
+        })
+      }
+    }
     
     if (!existingPlaylist) {
       console.log(`📝 No BossHoss playlist found for user ${userId}`)
-      return false
+      return { success: false, coverSet: false }
     }
     
     console.log(`🎵 Updating playlist ${existingPlaylist.id} for user ${userId}`)
     
     // Update playlist description with current timestamp
-    const description = `Die beliebtesten BossHoss Songs basierend auf Community Voting für die Back to the Boots Tour 2025. Wird täglich automatisch aktualisiert! 🎸 Letztes Update: ${new Date().toLocaleDateString('de-DE', {
-      day: '2-digit',
-      month: '2-digit', 
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })}`
-    
     const updateDescResponse = await fetch(`https://api.spotify.com/v1/playlists/${existingPlaylist.id}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ description })
+      body: JSON.stringify({ 
+        name: PLAYLIST_CONFIG.name,
+        description: PLAYLIST_CONFIG.description.update 
+      })
     })
     
     if (!updateDescResponse.ok) {
@@ -189,7 +213,7 @@ async function updateUserPlaylist(
     
     if (!clearResponse.ok) {
       console.log(`❌ Failed to clear tracks for user ${userId}`)
-      return false
+      return { success: false, coverSet: false }
     }
     
     // Add new tracks
@@ -212,16 +236,30 @@ async function updateUserPlaylist(
         
         if (!addResponse.ok) {
           console.log(`❌ Failed to add tracks batch ${i/batchSize + 1} for user ${userId}`)
-          return false
+          return { success: false, coverSet: false }
         }
       }
     }
     
+    // Automatisches Cover setzen (falls konfiguriert)
+    let coverSet = false
+    if (PLAYLIST_CONFIG.cover.autoSetCover) {
+      try {
+        coverSet = await setDefaultPlaylistCover(accessToken, existingPlaylist.id)
+        if (coverSet) {
+          console.log(`📷 Default cover set for user ${userId}`)
+        }
+      } catch (error) {
+        console.log(`⚠️ Failed to set cover for user ${userId}:`, error)
+        // Don't fail the entire update if cover setting fails
+      }
+    }
+    
     console.log(`✅ Successfully updated ${trackUris.length} tracks for user ${userId}`)
-    return true
+    return { success: true, coverSet }
     
   } catch (error) {
     console.error(`Error updating user playlist for ${userId}:`, error)
-    return false
+    return { success: false, coverSet: false }
   }
 }

@@ -1,10 +1,9 @@
-// src/app/api/playlist/route.ts - MIT KORREKTER SESSION
+// src/app/api/playlist/route.ts - NUR AUTOMATISCHES COVER
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { getTopTracks } from '@/lib/database'
 import { storeUserTokens } from '@/lib/spotify-tokens'
-
-// Import the NextAuth options
+import { PLAYLIST_CONFIG, setDefaultPlaylistCover } from '@/lib/playlist-config'
 import { authOptions } from '@/lib/auth'
 
 interface SpotifyPlaylist {
@@ -18,23 +17,9 @@ interface SpotifyPlaylist {
 // Create or update BossHoss voting playlist for user
 export async function POST(request: NextRequest) {
   try {
-    // WICHTIG: NextAuth-Optionen übergeben
     const session = await getServerSession(authOptions) as any
     
-    console.log('Session check:', {
-      hasSession: !!session,
-      hasUser: !!session?.user,
-      hasEmail: !!session?.user?.email,
-      hasAccessToken: !!session?.accessToken
-    })
-    
     if (!session?.user?.email || !session?.accessToken) {
-      console.error('Authentication failed:', {
-        session: !!session,
-        user: !!session?.user,
-        email: session?.user?.email,
-        accessToken: !!session?.accessToken
-      })
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
     
@@ -64,7 +49,7 @@ export async function POST(request: NextRequest) {
     
     console.log(`Processing for Spotify user: ${userId}`)
     
-    // WICHTIG: Speichere Tokens für automatische Updates
+    // Store tokens for automatic updates
     if (session.refreshToken) {
       try {
         await storeUserTokens(
@@ -72,30 +57,39 @@ export async function POST(request: NextRequest) {
           session.user.email,
           session.accessToken,
           session.refreshToken,
-          3600 // Spotify tokens laufen normalerweise nach 1h ab
+          3600
         )
         console.log(`💾 Tokens gespeichert für automatische Updates: ${userId}`)
       } catch (error) {
         console.error('Error storing tokens:', error)
-        // Continue anyway - playlist creation shouldn't fail because of token storage
       }
     } else {
-      console.warn(`⚠️ Kein refresh token verfügbar für ${userId} - automatische Updates werden nicht funktionieren`)
+      console.warn(`⚠️ Kein refresh token verfügbar für ${userId}`)
     }
     
     // Check if playlist already exists
     const existingPlaylist = await findExistingPlaylist(session.accessToken, userId)
     
     let playlist: SpotifyPlaylist
+    let isNewPlaylist = false
     
     if (existingPlaylist) {
       console.log(`Updating existing playlist: ${existingPlaylist.id}`)
-      // Update existing playlist
       playlist = await updatePlaylist(session.accessToken, existingPlaylist.id, topTracks)
     } else {
       console.log('Creating new playlist')
-      // Create new playlist
       playlist = await createNewPlaylist(session.accessToken, userId, topTracks)
+      isNewPlaylist = true
+    }
+    
+    // Automatisches Cover setzen
+    const coverSet = await setDefaultPlaylistCover(
+      session.accessToken, 
+      playlist.id
+    )
+    
+    if (coverSet) {
+      console.log(`📷 Automatisches Cover erfolgreich gesetzt für Playlist ${playlist.id}`)
     }
     
     return NextResponse.json({
@@ -107,7 +101,9 @@ export async function POST(request: NextRequest) {
       },
       tracksCount: topTracks.length,
       message: existingPlaylist ? 'Playlist updated!' : 'Playlist created!',
-      automaticUpdates: !!session.refreshToken
+      automaticUpdates: !!session.refreshToken,
+      coverSet,
+      isNewPlaylist
     })
     
   } catch (error) {
@@ -128,7 +124,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ hasPlaylist: false })
     }
     
-    // Get user's Spotify profile
     const profileResponse = await fetch('https://api.spotify.com/v1/me', {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`
@@ -142,7 +137,6 @@ export async function GET(request: NextRequest) {
     const profile = await profileResponse.json()
     const userId = profile.id
     
-    // Find existing playlist
     const existingPlaylist = await findExistingPlaylist(session.accessToken, userId)
     
     if (existingPlaylist) {
@@ -164,7 +158,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Helper: Find existing playlist
+// Helper: Find existing playlist (sucht nach altem UND neuem Namen)
 async function findExistingPlaylist(accessToken: string, userId: string): Promise<SpotifyPlaylist | null> {
   try {
     const playlistsResponse = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists?limit=50`, {
@@ -176,11 +170,40 @@ async function findExistingPlaylist(accessToken: string, userId: string): Promis
     if (!playlistsResponse.ok) return null
     
     const playlistsData = await playlistsResponse.json()
-    const playlistName = '🤠 BossHoss - Back to the Boots (Community Top 15)'
     
-    return playlistsData.items?.find((playlist: SpotifyPlaylist) => 
-      playlist.name === playlistName
-    ) || null
+    // Suche nach neuem Namen
+    let existingPlaylist = playlistsData.items?.find((playlist: SpotifyPlaylist) => 
+      playlist.name === PLAYLIST_CONFIG.name
+    )
+    
+    // Falls nicht gefunden, suche nach altem Namen für Migration
+    if (!existingPlaylist) {
+      const oldPlaylistName = '🤠 BossHoss - Back to the Boots (Community Top 15)'
+      existingPlaylist = playlistsData.items?.find((playlist: SpotifyPlaylist) => 
+        playlist.name === oldPlaylistName
+      )
+      
+      // Wenn alte Playlist gefunden, umbenennen
+      if (existingPlaylist) {
+        console.log(`🔄 Migrating old playlist "${oldPlaylistName}" to new name`)
+        await fetch(`https://api.spotify.com/v1/playlists/${existingPlaylist.id}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: PLAYLIST_CONFIG.name,
+            description: PLAYLIST_CONFIG.description.update
+          })
+        })
+        
+        // Update lokales Objekt mit neuem Namen
+        existingPlaylist.name = PLAYLIST_CONFIG.name
+      }
+    }
+    
+    return existingPlaylist || null
   } catch (error) {
     console.error('Error finding existing playlist:', error)
     return null
@@ -197,10 +220,7 @@ async function createNewPlaylist(accessToken: string, userId: string, topTracks:
   albumName: string
   rank: number
 }>): Promise<SpotifyPlaylist> {
-  const playlistName = '🤠 BossHoss - Back to the Boots (Community Top 15)'
-  const description = `Die beliebtesten BossHoss Songs basierend auf Community Voting für die Back to the Boots Tour 2025. Wird täglich automatisch aktualisiert! 🎸 Erstellt: ${new Date().toLocaleDateString('de-DE')}`
   
-  // Create playlist
   const createResponse = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
     method: 'POST',
     headers: {
@@ -208,10 +228,10 @@ async function createNewPlaylist(accessToken: string, userId: string, topTracks:
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      name: playlistName,
-      description: description,
-      public: false,
-      collaborative: false
+      name: PLAYLIST_CONFIG.name,
+      description: PLAYLIST_CONFIG.description.create,
+      public: PLAYLIST_CONFIG.settings.public,
+      collaborative: PLAYLIST_CONFIG.settings.collaborative
     })
   })
   
@@ -239,9 +259,8 @@ async function updatePlaylist(accessToken: string, playlistId: string, topTracks
   albumName: string
   rank: number
 }>): Promise<SpotifyPlaylist> {
-  // Update playlist description
-  const description = `Die beliebtesten BossHoss Songs basierend auf Community Voting für die Back to the Boots Tour 2025. Wird täglich automatisch aktualisiert! 🎸 Letztes Update: ${new Date().toLocaleDateString('de-DE')}`
   
+  // Update playlist name and description
   await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
     method: 'PUT',
     headers: {
@@ -249,7 +268,8 @@ async function updatePlaylist(accessToken: string, playlistId: string, topTracks
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      description: description
+      name: PLAYLIST_CONFIG.name,
+      description: PLAYLIST_CONFIG.description.update
     })
   })
   
@@ -288,10 +308,8 @@ async function addTracksToPlaylist(accessToken: string, playlistId: string, topT
   albumName: string
   rank: number
 }>): Promise<void> {
-  // Convert track results to Spotify URIs
   const trackUris = topTracks.map(track => `spotify:track:${track.trackId}`)
   
-  // Add tracks in batches of 50 (Spotify API limit)
   const batchSize = 50
   for (let i = 0; i < trackUris.length; i += batchSize) {
     const batch = trackUris.slice(i, i + batchSize)
