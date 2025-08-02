@@ -2,7 +2,7 @@
 
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useEffect } from 'react'
-import { Music, Star, Clock, TrendingUp, ArrowLeft, CheckCircle, ChevronDown, ChevronUp, LogOut, Trophy, PlayCircle } from 'lucide-react'
+import { Music, Star, Clock, TrendingUp, ArrowLeft, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 
@@ -154,7 +154,6 @@ export default function VotingPage() {
     }
 
     const loadData = async () => {
-      setLoading(true)
       await loadBossHossData()
       await loadUserListeningHistory()
       await loadUserVotingStatus()
@@ -212,7 +211,7 @@ export default function VotingPage() {
     }
   }
 
-  const loadResults = async () => {
+  const loadCommunityResults = async () => {
     try {
       const response = await fetch('/api/results')
       const data = await response.json()
@@ -268,12 +267,10 @@ export default function VotingPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 flex items-center justify-center">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-amber-200">
-          <div className="flex items-center space-x-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
-            <span className="text-xl text-gray-700">Loading your BossHoss experience...</span>
-          </div>
+      <div className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50 to-red-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-amber-600 mx-auto mb-4"></div>
+          <p className="text-amber-800 font-semibold">Loading...</p>
         </div>
       </div>
     )
@@ -284,141 +281,123 @@ export default function VotingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
-      {/* Header */}
-      <header className="bg-black/90 backdrop-blur-sm text-white p-4 shadow-lg">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50 to-red-50">
+      {/* Header - same style as page.tsx */}
+      <header className="bg-black/90 backdrop-blur-sm border-b-4 border-amber-500">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center space-x-3">
             <button
               onClick={() => router.push('/')}
               className="flex items-center space-x-2 text-amber-400 hover:text-amber-300 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
-              <span className="font-semibold">Back to Home</span>
+              <span className="font-semibold">Back</span>
             </button>
+            <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
+              <Music className="w-6 h-6 text-black" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-white">THE BOSSHOSS</h1>
+              <p className="text-amber-400 text-sm font-semibold">VOTING - {session.user?.name} 🤠</p>
+            </div>
           </div>
           
           <div className="flex items-center space-x-4">
-            <div className="text-right">
-              <p className="text-amber-400 font-semibold">Welcome back, {session.user?.name}</p>
-              <p className="text-gray-300 text-sm">Ready to rock the vote? 🤠</p>
+            <div className="text-white text-sm">
+              <span className="font-bold text-amber-400">{remainingVotes}</span> Votes left
             </div>
-            <button
+            <button 
               onClick={() => signOut()}
-              className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full transition-all duration-300 transform hover:scale-105"
+              className="text-white hover:text-amber-400 transition-colors"
             >
-              <LogOut className="w-4 h-4" />
-              <span className="font-semibold">Logout</span>
+              Sign Out
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto p-6">
+      <main className="max-w-6xl mx-auto px-4 py-8">
         {!showResults ? (
           <>
-            {/* Voting Status & Controls */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-amber-200 mb-8">
-              <div className="text-center mb-6">
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                  🤠 BossHoss Tour Voting
-                </h1>
-                <p className="text-xl text-gray-600">
-                  Vote for your favorites to influence the setlist!
-                </p>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6 mb-6">
-                {/* Vote Counter */}
-                <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-6 text-white text-center">
-                  <div className="flex items-center justify-center space-x-3 mb-2">
-                    <Star className="w-8 h-8" />
-                    <span className="text-3xl font-bold">{remainingVotes}</span>
-                  </div>
-                  <p className="text-amber-100 font-semibold">
-                    {remainingVotes === 1 ? 'Vote remaining' : 'Votes remaining'}
-                  </p>
-                  <p className="text-amber-200 text-sm mt-1">
-                    New votes reset daily at midnight
-                  </p>
+            {/* Voting Instructions - using page.tsx card style */}
+            <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-amber-200 mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                🗳️ Vote für die Back to the Boots Setlist!
+              </h2>
+              <p className="text-gray-600 mb-4">
+                <strong>Smart Voting:</strong> Deine Stimme zählt mehr, wenn du die Songs auch wirklich hörst! 
+                Wir checken deine Spotify-History für faire Gewichtung.
+              </p>
+              <div className="grid md:grid-cols-3 gap-4 text-sm">
+                <div className="flex items-center space-x-2">
+                  <Star className="w-5 h-5 text-amber-500" />
+                  <span><strong>1 Punkt:</strong> Standard Vote für alle Songs</span>
                 </div>
-
-                {/* Vote Multipliers Info */}
-                <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-amber-200">
-                  <h3 className="font-bold text-gray-900 mb-3">🎯 Vote Multipliers</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">🔥 Your Top Tracks:</span>
-                      <span className="font-bold text-red-600">5x Points</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">📻 Recently Played:</span>
-                      <span className="font-bold text-orange-600">3x Points</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">🎵 All Other Songs:</span>
-                      <span className="font-bold text-gray-600">1x Points</span>
-                    </div>
-                  </div>
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-5 h-5 text-blue-500" />
+                  <span><strong>3 Punkte:</strong> Du hast den Song kürzlich gehört (letzte 50 Tracks)</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="w-5 h-5 text-red-500" />
+                  <span><strong>5 Punkte:</strong> Einer deiner meistgehörten Songs (letztes Jahr)</span>
                 </div>
               </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center justify-center gap-4">
-                <button
-                  onClick={loadResults}
-                  className="flex items-center space-x-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
-                >
-                  <Trophy className="w-5 h-5" />
-                  <span>View Community Results</span>
-                </button>
-
-                {/* Playlist Status/Creation */}
-                {playlistStatus.hasPlaylist ? (
-                  <div className="flex items-center space-x-3">
-                    <div className="flex items-center space-x-2 bg-green-100 px-4 py-2 rounded-full border border-green-200">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-green-800 font-semibold text-sm">Playlist aktiv</span>
+              
+              <div className="flex flex-wrap gap-4 mt-4">
+                {votedTracks.length > 0 && !showResults && (
+                  <button
+                    onClick={loadCommunityResults}
+                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105"
+                  >
+                    Community Results anzeigen ({votedTracks.length} Votes abgegeben)
+                  </button>
+                )}
+                
+                {/* Playlist Feature */}
+                <div className="flex items-center space-x-4">
+                  {playlistStatus.hasPlaylist ? (
+                    <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-2 bg-green-100 px-4 py-2 rounded-full">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-green-800 font-semibold text-sm">Playlist aktiv</span>
+                      </div>
+                      <a
+                        href={playlistStatus.playlist?.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full text-sm transition-all duration-300 transform hover:scale-105"
+                      >
+                        🎵 In Spotify öffnen
+                      </a>
+                      <button
+                        onClick={createOrUpdatePlaylist}
+                        disabled={creatingPlaylist}
+                        className="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-full text-sm transition-all duration-300 transform hover:scale-105 disabled:opacity-50"
+                      >
+                        {creatingPlaylist ? 'Updating...' : '🔄 Update'}
+                      </button>
                     </div>
-                    <a
-                      href={playlistStatus.playlist?.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full text-sm transition-all duration-300 transform hover:scale-105 shadow-lg"
-                    >
-                      <PlayCircle className="w-4 h-4" />
-                      <span>Open in Spotify</span>
-                    </a>
+                  ) : (
                     <button
                       onClick={createOrUpdatePlaylist}
                       disabled={creatingPlaylist}
-                      className="flex items-center space-x-2 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-full text-sm transition-all duration-300 transform hover:scale-105 disabled:opacity-50 shadow-lg"
+                      className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <Clock className="w-4 h-4" />
-                      <span>{creatingPlaylist ? 'Updating...' : 'Update Playlist'}</span>
+                      {creatingPlaylist ? 'Creating Playlist...' : '🎵 Create Spotify Playlist'}
                     </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={createOrUpdatePlaylist}
-                    disabled={creatingPlaylist}
-                    className="flex items-center space-x-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-                  >
-                    <PlayCircle className="w-5 h-5" />
-                    <span>{creatingPlaylist ? 'Creating Playlist...' : 'Create Spotify Playlist'}</span>
-                  </button>
-                )}
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Albums Grid */}
+            {/* Albums */}
             <div className="grid gap-6">
               {bosshossAlbums.map((album) => {
                 const isExpanded = expandedAlbums[album.id]
                 const albumVotes = album.tracks.filter(track => hasVoted(track.id)).length
                 
                 return (
-                  <div key={album.id} className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-amber-200 overflow-hidden">
+                  <div key={album.id} className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-amber-200 overflow-hidden">
                     {/* Album Header */}
                     <button
                       onClick={() => toggleAlbumExpansion(album.id)}
@@ -432,7 +411,7 @@ export default function VotingPage() {
                               alt={album.name}
                               width={80}
                               height={80}
-                              className="rounded-xl shadow-lg"
+                              className="rounded-lg shadow-lg"
                             />
                           )}
                           <div className="text-left">
@@ -446,11 +425,11 @@ export default function VotingPage() {
                         
                         <div className="flex items-center space-x-3">
                           {albumVotes > 0 && (
-                            <div className="bg-white/20 rounded-full px-3 py-1 border border-amber-400">
-                              <span className="text-amber-300 font-semibold">{albumVotes} voted</span>
+                            <div className="bg-white/20 rounded-full px-3 py-1">
+                              <span className="text-white font-semibold">{albumVotes} voted</span>
                             </div>
                           )}
-                          <div className="text-amber-400">
+                          <div className="text-white">
                             {isExpanded ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
                           </div>
                         </div>
@@ -459,21 +438,21 @@ export default function VotingPage() {
                     
                     {/* Album Tracks - Collapsible */}
                     {isExpanded && (
-                      <div className="p-6 animate-in slide-in-from-top-2 duration-300">
-                        <div className="grid gap-4">
+                      <div className="p-4 animate-in slide-in-from-top-2 duration-300">
+                        <div className="grid gap-3">
                           {album.tracks.map((track) => (
-                            <div key={track.id} className="flex items-center justify-between p-4 bg-white/70 backdrop-blur-sm rounded-xl hover:bg-white/90 transition-all duration-300 border border-amber-100 hover:border-amber-300 hover:shadow-lg">
-                              <div className="flex items-center space-x-4 flex-1">
-                                <div className="w-3 h-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"></div>
+                            <div key={track.id} className="flex items-center justify-between p-3 bg-white/50 rounded-lg hover:bg-white/70 transition-colors">
+                              <div className="flex items-center space-x-3 flex-1">
+                                <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
                                 <div className="flex-1">
-                                  <h4 className="font-bold text-gray-900 text-lg">{track.name}</h4>
-                                  <p className="text-gray-600">
+                                  <h4 className="font-semibold text-gray-900">{track.name}</h4>
+                                  <p className="text-sm text-gray-600">
                                     {track.artists.map(a => a.name).join(', ')}
                                   </p>
                                 </div>
                                 
                                 {/* Vote multiplier indicator */}
-                                <div className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 font-bold border border-amber-200">
+                                <div className="text-xs px-2 py-1 rounded-full bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 font-semibold">
                                   {getVoteLabel(track.id)}
                                 </div>
                               </div>
@@ -481,7 +460,7 @@ export default function VotingPage() {
                               <button
                                 onClick={() => handleVote(track.id)}
                                 disabled={remainingVotes <= 0 || hasVoted(track.id) || submitting}
-                                className={`ml-4 px-6 py-3 rounded-full font-bold transition-all duration-300 shadow-lg ${
+                                className={`ml-4 px-4 py-2 rounded-full font-semibold transition-all duration-300 ${
                                   hasVoted(track.id)
                                     ? 'bg-green-500 text-white cursor-default'
                                     : remainingVotes <= 0
@@ -492,12 +471,12 @@ export default function VotingPage() {
                                 }`}
                               >
                                 {hasVoted(track.id) ? (
-                                  <span className="flex items-center space-x-2">
+                                  <span className="flex items-center space-x-1">
                                     <CheckCircle className="w-4 h-4" />
                                     <span>Voted</span>
                                   </span>
                                 ) : submitting ? (
-                                  <span className="flex items-center space-x-2">
+                                  <span className="flex items-center space-x-1">
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                                     <span>...</span>
                                   </span>
@@ -516,60 +495,74 @@ export default function VotingPage() {
             </div>
           </>
         ) : (
-          /* Community Results View */
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-amber-200">
-            <div className="text-center mb-8">
-              <h2 className="text-4xl font-bold text-gray-900 mb-2">
-                🏆 Community Voting Results
-              </h2>
-              <p className="text-xl text-gray-600">Top 15 Songs for the Back to the Boots Tour</p>
-            </div>
+          /* Community Results View - using page.tsx card style */
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-amber-200">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">
+              🏆 Community Voting Results - Top 15
+            </h2>
             
             <div className="space-y-4 mb-8">
               {votingResults.map((result, index) => (
-                <div key={result.trackId} className={`flex items-center justify-between p-6 rounded-2xl transition-all duration-300 hover:shadow-lg ${
-                  index === 0 ? 'bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 border-2 border-amber-400 shadow-xl' :
-                  index < 3 ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 shadow-lg' :
-                  'bg-white/70 backdrop-blur-sm border border-gray-200 shadow-md'
+                <div key={result.trackId} className={`flex items-center justify-between p-4 rounded-lg ${
+                  index === 0 ? 'bg-gradient-to-r from-amber-100 to-orange-100 border-2 border-amber-300' :
+                  index < 3 ? 'bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200' :
+                  'bg-gray-50 border border-gray-200'
                 }`}>
-                  <div className="flex items-center space-x-6">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg ${
+                  <div className="flex items-center space-x-4">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
                       index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' :
                       index === 1 ? 'bg-gradient-to-r from-gray-300 to-gray-500' :
-                      index === 2 ? 'bg-gradient-to-r from-amber-600 to-orange-600' :
-                      'bg-gradient-to-r from-gray-400 to-gray-600'
+                      index === 2 ? 'bg-gradient-to-r from-amber-600 to-amber-800' :
+                      'bg-gradient-to-r from-amber-500 to-orange-500'
                     }`}>
                       {index + 1}
                     </div>
-                    
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">{result.trackName}</h3>
-                      <p className="text-gray-600">{result.artistName}</p>
-                      <p className="text-sm text-gray-500">{result.albumName}</p>
+                      <h4 className="font-bold text-gray-900">{result.trackName}</h4>
+                      <p className="text-sm text-gray-600">{result.artistName}</p>
+                      {result.albumName && (
+                        <p className="text-xs text-gray-500">{result.albumName}</p>
+                      )}
                     </div>
                   </div>
-                  
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-amber-600">{result.totalPoints}</div>
-                    <div className="text-sm text-gray-500">{result.totalVotes} votes</div>
+                    <div className="text-lg font-bold text-amber-600">{result.totalPoints} Punkte</div>
+                    <div className="text-sm text-gray-500">{result.totalVotes} Votes</div>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="text-center">
-              <button
-                onClick={() => setShowResults(false)}
-                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
-              >
-                Back to Voting
-              </button>
+            <div className="text-center space-y-4">
+              <p className="text-gray-600">
+                🎸 Das sind die beliebtesten BossHoss Songs der Community!
+              </p>
+              <p className="text-sm text-gray-500">
+                {votedTracks.length > 0 ? 
+                  `Du hast heute ${votedTracks.length} Stimme${votedTracks.length !== 1 ? 'n' : ''} abgegeben. Komm morgen wieder für neue Votes!` :
+                  'Gib deine Stimmen ab um die Setlist zu beeinflussen!'
+                }
+              </p>
+              <div className="flex justify-center space-x-4">
+                <button
+                  onClick={() => setShowResults(false)}
+                  className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105"
+                >
+                  Zurück zum Voting
+                </button>
+                <button
+                  onClick={() => router.push('/')}
+                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105"
+                >
+                  Zur Startseite
+                </button>
+              </div>
             </div>
           </div>
         )}
       </main>
 
-      {/* Footer */}
+      {/* Footer - same style as page.tsx */}
       <footer className="bg-black/90 text-white py-8 mt-16">
         <div className="max-w-6xl mx-auto px-4 text-center">
           <p className="text-gray-400">
