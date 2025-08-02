@@ -305,7 +305,7 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-       <footer className="relative z-20 text-center py-8 mt-8">
+      <footer className="relative z-20 text-center py-8 mt-8">
         <div className="max-w-6xl mx-auto px-4">
           <p className="font-rama opacity-80 text-sm">
             © 2025 The BossHoss • Back to the Boots Tour • 
@@ -313,7 +313,7 @@ export default function Home() {
               href="https://dunstan.media" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="font-blackbetty ml-2 hover:opacity-50 transition-opacity duration-300"
+              className="font-rama ml-2 hover:opacity-50 transition-opacity duration-300"
             >
               Powered with 💪 by Dunstan Media
             </a>
