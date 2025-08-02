@@ -369,25 +369,30 @@ export default function VotingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50 to-red-50">
+    <div className="min-h-screen bttb-bg">
       {/* Header */}
       <header className="bg-black/90 backdrop-blur-sm border-b-4 border-amber-500 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <button 
-              onClick={() => router.push('/')}
-              className="text-white hover:text-amber-400 transition-colors mr-3"
-            >
-              <ArrowLeft className="w-6 h-6" />
-            </button>
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
-              <Music className="w-5 h-5 text-black" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">SONG VOTING</h1>
-              <p className="text-amber-400 text-sm">Hey {session.user?.name}! 🤠</p>
-            </div>
-          </div>
+  <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+    <div className="flex items-center space-x-3">
+      <button 
+        onClick={() => router.push('/')}
+        className="text-white hover:text-amber-400 transition-colors mr-3"
+      >
+        <ArrowLeft className="w-6 h-6" />
+      </button>
+      <img 
+        src="https://thebosshoss.com/_next/static/media/tbh_bttb.cb9d83ef.webp"
+        alt="The BossHoss - Back to the Boots"
+        className="w-10 h-10 object-cover rounded-full"
+        style={{
+          filter: 'drop-shadow(4px 0 8px rgba(206,174,121,.2))'
+        }}
+      />
+      <div>
+        <h1 className="font-helltown text-xl font-bold text-white tracking-[0.1rem] uppercase">SONG VOTING</h1>
+        <p className="text-amber-400 text-sm font-rama">Hey {session.user?.name}!</p>
+      </div>
+    </div>
           
           <div className="flex items-center space-x-4">
             <div className="text-white text-sm">
@@ -407,7 +412,7 @@ export default function VotingPage() {
         {!showResults ? (
           <>
             {/* Voting Instructions */}
-            <div className="bg-white/80 rounded-2xl p-6 shadow-xl border border-amber-200 mb-8">
+            <div className="p-8 shadow-xl border border-amber-200 mb-8 rounded-2xl" style={{ backgroundColor: '#ceae79' }}>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 🗳️ Vote für die Back to the Clubs Setlist!
               </h2>
