@@ -2,7 +2,7 @@
 
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { useState } from 'react'
-import { Music, Star, Users, Clock } from 'lucide-react'
+import { Star, Users, Clock } from 'lucide-react'
 
 export default function Home() {
   const { data: session, status } = useSession()
@@ -12,6 +12,13 @@ export default function Home() {
     setIsLoading(true)
     await signIn('spotify', { callbackUrl: '/voting' })
   }
+
+  // Spotify Logo SVG Component
+  const SpotifyLogo = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+    </svg>
+  )
 
   if (status === 'loading') {
     return (
@@ -73,11 +80,11 @@ export default function Home() {
                 Vote für deine Lieblingssongs und bestimme die Setlist für die exklusive Club Tour.
               </p>
 
-              {/* CTA Button */}
+              {/* Spotify CTA Button mit Logo */}
               <button
                 onClick={handleSpotifyLogin}
                 disabled={isLoading}
-                className="group relative inline-flex items-center space-x-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-6 rounded-full text-base transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group relative inline-flex items-center space-x-3 bg-[#1DB954] hover:bg-[#1ed760] text-white font-bold py-3 px-6 rounded-full text-base transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <>
@@ -86,9 +93,7 @@ export default function Home() {
                   </>
                 ) : (
                   <>
-                    <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center">
-                      <Music className="w-3 h-3 text-green-400" />
-                    </div>
+                    <SpotifyLogo className="w-6 h-6 text-white" />
                     <span>Mit Spotify anmelden & voten</span>
                   </>
                 )}
@@ -137,7 +142,7 @@ export default function Home() {
 
             {/* Tour Dates */}
             <div className="mb-8">
-              {/* Tour Titel - alles in Helltown */}
+              {/* Tour Titel */}
               <div className="text-center mb-6">
                 <div className="font-helltown text-xl md:text-2xl lg:text-3xl tracking-[0.2rem] uppercase font-semibold">
                   Back To The Boots Club Tour
@@ -147,20 +152,24 @@ export default function Home() {
               {/* Desktop Tour List */}
               <div className="hidden md:block space-y-1">
                 {[
-                  { date: '26.09.2025', city: 'HAMBURG', venue: 'GROSSE FREIHEIT' },
-                  { date: '27.09.2025', city: 'BERLIN', venue: 'ASTRA' },
-                  { date: '01.10.2025', city: 'KÖLN', venue: 'LIVE MUSIC HALL' },
-                  { date: '02.10.2025', city: 'MÜNSTER', venue: 'SKATERS PALACE' },
-                  { date: '03.10.2025', city: 'HANNOVER', venue: 'CAPITOL' },
-                  { date: '04.10.2025', city: 'STUTTGART', venue: 'IM WIZEMANN' },
-                  { date: '05.10.2025', city: 'FRANKFURT', venue: 'BATSCHKAPP' },
-                  { date: '06.10.2025', city: 'LEIPZIG', venue: 'TÄUBCHENTHAL' },
-                  { date: '07.10.2025', city: 'DRESDEN', venue: 'ALTER SCHLACHTHOF' },
-                  { date: '08.10.2025', city: 'MÜNCHEN', venue: 'BACKSTAGE-WERK' }
+                  { date: '26.09.2025', city: 'HAMBURG', venue: 'GROSSE FREIHEIT', status: 'sold_out' },
+                  { date: '27.09.2025', city: 'BERLIN', venue: 'ASTRA', status: 'sold_out' },
+                  { date: '01.10.2025', city: 'KÖLN', venue: 'LIVE MUSIC HALL', status: 'sold_out' },
+                  { date: '02.10.2025', city: 'MÜNSTER', venue: 'SKATERS PALACE', status: 'sold_out' },
+                  { date: '03.10.2025', city: 'HANNOVER', venue: 'CAPITOL', status: 'sold_out' },
+                  { date: '04.10.2025', city: 'STUTTGART', venue: 'IM WIZEMANN', status: 'sold_out' },
+                  { date: '05.10.2025', city: 'FRANKFURT', venue: 'BATSCHKAPP', status: 'sold_out' },
+                  { date: '06.10.2025', city: 'LEIPZIG', venue: 'TÄUBCHENTHAL', status: 'few_left' },
+                  { date: '07.10.2025', city: 'DRESDEN', venue: 'ALTER SCHLACHTHOF', status: 'few_left' },
+                  { date: '08.10.2025', city: 'MÜNCHEN', venue: 'BACKSTAGE-WERK', status: 'sold_out' }
                 ].map((show, index) => (
-                  <div 
+                  <a 
                     key={index}
-                    className="grid grid-cols-12 gap-2 p-3 bg-white bg-opacity-80 transition-all duration-300 hover:bg-black hover:bg-opacity-80 hover:text-[#ceae79] items-center"
+                    href="https://shop.thebosshoss.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="grid grid-cols-12 gap-2 p-3 transition-all duration-300 hover:bg-black hover:bg-opacity-80 hover:text-[#ceae79] items-center block"
+                    style={{ backgroundColor: '#ceae79' }}
                   >
                     <div className="col-span-3 font-blackbetty text-base font-semibold">
                       {show.date}
@@ -168,49 +177,69 @@ export default function Home() {
                     <div className="col-span-3 font-blackbetty text-base font-semibold">
                       {show.city}
                     </div>
-                    <div className="col-span-4 font-rama text-base">
+                    <div className="col-span-4 font-rama text-base flex items-center gap-2">
                       {show.venue}
+                      {show.status === 'sold_out' && (
+                        <span className="font-helltown text-xs bg-red-600 text-white px-2 py-1 uppercase">
+                          SOLD OUT
+                        </span>
+                      )}
+                      {show.status === 'few_left' && (
+                        <span className="font-helltown text-xs bg-green-600 text-white px-2 py-1 uppercase">
+                          FEW LEFT
+                        </span>
+                      )}
                     </div>
                     <div className="col-span-2 text-right">
-                      <a 
-                        href="#" 
-                        className="font-blackbetty underline text-sm font-semibold transition-all duration-300 hover:opacity-50"
-                      >
+                      <span className="font-blackbetty underline text-sm font-semibold">
                         TICKETS
-                      </a>
+                      </span>
                     </div>
-                  </div>
+                  </a>
                 ))}
               </div>
 
-              {/* Mobile Tour List - kompakte Darstellung */}
+              {/* Mobile Tour List */}
               <div className="md:hidden space-y-3">
                 {[
-                  { date: '26.09.2025', city: 'HAMBURG', venue: 'GROSSE FREIHEIT' },
-                  { date: '27.09.2025', city: 'BERLIN', venue: 'ASTRA' },
-                  { date: '01.10.2025', city: 'KÖLN', venue: 'LIVE MUSIC HALL' },
-                  { date: '02.10.2025', city: 'MÜNSTER', venue: 'SKATERS PALACE' },
-                  { date: '03.10.2025', city: 'HANNOVER', venue: 'CAPITOL' },
-                  { date: '04.10.2025', city: 'STUTTGART', venue: 'IM WIZEMANN' },
-                  { date: '05.10.2025', city: 'FRANKFURT', venue: 'BATSCHKAPP' },
-                  { date: '06.10.2025', city: 'LEIPZIG', venue: 'TÄUBCHENTHAL' },
-                  { date: '07.10.2025', city: 'DRESDEN', venue: 'ALTER SCHLACHTHOF' },
-                  { date: '08.10.2025', city: 'MÜNCHEN', venue: 'BACKSTAGE-WERK' }
+                  { date: '26.09.2025', city: 'HAMBURG', venue: 'GROSSE FREIHEIT', status: 'sold_out' },
+                  { date: '27.09.2025', city: 'BERLIN', venue: 'ASTRA', status: 'sold_out' },
+                  { date: '01.10.2025', city: 'KÖLN', venue: 'LIVE MUSIC HALL', status: 'sold_out' },
+                  { date: '02.10.2025', city: 'MÜNSTER', venue: 'SKATERS PALACE', status: 'sold_out' },
+                  { date: '03.10.2025', city: 'HANNOVER', venue: 'CAPITOL', status: 'sold_out' },
+                  { date: '04.10.2025', city: 'STUTTGART', venue: 'IM WIZEMANN', status: 'sold_out' },
+                  { date: '05.10.2025', city: 'FRANKFURT', venue: 'BATSCHKAPP', status: 'sold_out' },
+                  { date: '06.10.2025', city: 'LEIPZIG', venue: 'TÄUBCHENTHAL', status: 'few_left' },
+                  { date: '07.10.2025', city: 'DRESDEN', venue: 'ALTER SCHLACHTHOF', status: 'few_left' },
+                  { date: '08.10.2025', city: 'MÜNCHEN', venue: 'BACKSTAGE-WERK', status: 'sold_out' }
                 ].map((show, index) => (
-                  <div 
+                  <a 
                     key={index}
-                    className="bg-white bg-opacity-80 p-3 transition-all duration-300 hover:bg-black hover:bg-opacity-80 hover:text-[#ceae79]"
+                    href="https://shop.thebosshoss.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-3 transition-all duration-300 hover:bg-black hover:bg-opacity-80 hover:text-[#ceae79] block"
+                    style={{ backgroundColor: '#ceae79' }}
                   >
                     <div className="flex justify-between items-start mb-1">
                       <div className="font-blackbetty text-sm font-semibold">
                         {show.date}
                       </div>
-                      <a 
-                        href="#" 
-                        className="font-blackbetty underline text-xs font-semibold transition-all duration-300 hover:opacity-50"
-                      >
-                        TICKETS
-                      </a>
+                      <div className="flex items-center gap-2">
+                        {show.status === 'sold_out' && (
+                          <span className="font-helltown text-xs bg-red-600 text-white px-2 py-1 uppercase">
+                            SOLD OUT
+                          </span>
+                        )}
+                        {show.status === 'few_left' && (
+                          <span className="font-helltown text-xs bg-green-600 text-white px-2 py-1 uppercase">
+                            FEW LEFT
+                          </span>
+                        )}
+                        <span className="font-blackbetty underline text-xs font-semibold">
+                          TICKETS
+                        </span>
+                      </div>
                     </div>
                     <div className="font-blackbetty text-base font-semibold mb-1">
                       {show.city}
@@ -218,7 +247,7 @@ export default function Home() {
                     <div className="font-rama text-sm">
                       {show.venue}
                     </div>
-                  </div>
+                  </a>
                 ))}
               </div>
             </div>
