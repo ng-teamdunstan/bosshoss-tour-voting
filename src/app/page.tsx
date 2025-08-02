@@ -168,27 +168,33 @@ export default function Home() {
                     href="https://shop.thebosshoss.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="grid grid-cols-12 gap-2 p-3 transition-all duration-300 hover:bg-black hover:bg-opacity-80 hover:text-[#ceae79] items-center block"
+                    className="relative grid grid-cols-12 gap-2 p-3 transition-all duration-300 hover:bg-black hover:bg-opacity-80 hover:text-[#ceae79] items-center block overflow-hidden"
                     style={{ backgroundColor: '#ceae79' }}
                   >
+                    {/* Schräger Badge */}
+                    {show.status === 'sold_out' && (
+                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 -rotate-12 z-10">
+                        <span className="font-helltown text-xs bg-red-600 text-white px-3 py-1 uppercase shadow-lg">
+                          SOLD OUT
+                        </span>
+                      </div>
+                    )}
+                    {show.status === 'few_left' && (
+                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 -rotate-12 z-10">
+                        <span className="font-helltown text-xs bg-green-600 text-white px-3 py-1 uppercase shadow-lg">
+                          FEW LEFT
+                        </span>
+                      </div>
+                    )}
+
                     <div className="col-span-3 font-blackbetty text-base font-semibold">
                       {show.date}
                     </div>
                     <div className="col-span-3 font-blackbetty text-base font-semibold">
                       {show.city}
                     </div>
-                    <div className="col-span-4 font-rama text-base flex items-center gap-2">
+                    <div className="col-span-4 font-rama text-base">
                       {show.venue}
-                      {show.status === 'sold_out' && (
-                        <span className="font-helltown text-xs bg-red-600 text-white px-2 py-1 uppercase">
-                          SOLD OUT
-                        </span>
-                      )}
-                      {show.status === 'few_left' && (
-                        <span className="font-helltown text-xs bg-green-600 text-white px-2 py-1 uppercase">
-                          FEW LEFT
-                        </span>
-                      )}
                     </div>
                     <div className="col-span-2 text-right">
                       <span className="font-blackbetty underline text-sm font-semibold">
@@ -218,28 +224,32 @@ export default function Home() {
                     href="https://shop.thebosshoss.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-3 transition-all duration-300 hover:bg-black hover:bg-opacity-80 hover:text-[#ceae79] block"
+                    className="relative p-3 transition-all duration-300 hover:bg-black hover:bg-opacity-80 hover:text-[#ceae79] block overflow-hidden"
                     style={{ backgroundColor: '#ceae79' }}
                   >
+                    {/* Schräger Badge für Mobile */}
+                    {show.status === 'sold_out' && (
+                      <div className="absolute top-1 right-4 transform rotate-12 z-10">
+                        <span className="font-helltown text-xs bg-red-600 text-white px-2 py-1 uppercase shadow-lg">
+                          SOLD OUT
+                        </span>
+                      </div>
+                    )}
+                    {show.status === 'few_left' && (
+                      <div className="absolute top-1 right-4 transform rotate-12 z-10">
+                        <span className="font-helltown text-xs bg-green-600 text-white px-2 py-1 uppercase shadow-lg">
+                          FEW LEFT
+                        </span>
+                      </div>
+                    )}
+
                     <div className="flex justify-between items-start mb-1">
                       <div className="font-blackbetty text-sm font-semibold">
                         {show.date}
                       </div>
-                      <div className="flex items-center gap-2">
-                        {show.status === 'sold_out' && (
-                          <span className="font-helltown text-xs bg-red-600 text-white px-2 py-1 uppercase">
-                            SOLD OUT
-                          </span>
-                        )}
-                        {show.status === 'few_left' && (
-                          <span className="font-helltown text-xs bg-green-600 text-white px-2 py-1 uppercase">
-                            FEW LEFT
-                          </span>
-                        )}
-                        <span className="font-blackbetty underline text-xs font-semibold">
-                          TICKETS
-                        </span>
-                      </div>
+                      <span className="font-blackbetty underline text-xs font-semibold">
+                        TICKETS
+                      </span>
                     </div>
                     <div className="font-blackbetty text-base font-semibold mb-1">
                       {show.city}
