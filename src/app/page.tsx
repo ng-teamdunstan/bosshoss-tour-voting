@@ -15,64 +15,68 @@ export default function Home() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-amber-100 flex items-center justify-center">
+      <div className="min-h-screen bttb-bg flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-amber-800 font-semibold">Loading...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-black mx-auto mb-4"></div>
+          <p className="font-rama text-black font-semibold">Loading...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50 to-red-50">
+    <div className="min-h-screen bttb-bg">
       {/* Header */}
-      <header className="bg-black/90 backdrop-blur-sm border-b-4 border-amber-500">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
-              <Music className="w-6 h-6 text-black" />
+      <header className="relative z-20 py-8">
+        <div className="max-w-[112rem] mx-auto px-[2.4rem]">
+          {/* Navigation */}
+          <nav className="flex justify-between items-center mb-8">
+            <div className="font-blackbetty text-2xl tracking-[0.15rem] uppercase">
+              MENU
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white">THE BOSSHOSS</h1>
-              <p className="text-amber-400 text-sm font-semibold">BACK TO THE BOOTS TOUR</p>
-            </div>
+            {session && (
+              <button 
+                onClick={() => signOut()}
+                className="font-blackbetty text-2xl tracking-[0.15rem] uppercase hover:opacity-50 transition-all duration-300"
+              >
+                SIGN OUT
+              </button>
+            )}
+          </nav>
+
+          {/* Logo */}
+          <div className="text-center relative">
+            <img 
+              src="https://thebosshoss.com/_next/static/media/tbh_bttb.cb9d83ef.webp"
+              alt="The BossHoss - Back to the Boots"
+              className="mx-auto mb-8 w-[28rem] h-auto"
+              style={{
+                filter: 'drop-shadow(16px 0 32px rgba(206,174,121,.1333)) drop-shadow(8px 0 16px rgba(206,174,121,.2666)) drop-shadow(2px 0 4px rgba(206,174,121,.6666)) drop-shadow(1px 0 2px rgba(206,174,121,.6666))'
+              }}
+            />
           </div>
-          
-          {session && (
-            <button 
-              onClick={() => signOut()}
-              className="text-white hover:text-amber-400 transition-colors"
-            >
-              Sign Out
-            </button>
-          )}
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="max-w-[112rem] mx-auto px-[2.4rem]">
         {!session ? (
           /* Landing Page */
           <div className="text-center">
             {/* Hero Section */}
             <div className="mb-12">
-              <div className="inline-block p-8 mb-8">
-                <div className="w-32 h-32 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 rounded-full mx-auto mb-6 flex items-center justify-center shadow-2xl">
-                  <Music className="w-16 h-16 text-white" />
-                </div>
-                <h1 className="text-5xl md:text-7xl font-black text-gray-900 mb-4 tracking-tight">
-                  BACK TO THE
-                  <span className="block text-amber-600">BOOTS</span>
-                </h1>
-                <p className="text-xl md:text-2xl text-gray-700 font-semibold mb-2">
-                  Club Tour 2025
-                </p>
-                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                  Du entscheidest mit! Vote für deine Lieblingssongs und bestimme die Setlist für die exklusive Club Tour.
-                </p>
+              <div className="font-rama mb-8 text-[2.8rem] tracking-[0.15rem] uppercase font-semibold">
+                Club Tour 2025
               </div>
 
-              {/* CTA Button */}
+              <h1 className="font-helltown mb-8 text-[5.5rem] leading-[1.1] tracking-[0.275rem] uppercase font-semibold">
+                Du entscheidest mit!
+              </h1>
+
+              <p className="font-rama mb-12 text-[1.8rem] tracking-[0.05em] max-w-[80rem] mx-auto">
+                Vote für deine Lieblingssongs und bestimme die Setlist für die exklusive Club Tour.
+              </p>
+
+              {/* CTA Button - FUNKTIONALITÄT UNVERÄNDERT */}
               <button
                 onClick={handleSpotifyLogin}
                 disabled={isLoading}
@@ -93,41 +97,41 @@ export default function Home() {
                 )}
               </button>
               
-              <p className="text-sm text-gray-500 mt-4 max-w-md mx-auto">
+              <p className="font-rama text-sm opacity-80 mt-4">
                 Sichere Anmeldung über Spotify. Wir speichern nur deine öffentlichen Profildaten.
               </p>
             </div>
 
             {/* Features */}
             <div className="grid md:grid-cols-3 gap-8 mb-12">
-              <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-amber-200 hover:shadow-xl transition-shadow">
-                <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Star className="w-6 h-6 text-white" />
+              <div className="bg-black bg-opacity-10 p-8 transition-all duration-300 hover:bg-opacity-20">
+                <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Star className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Smart Voting</h3>
-                <p className="text-gray-600">
+                <h3 className="font-helltown mb-4 text-[3.5rem] tracking-[0.175rem] uppercase font-semibold">Smart Voting</h3>
+                <p className="font-rama text-[1.8rem] tracking-[0.05em]">
                   Deine Stimme zählt mehr, wenn du die Songs auch wirklich hörst! 
                   Bis zu 5 Punkte pro Vote.
                 </p>
               </div>
 
-              <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-amber-200 hover:shadow-xl transition-shadow">
-                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users className="w-6 h-6 text-white" />
+              <div className="bg-black bg-opacity-10 p-8 transition-all duration-300 hover:bg-opacity-20">
+                <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Users className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Fan Community</h3>
-                <p className="text-gray-600">
+                <h3 className="font-helltown mb-4 text-[3.5rem] tracking-[0.175rem] uppercase font-semibold">Fan Community</h3>
+                <p className="font-rama text-[1.8rem] tracking-[0.05em]">
                   Sieh die Ergebnisse aller Fans und entdecke die beliebtesten 
                   BossHoss Tracks der Community.
                 </p>
               </div>
 
-              <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-amber-200 hover:shadow-xl transition-shadow">
-                <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Clock className="w-6 h-6 text-white" />
+              <div className="bg-black bg-opacity-10 p-8 transition-all duration-300 hover:bg-opacity-20">
+                <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Clock className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Live Updates</h3>
-                <p className="text-gray-600">
+                <h3 className="font-helltown mb-4 text-[3.5rem] tracking-[0.175rem] uppercase font-semibold">Live Updates</h3>
+                <p className="font-rama text-[1.8rem] tracking-[0.05em]">
                   Automatische Playlist-Updates täglich. Die aktuellen Top-Songs 
                   immer in deiner Spotify Library.
                 </p>
@@ -135,45 +139,45 @@ export default function Home() {
             </div>
 
             {/* Tour Dates */}
-            <div className="bg-black/90 rounded-2xl p-8 text-white">
-              <h2 className="text-3xl font-bold mb-6 text-amber-400">BACK TO THE BOOTS CLUB TOUR</h2>
+            <div className="bg-black bg-opacity-10 p-8 mb-8">
+              <h2 className="font-helltown mb-6 text-[5.5rem] leading-[1.1] tracking-[0.275rem] uppercase font-semibold">BACK TO THE BOOTS CLUB TOUR</h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                <div className="bg-white/10 rounded-lg p-4">
-                  <p className="text-amber-400 font-semibold">26.09.2025</p>
+                <div className="bg-white bg-opacity-10 p-4">
+                  <p className="font-blackbetty font-semibold">26.09.2025</p>
                   <p className="font-bold">Hamburg</p>
-                  <p className="text-gray-300">Große Freiheit</p>
+                  <p className="opacity-80">Große Freiheit</p>
                 </div>
-                <div className="bg-white/10 rounded-lg p-4">
-                  <p className="text-amber-400 font-semibold">27.09.2025</p>
+                <div className="bg-white bg-opacity-10 p-4">
+                  <p className="font-blackbetty font-semibold">27.09.2025</p>
                   <p className="font-bold">Berlin</p>
-                  <p className="text-gray-300">Astra</p>
+                  <p className="opacity-80">Astra</p>
                 </div>
-                <div className="bg-white/10 rounded-lg p-4">
-                  <p className="text-amber-400 font-semibold">01.10.2025</p>
+                <div className="bg-white bg-opacity-10 p-4">
+                  <p className="font-blackbetty font-semibold">01.10.2025</p>
                   <p className="font-bold">Köln</p>
-                  <p className="text-gray-300">Live Music Hall</p>
+                  <p className="opacity-80">Live Music Hall</p>
                 </div>
-                <div className="bg-white/10 rounded-lg p-4">
-                  <p className="text-amber-400 font-semibold">+ 5 weitere</p>
+                <div className="bg-white bg-opacity-10 p-4">
+                  <p className="font-blackbetty font-semibold">+ 5 weitere</p>
                   <p className="font-bold">Städte</p>
-                  <p className="text-gray-300">Coming Soon</p>
+                  <p className="opacity-80">Coming Soon</p>
                 </div>
               </div>
             </div>
           </div>
         ) : (
-          /* Logged In State */
+          /* Logged In State - FUNKTIONALITÄT UNVERÄNDERT */
           <div className="text-center">
-            <div className="bg-white/80 rounded-2xl p-8 shadow-xl border border-amber-200 mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <div className="bg-black bg-opacity-10 p-8 mb-8">
+              <h2 className="font-helltown mb-4 text-[3.5rem] tracking-[0.175rem] uppercase font-semibold">
                 Welcome back, {session.user?.name}! 🤠
               </h2>
-              <p className="text-lg text-gray-600 mb-6">
+              <p className="font-rama mb-6 text-[1.8rem] tracking-[0.05em]">
                 Ready to vote for your favorite BossHoss songs?
               </p>
               <a 
                 href="/voting"
-                className="inline-flex items-center space-x-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+                className="inline-flex items-center space-x-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-6 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
               >
                 <Star className="w-5 h-5" />
                 <span>Jetzt voten!</span>
@@ -184,11 +188,11 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-black/90 text-white py-8 mt-16">
-        <div className="max-w-6xl mx-auto px-4 text-center">
-          <p className="text-gray-400">
+      <footer className="relative z-20 text-center py-8 mt-16">
+        <div className="max-w-6xl mx-auto px-4">
+          <p className="font-rama opacity-80">
             © 2025 The BossHoss • Back to the Boots Tour • 
-            <span className="text-amber-400 ml-2">Powered by Fan Votes</span>
+            <span className="font-blackbetty ml-2">Powered by Fan Votes</span>
           </p>
         </div>
       </footer>

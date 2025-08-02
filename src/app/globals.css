@@ -1,3 +1,48 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* BossHoss Fonts */
+@font-face {
+  font-family: 'BlackBetty';
+  src: url('https://thebosshoss.com/fonts/BlackBetty.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helltown';
+  src: url('https://thebosshoss.com/fonts/Helltown.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+/* BossHoss Theme Variables */
+:root {
+  --color-bttb-bg: #ceae79;
+  --color-bttb-fg: #000;
+  --color-bttb-gold: rgba(230,168,70,0.4);
+}
+
+/* BossHoss Background */
+.bttb-bg {
+  background: linear-gradient(var(--color-bttb-gold), var(--color-bttb-gold)), 
+              url('https://thebosshoss.com/paper-texture.jpg');
+  background-size: 100% auto;
+  background-attachment: fixed;
+  background-color: var(--color-bttb-bg);
+  color: var(--color-bttb-fg);
+}
+
+/* Typography Classes */
+.font-helltown {
+  font-family: 'Helltown', 'Arial Black', sans-serif;
+}
+
+.font-blackbetty {
+  font-family: 'BlackBetty', 'Arial Black', sans-serif;
+}
+
+.font-rama {
+  font-family: 'rama-gothic-e', -apple-system, BlinkMacSystemFont, sans-serif;
+}
