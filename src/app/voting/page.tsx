@@ -535,7 +535,7 @@ export default function VotingPage() {
                 >
                   {/* Album Header */}
                   <div 
-                    className="flex items-center space-x-4 p-4 cursor-pointer hover:bg-amber-50 transition-colors"
+                    className="rounded-2xl p-6 shadow-lg border border-amber-200 hover:shadow-xl transition-shadow" style={{ backgroundColor: '#ceae79' }}
                     onClick={() => toggleAlbum(album.id)}
                   >
                     <Image 
