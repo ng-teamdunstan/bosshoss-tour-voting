@@ -1,4 +1,5 @@
 // src/app/api/playlist/route.ts - KOMPLETT ERSETZEN MIT COVER-FUNKTIONALITÄT
+import { fetchSpotifyJSON, fetchWithRetry } from '@/lib/spotify-utils'
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { getTopTracks } from '@/lib/database'

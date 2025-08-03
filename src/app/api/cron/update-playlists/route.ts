@@ -1,4 +1,5 @@
 // src/app/api/cron/update-playlists/route.ts - MIT AUTO-COVER
+import { fetchSpotifyJSON, fetchWithRetry } from '@/lib/spotify-utils'
 import { NextRequest, NextResponse } from 'next/server'
 import { getTopTracks } from '@/lib/database'
 import { getPlaylistSubscribers, getValidAccessToken, removeUserFromUpdates } from '@/lib/spotify-tokens'
