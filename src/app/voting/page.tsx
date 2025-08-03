@@ -371,40 +371,39 @@ export default function VotingPage() {
   return (
     <div className="min-h-screen bttb-bg">
       {/* Header */}
-<header className="backdrop-blur-sm border-b-4 border-black sticky top-0 z-50" style={{ backgroundColor: 'rgba(206, 174, 121, 0.95)' }}>
+<header className="backdrop-blur-sm border-b-2 border-black sticky top-0 z-50" style={{ backgroundColor: 'rgba(206, 174, 121, 0.95)' }}>
   <div className="max-w-6xl mx-auto px-4 py-4">
     <div className="grid grid-cols-3 items-center">
-      {/* Links - Zurück Button und Username */}
-      <div className="flex items-center space-x-3 justify-start">
+      {/* Links - Zurück Button */}
+      <div className="flex justify-start">
         <button 
           onClick={() => router.push('/')}
           className="text-black hover:text-gray-600 transition-colors"
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <p className="font-rama text-sm text-black hidden sm:block">
-          Hey {session.user?.name}! 🤠
-        </p>
       </div>
       
-      {/* Mitte - Logo */}
-      <div className="flex justify-center">
+      {/* Mitte - Logo, Username und Votes */}
+      <div className="flex flex-col items-center space-y-2">
         <img 
           src="https://thebosshoss.com/_next/static/media/tbh_bttb.cb9d83ef.webp"
           alt="The BossHoss - Back to the Boots"
-          className="h-12 w-auto object-contain"
+          className="h-10 w-auto object-contain"
           style={{
             filter: 'drop-shadow(4px 0 8px rgba(0,0,0,.2))'
           }}
         />
+        <p className="font-rama text-sm text-black text-center">
+          Hey {session.user?.name}! 🤠
+        </p>
+        <div className="font-rama text-xs text-black text-center">
+          <span className="font-blackbetty font-bold">{remainingVotes}</span> Votes left
+        </div>
       </div>
       
-      {/* Rechts - Votes und Sign Out */}
-      <div className="flex items-center space-x-4 justify-end">
-        <div className="text-black text-sm font-rama text-right">
-          <div className="font-blackbetty font-bold">{remainingVotes}</div>
-          <div className="text-xs hidden sm:block">Votes übrig</div>
-        </div>
+      {/* Rechts - Sign Out */}
+      <div className="flex justify-end">
         <button 
           onClick={() => signOut()}
           className="text-black hover:text-gray-600 transition-colors font-rama text-sm"
@@ -412,13 +411,6 @@ export default function VotingPage() {
           Sign Out
         </button>
       </div>
-    </div>
-
-    {/* Mobile Username - falls auf Desktop versteckt */}
-    <div className="sm:hidden mt-2 text-center">
-      <p className="font-rama text-sm text-black">
-        Hey {session.user?.name}! 🤠
-      </p>
     </div>
   </div>
 </header>
