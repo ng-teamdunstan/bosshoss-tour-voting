@@ -64,6 +64,7 @@ export default function VotingPage() {
 
   // State declarations
   const [loading, setLoading] = useState(true)
+  const [loadingProgress, setLoadingProgress] = useState({ loaded: 0, total: 0 })
   const [bosshossAlbums, setBosshossAlbums] = useState<SpotifyAlbum[]>([])
   const [expandedAlbums, setExpandedAlbums] = useState<ExpandedAlbums>({})
   const [recentTracks, setRecentTracks] = useState<string[]>([])
@@ -101,14 +102,103 @@ export default function VotingPage() {
     return votedTracks.includes(trackId)
   }
 
+  // Optimierte Album-Loading Funktion
+  const loadAlbumsOptimized = async (
+    albums: any[],
+    accessToken: string,
+    onProgress: (loaded: number, total: number) => void
+  ): Promise<any[]> => {
+    const BATCH_SIZE = 8 // Erhöht von 3 auf 8
+    const DELAY_MS = 300 // Reduziert von 2000ms auf 300ms
+    
+    // Sortiere Alben nach Wichtigkeit (neueste zuerst)
+    const sortedAlbums = albums.sort((a: any, b: any) => {
+      return new Date(b.release_date).getTime() - new Date(a.release_date).getTime()
+    })
+    
+    const results: any[] = []
+    
+    for (let i = 0; i < sortedAlbums.length; i += BATCH_SIZE) {
+      const batch = sortedAlbums.slice(i, i + BATCH_SIZE)
+      
+      console.log(`🎵 Loading album batch ${Math.floor(i/BATCH_SIZE) + 1}/${Math.ceil(sortedAlbums.length/BATCH_SIZE)}`)
+      
+      try {
+        // Parallele Verarbeitung innerhalb des Batches
+        const batchResults = await Promise.all(
+          batch.map(async (album: any, index: number) => {
+            // Staggered loading - kleine Verzögerung zwischen parallel requests
+            if (index > 0) {
+              await new Promise(resolve => setTimeout(resolve, index * 50))
+            }
+            
+            try {
+              console.log(`📀 Loading tracks for: ${album.name}`)
+              
+              const tracksData = await fetchSpotifyJSON(
+                `https://api.spotify.com/v1/albums/${album.id}/tracks?market=DE`,
+                accessToken
+              )
+              
+              return {
+                id: album.id,
+                name: album.name,
+                release_date: album.release_date,
+                images: album.images,
+                album_type: album.album_type,
+                tracks: tracksData.items?.map((track: any) => ({
+                  ...track,
+                  album: {
+                    name: album.name,
+                    images: album.images,
+                    release_date: album.release_date
+                  }
+                })) || []
+              }
+              
+            } catch (error) {
+              console.error(`❌ Error loading tracks for album ${album.name}:`, error)
+              // Album ohne Tracks zurückgeben
+              return {
+                id: album.id,
+                name: album.name,
+                release_date: album.release_date,
+                images: album.images,
+                album_type: album.album_type,
+                tracks: []
+              }
+            }
+          })
+        )
+        
+        results.push(...batchResults)
+        
+        // Progress Callback
+        onProgress(results.length, sortedAlbums.length)
+        
+        // Kürzere Pause zwischen Batches
+        if (i + BATCH_SIZE < sortedAlbums.length) {
+          await new Promise(resolve => setTimeout(resolve, DELAY_MS))
+        }
+        
+      } catch (error) {
+        console.error(`❌ Batch ${Math.floor(i/BATCH_SIZE) + 1} failed:`, error)
+        continue
+      }
+    }
+    
+    return results
+  }
+
   // Main data loading functions wrapped in useCallback
   const loadBossHossData = useCallback(async () => {
     try {
       setLoading(true)
+      setLoadingProgress({ loaded: 0, total: 0 })
       const userSession = session as any
 
-      // 1. Search for BossHoss artist (mit Retry)
-      console.log('Searching for BossHoss artist...')
+      // 1. Search for BossHoss artist (sehr schnell)
+      console.log('🔍 Searching for BossHoss artist...')
       const artistData = await fetchSpotifyJSON(
         `https://api.spotify.com/v1/search?q=artist:BossHoss&type=artist&limit=1`,
         userSession.accessToken
@@ -121,10 +211,10 @@ export default function VotingPage() {
       }
 
       const artistId = artistData.artists.items[0].id
-      console.log('Found BossHoss artist:', artistId)
+      console.log('✅ Found BossHoss artist:', artistId)
 
-      // 2. Get all BossHoss albums (mit Retry)
-      console.log('Loading BossHoss albums...')
+      // 2. Get all BossHoss albums (sehr schnell)
+      console.log('📀 Loading BossHoss albums list...')
       const albumsData = await fetchSpotifyJSON(
         `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album,single&market=DE&limit=50`,
         userSession.accessToken
@@ -136,76 +226,33 @@ export default function VotingPage() {
         return
       }
 
-      console.log(`Found ${albumsData.items.length} albums/singles`)
+      console.log(`🎵 Found ${albumsData.items.length} albums/singles`)
+      setLoadingProgress({ loaded: 0, total: albumsData.items.length })
 
-      // 3. Get tracks for each album - IN BATCHES statt parallel
-      const albumsWithTracks = await processBatches(
+      // 3. Load tracks for albums - OPTIMIERT mit Progress
+      const albumsWithTracks = await loadAlbumsOptimized(
         albumsData.items,
-        3, // Nur 3 Alben gleichzeitig verarbeiten
-        async (albumBatch: any[]) => {
-          return await Promise.all(
-            albumBatch.map(async (album: any) => {
-              try {
-                console.log(`Loading tracks for: ${album.name}`)
-                
-                const tracksData = await fetchSpotifyJSON(
-                  `https://api.spotify.com/v1/albums/${album.id}/tracks?market=DE`,
-                  userSession.accessToken
-                )
-                
-                return {
-                  id: album.id,
-                  name: album.name,
-                  release_date: album.release_date,
-                  images: album.images,
-                  album_type: album.album_type,
-                  tracks: tracksData.items?.map((track: any) => ({
-                    ...track,
-                    album: {
-                      name: album.name,
-                      images: album.images,
-                      release_date: album.release_date
-                    }
-                  })) || []
-                }
-                
-              } catch (error) {
-                console.error(`Error loading tracks for album ${album.name}:`, error)
-                // Album ohne Tracks zurückgeben
-                return {
-                  id: album.id,
-                  name: album.name,
-                  release_date: album.release_date,
-                  images: album.images,
-                  album_type: album.album_type,
-                  tracks: []
-                }
-              }
-            })
-          )
-        },
-        2000 // 2 Sekunden Pause zwischen Batches
+        userSession.accessToken,
+        (loaded: number, total: number) => {
+          setLoadingProgress({ loaded, total })
+        }
       )
 
-      // 4. Sort by release date (newest first)
-      const sortedAlbums = albumsWithTracks.sort((a: any, b: any) => {
-        return new Date(b.release_date).getTime() - new Date(a.release_date).getTime()
-      })
-
-      setBosshossAlbums(sortedAlbums)
+      // 4. Albums sind bereits sortiert in loadAlbumsOptimized
+      setBosshossAlbums(albumsWithTracks)
       
       // Expand first 2 releases by default
       const initialExpanded: ExpandedAlbums = {}
-      sortedAlbums.slice(0, 2).forEach((album: any) => {
+      albumsWithTracks.slice(0, 2).forEach((album: any) => {
         initialExpanded[album.id] = true
       })
       setExpandedAlbums(initialExpanded)
       
-      console.log('BossHoss data loaded successfully!')
+      console.log('🎉 BossHoss data loaded successfully!')
       setLoading(false)
       
     } catch (error) {
-      console.error('Error loading BossHoss data:', error)
+      console.error('❌ Error loading BossHoss data:', error)
       setLoading(false)
       
       // User-freundliche Fehlermeldung
@@ -216,7 +263,7 @@ export default function VotingPage() {
   const loadUserListeningHistory = useCallback(async () => {
     try {
       const userSession = session as any
-      console.log('Loading user listening history...')
+      console.log('🎧 Loading user listening history...')
 
       // Get recently played tracks (last 50) mit Retry
       const recentData = await fetchSpotifyJSON(
@@ -226,10 +273,10 @@ export default function VotingPage() {
       
       const recentTrackIds = recentData.items?.map((item: { track: { id: string } }) => item.track.id) || []
       setRecentTracks(recentTrackIds)
-      console.log(`Found ${recentTrackIds.length} recent tracks`)
+      console.log(`✅ Found ${recentTrackIds.length} recent tracks`)
 
-      // Kleine Pause zwischen API-Aufrufen
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // Kleine Pause zwischen API-Aufrufen (reduziert)
+      await new Promise(resolve => setTimeout(resolve, 200))
 
       // Get top tracks (long term = ~1 year) mit Retry
       const topData = await fetchSpotifyJSON(
@@ -239,10 +286,10 @@ export default function VotingPage() {
       
       const topTrackIds = topData.items?.map((item: { id: string }) => item.id) || []
       setTopTracks(topTrackIds)
-      console.log(`Found ${topTrackIds.length} top tracks`)
+      console.log(`✅ Found ${topTrackIds.length} top tracks`)
       
     } catch (error) {
-      console.error('Error loading user listening history:', error)
+      console.error('❌ Error loading user listening history:', error)
       // Nicht kritisch - App kann ohne diese Daten funktionieren
       setRecentTracks([])
       setTopTracks([])
@@ -393,11 +440,27 @@ export default function VotingPage() {
   }, [session, loadBossHossData, loadUserListeningHistory])
 
   if (status === 'loading' || loading) {
+    const progress = loadingProgress.total > 0 ? (loadingProgress.loaded / loadingProgress.total) * 100 : 0
+    
     return (
       <div className="min-h-screen bg-gradient-to-b from-amber-50 to-amber-100 flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-amber-800 font-semibold">Loading BossHoss Songs...</p>
+          <p className="text-amber-800 font-semibold mb-2">Loading BossHoss Songs...</p>
+          
+          {loadingProgress.total > 0 && (
+            <>
+              <div className="w-full bg-amber-200 rounded-full h-2 mb-2">
+                <div 
+                  className="bg-amber-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
+              <p className="text-amber-600 text-sm">
+                {loadingProgress.loaded} / {loadingProgress.total} Alben geladen ({Math.round(progress)}%)
+              </p>
+            </>
+          )}
         </div>
       </div>
     )
