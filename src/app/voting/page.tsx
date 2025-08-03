@@ -371,81 +371,54 @@ export default function VotingPage() {
   return (
     <div className="min-h-screen bttb-bg">
       {/* Header */}
-<header className="bg-black/90 backdrop-blur-sm border-b-4 border-white sticky top-0 z-50">
-  <div className="max-w-6xl mx-auto px-4 py-3">
-    {/* Desktop Layout */}
-    <div className="hidden md:flex justify-between items-center">
-      <div className="flex items-center space-x-3">
+<header className="backdrop-blur-sm border-b-4 border-black sticky top-0 z-50" style={{ backgroundColor: 'rgba(206, 174, 121, 0.95)' }}>
+  <div className="max-w-6xl mx-auto px-4 py-4">
+    <div className="grid grid-cols-3 items-center">
+      {/* Links - Zurück Button und Username */}
+      <div className="flex items-center space-x-3 justify-start">
         <button 
           onClick={() => router.push('/')}
-          className="text-white hover:text-amber-400 transition-colors mr-3"
+          className="text-black hover:text-gray-600 transition-colors"
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
+        <p className="font-rama text-sm text-black hidden sm:block">
+          Hey {session.user?.name}! 🤠
+        </p>
+      </div>
+      
+      {/* Mitte - Logo */}
+      <div className="flex justify-center">
         <img 
           src="https://thebosshoss.com/_next/static/media/tbh_bttb.cb9d83ef.webp"
           alt="The BossHoss - Back to the Boots"
-          className="w-10 h-10 object-cover rounded-full"
+          className="h-12 w-auto object-contain"
           style={{
-            filter: 'drop-shadow(4px 0 8px rgba(206,174,121,.2))'
+            filter: 'drop-shadow(4px 0 8px rgba(0,0,0,.2))'
           }}
         />
-        <div>
-          <h1 className="font-helltown text-xl font-bold text-white tracking-[0.1rem] uppercase">SONG VOTING</h1>
-          <p className="text-amber-400 text-sm font-rama">Hey {session.user?.name}! 🤠</p>
-        </div>
       </div>
       
-      <div className="flex items-center space-x-4">
-        <div className="text-white text-sm font-rama">
-          <span className="font-blackbetty font-bold text-amber-400">{remainingVotes}</span> Votes übrig
+      {/* Rechts - Votes und Sign Out */}
+      <div className="flex items-center space-x-4 justify-end">
+        <div className="text-black text-sm font-rama text-right">
+          <div className="font-blackbetty font-bold">{remainingVotes}</div>
+          <div className="text-xs hidden sm:block">Votes übrig</div>
         </div>
         <button 
           onClick={() => signOut()}
-          className="text-white hover:text-amber-400 transition-colors font-rama"
+          className="text-black hover:text-gray-600 transition-colors font-rama text-sm"
         >
           Sign Out
         </button>
       </div>
     </div>
 
-    {/* Mobile Layout */}
-    <div className="md:hidden">
-      {/* Top Row - Logo and Sign Out */}
-      <div className="flex justify-between items-center mb-2">
-        <div className="flex items-center space-x-2">
-          <button 
-            onClick={() => router.push('/')}
-            className="text-white hover:text-amber-400 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <img 
-            src="https://thebosshoss.com/_next/static/media/tbh_bttb.cb9d83ef.webp"
-            alt="The BossHoss - Back to the Boots"
-            className="w-8 h-8 object-cover rounded-full"
-            style={{
-              filter: 'drop-shadow(2px 0 4px rgba(206,174,121,.2))'
-            }}
-          />
-          <h1 className="font-helltown text-lg font-bold text-white tracking-[0.05rem] uppercase">VOTING</h1>
-        </div>
-        
-        <button 
-          onClick={() => signOut()}
-          className="text-white hover:text-amber-400 transition-colors text-sm font-rama"
-        >
-          Sign Out
-        </button>
-      </div>
-
-      {/* Bottom Row - User Info and Votes */}
-      <div className="flex justify-between items-center">
-        <p className="text-amber-400 text-sm font-rama">Hey {session.user?.name}! 🤠</p>
-        <div className="text-white text-sm font-rama">
-          <span className="font-blackbetty font-bold text-amber-400">{remainingVotes}</span> Votes übrig
-        </div>
-      </div>
+    {/* Mobile Username - falls auf Desktop versteckt */}
+    <div className="sm:hidden mt-2 text-center">
+      <p className="font-rama text-sm text-black">
+        Hey {session.user?.name}! 🤠
+      </p>
     </div>
   </div>
 </header>
