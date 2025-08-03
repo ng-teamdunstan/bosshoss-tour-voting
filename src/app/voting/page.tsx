@@ -418,7 +418,7 @@ export default function VotingPage() {
       <main className="max-w-6xl mx-auto px-4 py-8">
         {!showResults ? (
           <>
-            {/* Voting Instructions */}
+{/* Voting Instructions */}
 <div 
   className="rounded-2xl p-6 shadow-xl mb-8 border-2" 
   style={{ 
@@ -428,10 +428,9 @@ export default function VotingPage() {
 >
   {/* Header */}
   <div className="mb-6">
-    <h2 className="font-helltown text-2xl md:text-3xl font-bold text-black mb-2 tracking-[0.1rem] uppercase">
-      Vote für die Back to the Clubs Setlist!
+    <h2 className="text-2xl font-bold text-black mb-4">
+      🗳️ Vote für die Back to the Clubs Setlist!
     </h2>
-    <div className="w-16 h-1 bg-black rounded-full"></div>
   </div>
 
   {/* Smart Voting Erklärung */}
@@ -465,7 +464,7 @@ export default function VotingPage() {
     </div>
     
     <div className="flex items-start space-x-3 p-3 bg-black bg-opacity-10 rounded-lg">
-      <TrendingUp className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+      <Music className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
       <div>
         <span className="font-blackbetty font-bold text-black">5 Punkte:</span>
         <span className="font-rama text-black ml-1">Einer deiner meistgehörten Songs</span>
@@ -479,7 +478,7 @@ export default function VotingPage() {
     <div className="text-center">
       <button
         onClick={loadCommunityResults}
-        className="bg-green-600 hover:bg-green-700 text-white font-blackbetty py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg uppercase tracking-wider w-full sm:w-auto"
+        className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg w-full sm:w-auto"
       >
         Community Results anzeigen ({votedTracks.length} Votes abgegeben)
       </button>
