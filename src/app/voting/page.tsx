@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Music, ArrowLeft, Vote, Trophy, ListMusic, Star, Play, Clock } from 'lucide-react'
 import { fetchSpotifyJSON, processBatches } from '@/lib/spotify-utils'
 
@@ -100,8 +101,8 @@ export default function VotingPage() {
     return votedTracks.includes(trackId)
   }
 
-  // Main data loading functions
-  const loadBossHossData = async () => {
+  // Main data loading functions wrapped in useCallback
+  const loadBossHossData = useCallback(async () => {
     try {
       setLoading(true)
       const userSession = session as any
@@ -210,9 +211,9 @@ export default function VotingPage() {
       // User-freundliche Fehlermeldung
       alert('Fehler beim Laden der BossHoss Songs. Bitte lade die Seite neu.')
     }
-  }
+  }, [session])
 
-  const loadUserListeningHistory = async () => {
+  const loadUserListeningHistory = useCallback(async () => {
     try {
       const userSession = session as any
       console.log('Loading user listening history...')
@@ -246,7 +247,7 @@ export default function VotingPage() {
       setRecentTracks([])
       setTopTracks([])
     }
-  }
+  }, [session])
 
   const loadUserVotingStatus = async () => {
     try {
@@ -389,7 +390,7 @@ export default function VotingPage() {
     }
     
     loadData()
-  }, [session])
+  }, [session, loadBossHossData, loadUserListeningHistory])
 
   if (status === 'loading' || loading) {
     return (
@@ -534,9 +535,11 @@ export default function VotingPage() {
                 className="p-6 cursor-pointer hover:bg-amber-50 transition-colors border-b border-amber-100"
               >
                 <div className="flex items-center space-x-4">
-                  <img 
+                  <Image 
                     src={album.images[0]?.url || '/placeholder-album.jpg'} 
                     alt={album.name}
+                    width={64}
+                    height={64}
                     className="w-16 h-16 rounded-lg shadow-md"
                   />
                   <div className="flex-1">
@@ -599,7 +602,7 @@ export default function VotingPage() {
               <ListMusic className="w-6 h-6 text-green-600" />
               <div>
                 <h3 className="font-semibold text-green-800">Deine Community Playlist ist bereit!</h3>
-                <p className="text-green-600 text-sm">"{playlistStatus.playlist?.name}" wurde in deiner Spotify-Bibliothek erstellt.</p>
+                <p className="text-green-600 text-sm">&ldquo;{playlistStatus.playlist?.name}&rdquo; wurde in deiner Spotify-Bibliothek erstellt.</p>
                 {playlistStatus.playlist?.url && (
                   <a 
                     href={playlistStatus.playlist.url} 
