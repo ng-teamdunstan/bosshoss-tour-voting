@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { Music, ArrowLeft, Vote, Trophy, ListMusic, Star, Play, Clock } from 'lucide-react'
+import { Music, ArrowLeft, Vote, Trophy, ListMusic, Star, Play, Clock, RefreshCw } from 'lucide-react'
 import { fetchSpotifyJSON, processBatches } from '@/lib/spotify-utils'
 
 // Interfaces - vor ihrer Verwendung deklariert
@@ -62,7 +62,7 @@ export default function VotingPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
 
-  // State declarations
+  // State declarations mit Caching
   const [loading, setLoading] = useState(true)
   const [loadingProgress, setLoadingProgress] = useState({ loaded: 0, total: 0 })
   const [bosshossAlbums, setBosshossAlbums] = useState<SpotifyAlbum[]>([])
@@ -76,6 +76,11 @@ export default function VotingPage() {
   const [votingResults, setVotingResults] = useState<VotingResult[]>([])
   const [playlistStatus, setPlaylistStatus] = useState<PlaylistStatus>({ hasPlaylist: false })
   const [creatingPlaylist, setCreatingPlaylist] = useState(false)
+  
+  // Caching states
+  const [dataLoaded, setDataLoaded] = useState(false)
+  const [lastLoadTime, setLastLoadTime] = useState<number>(0)
+  const [userHistoryLoaded, setUserHistoryLoaded] = useState(false)
 
   // Redirect if not logged in
   useEffect(() => {
@@ -100,6 +105,21 @@ export default function VotingPage() {
 
   const hasVoted = (trackId: string) => {
     return votedTracks.includes(trackId)
+  }
+
+  // Cache Helper Functions
+  const isDataFresh = (lastLoad: number, maxAgeMinutes: number): boolean => {
+    const now = Date.now()
+    const maxAge = maxAgeMinutes * 60 * 1000 // Convert to milliseconds
+    return (now - lastLoad) < maxAge
+  }
+
+  const shouldLoadBossHossData = (): boolean => {
+    return !dataLoaded || !isDataFresh(lastLoadTime, 30) // 30 Minuten Cache
+  }
+
+  const shouldLoadUserHistory = (): boolean => {
+    return !userHistoryLoaded || !isDataFresh(lastLoadTime, 5) // 5 Minuten Cache
   }
 
   // Optimierte Album-Loading Funktion
@@ -191,14 +211,22 @@ export default function VotingPage() {
   }
 
   // Main data loading functions wrapped in useCallback
-  const loadBossHossData = useCallback(async () => {
+  const loadBossHossData = useCallback(async (forceRefresh: boolean = false) => {
+    // Cache Check - nur laden wenn nötig
+    if (!forceRefresh && !shouldLoadBossHossData()) {
+      console.log('🎵 Using cached BossHoss data')
+      setLoading(false)
+      return
+    }
+
     try {
       setLoading(true)
       setLoadingProgress({ loaded: 0, total: 0 })
       const userSession = session as any
 
+      console.log('🔍 Loading fresh BossHoss data...')
+
       // 1. Search for BossHoss artist (sehr schnell)
-      console.log('🔍 Searching for BossHoss artist...')
       const artistData = await fetchSpotifyJSON(
         `https://api.spotify.com/v1/search?q=artist:BossHoss&type=artist&limit=1`,
         userSession.accessToken
@@ -248,7 +276,11 @@ export default function VotingPage() {
       })
       setExpandedAlbums(initialExpanded)
       
-      console.log('🎉 BossHoss data loaded successfully!')
+      // Update cache status
+      setDataLoaded(true)
+      setLastLoadTime(Date.now())
+      
+      console.log('🎉 BossHoss data loaded and cached successfully!')
       setLoading(false)
       
     } catch (error) {
@@ -258,12 +290,18 @@ export default function VotingPage() {
       // User-freundliche Fehlermeldung
       alert('Fehler beim Laden der BossHoss Songs. Bitte lade die Seite neu.')
     }
-  }, [session])
+  }, [session, shouldLoadBossHossData, loadAlbumsOptimized])
 
-  const loadUserListeningHistory = useCallback(async () => {
+  const loadUserListeningHistory = useCallback(async (forceRefresh: boolean = false) => {
+    // Cache Check - nur laden wenn nötig
+    if (!forceRefresh && !shouldLoadUserHistory()) {
+      console.log('🎧 Using cached user history data')
+      return
+    }
+
     try {
       const userSession = session as any
-      console.log('🎧 Loading user listening history...')
+      console.log('🎧 Loading fresh user listening history...')
 
       // Get recently played tracks (last 50) mit Retry
       const recentData = await fetchSpotifyJSON(
@@ -288,13 +326,16 @@ export default function VotingPage() {
       setTopTracks(topTrackIds)
       console.log(`✅ Found ${topTrackIds.length} top tracks`)
       
+      // Update cache status
+      setUserHistoryLoaded(true)
+      
     } catch (error) {
       console.error('❌ Error loading user listening history:', error)
       // Nicht kritisch - App kann ohne diese Daten funktionieren
       setRecentTracks([])
       setTopTracks([])
     }
-  }, [session])
+  }, [session, shouldLoadUserHistory])
 
   const loadUserVotingStatus = async () => {
     try {
@@ -334,6 +375,25 @@ export default function VotingPage() {
       }
     } catch (error) {
       console.error('Error loading community results:', error)
+    }
+  }
+
+  // Force refresh function for manual updates
+  const forceRefreshData = async () => {
+    console.log('🔄 Force refreshing all data...')
+    setDataLoaded(false)
+    setUserHistoryLoaded(false)
+    setLastLoadTime(0)
+    setLoading(true)
+    
+    try {
+      await loadBossHossData(true)
+      await loadUserListeningHistory(true)
+      await loadUserVotingStatus()
+      await loadPlaylistStatus()
+    } catch (error) {
+      console.error('Error during force refresh:', error)
+      setLoading(false)
     }
   }
 
@@ -422,21 +482,24 @@ export default function VotingPage() {
     }))
   }
 
-  // Load data when session is available
+  // Load data when session is available - mit intelligentem Caching
   useEffect(() => {
     if (!session) return
     
     const userSession = session as any
     if (!userSession.accessToken) return
 
-    const loadData = async () => {
-      await loadBossHossData()
-      await loadUserListeningHistory()
+    const loadInitialData = async () => {
+      // Voting Status und Playlist Status immer neu laden (ändern sich häufig)
       await loadUserVotingStatus()
       await loadPlaylistStatus()
+      
+      // BossHoss Daten und User History nur laden wenn nötig (mit Cache)
+      await loadBossHossData()
+      await loadUserListeningHistory()
     }
     
-    loadData()
+    loadInitialData()
   }, [session, loadBossHossData, loadUserListeningHistory])
 
   if (status === 'loading' || loading) {
@@ -496,6 +559,16 @@ export default function VotingPage() {
               <p className="text-lg font-bold">{remainingVotes}</p>
               <p className="text-xs text-amber-400">Stimmen übrig</p>
             </div>
+            
+            <button
+              onClick={forceRefreshData}
+              disabled={loading}
+              className="bg-gray-600 text-white px-3 py-2 rounded-lg font-semibold hover:bg-gray-700 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50"
+              title="Daten neu laden"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
             
             <button
               onClick={loadCommunityResults}
@@ -568,7 +641,7 @@ export default function VotingPage() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8">
-        {/* Instructions */}
+        {/* Instructions mit Cache-Info */}
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 mb-8 border border-amber-200">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">🎸 Wähle deine Lieblings-BossHoss Songs</h2>
           <div className="grid md:grid-cols-3 gap-4 text-sm">
@@ -585,7 +658,15 @@ export default function VotingPage() {
               <span><strong>Dein Top Track:</strong> 5 Punkte</span>
             </div>
           </div>
-          <p className="text-gray-600 mt-3">Du hast {remainingVotes} Stimmen für heute übrig. Wähle weise!</p>
+          <div className="flex justify-between items-center mt-3">
+            <p className="text-gray-600">Du hast {remainingVotes} Stimmen für heute übrig. Wähle weise!</p>
+            {dataLoaded && (
+              <p className="text-xs text-gray-500">
+                📊 Daten geladen: {new Date(lastLoadTime).toLocaleTimeString('de-DE')}
+                {!isDataFresh(lastLoadTime, 30) && <span className="text-orange-500"> (veraltet)</span>}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Albums List */}
