@@ -419,40 +419,73 @@ export default function VotingPage() {
         {!showResults ? (
           <>
             {/* Voting Instructions */}
-            <div className="bg-white/80 rounded-2xl p-6 shadow-xl border border-amber-200 mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                🗳️ Vote für die Back to the Clubs Setlist!
-              </h2>
-              <p className="text-gray-600 mb-4">
-                <strong>Smart Voting:</strong> Deine Stimme zählt mehr, wenn du die Songs auch wirklich hörst! 
-                Wir checken deine Spotify-History für faire Gewichtung.
-              </p>
-              <div className="grid md:grid-cols-3 gap-4 text-sm">
-                <div className="flex items-center space-x-2">
-                  <Star className="w-5 h-5 text-amber-500" />
-                  <span><strong>1 Punkt:</strong> Standard Vote für alle Songs</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Clock className="w-5 h-5 text-blue-500" />
-                  <span><strong>3 Punkte:</strong> Du hast den Song kürzlich gehört (letzte 50 Tracks)</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <TrendingUp className="w-5 h-5 text-red-500" />
-                  <span><strong>5 Punkte:</strong> Einer deiner meistgehörten Songs (letztes Jahr)</span>
-                </div>
-              </div>
-              
-              <div className="flex flex-wrap gap-4 mt-4">
-                {votedTracks.length > 0 && !showResults && (
-                  <button
-                    onClick={loadCommunityResults}
-                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105"
-                  >
-                    Community Results anzeigen ({votedTracks.length} Votes abgegeben)
-                  </button>
-                )}
-              </div>
-            </div>
+<div 
+  className="rounded-2xl p-6 shadow-xl mb-8 border-2" 
+  style={{ 
+    backgroundColor: '#ceae79',
+    borderColor: 'rgba(206, 174, 121, 0.95)'
+  }}
+>
+  {/* Header */}
+  <div className="mb-6">
+    <h2 className="font-helltown text-2xl md:text-3xl font-bold text-black mb-2 tracking-[0.1rem] uppercase">
+      Vote für die Back to the Clubs Setlist!
+    </h2>
+    <div className="w-16 h-1 bg-black rounded-full"></div>
+  </div>
+
+  {/* Smart Voting Erklärung */}
+  <div className="mb-6">
+    <h3 className="font-blackbetty text-lg font-bold text-black mb-3 tracking-[0.05rem] uppercase">
+      Smart Voting:
+    </h3>
+    <p className="font-rama text-black leading-relaxed">
+      Deine Stimme zählt mehr, wenn du die Songs auch wirklich hörst! 
+      Wir checken deine Spotify-History für faire Gewichtung.
+    </p>
+  </div>
+
+  {/* Punkt-System */}
+  <div className="space-y-4 mb-6">
+    <div className="flex items-start space-x-3 p-3 bg-black bg-opacity-10 rounded-lg">
+      <Star className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+      <div>
+        <span className="font-blackbetty font-bold text-black">1 Punkt:</span>
+        <span className="font-rama text-black ml-1">Standard Vote für alle Songs</span>
+      </div>
+    </div>
+    
+    <div className="flex items-start space-x-3 p-3 bg-black bg-opacity-10 rounded-lg">
+      <Clock className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+      <div>
+        <span className="font-blackbetty font-bold text-black">3 Punkte:</span>
+        <span className="font-rama text-black ml-1">Du hast den Song kürzlich gehört</span>
+        <div className="font-rama text-sm text-black opacity-80">(letzte 50 Tracks)</div>
+      </div>
+    </div>
+    
+    <div className="flex items-start space-x-3 p-3 bg-black bg-opacity-10 rounded-lg">
+      <TrendingUp className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+      <div>
+        <span className="font-blackbetty font-bold text-black">5 Punkte:</span>
+        <span className="font-rama text-black ml-1">Einer deiner meistgehörten Songs</span>
+        <div className="font-rama text-sm text-black opacity-80">(letztes Jahr)</div>
+      </div>
+    </div>
+  </div>
+
+  {/* Action Button */}
+  {votedTracks.length > 0 && !showResults && (
+    <div className="text-center">
+      <button
+        onClick={loadCommunityResults}
+        className="bg-green-600 hover:bg-green-700 text-white font-blackbetty py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg uppercase tracking-wider w-full sm:w-auto"
+      >
+        Community Results anzeigen ({votedTracks.length} Votes abgegeben)
+      </button>
+    </div>
+  )}
+</div>
 
             {/* Playlist Feature */}
             <div className="bg-white/90 rounded-2xl p-6 shadow-xl border border-amber-200 mb-8">
