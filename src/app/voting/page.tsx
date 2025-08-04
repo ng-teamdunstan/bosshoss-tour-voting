@@ -453,32 +453,45 @@ export default function VotingPage() {
 
   return (
     <div className="min-h-screen bttb-bg">
-      {/* Header - Neue Version */}
+      {/* Header - Korrigierte Version */}
 <header 
-  className="sticky top-0 z-50 border-b-2 border-black"
-  style={{ backgroundColor: '#ceae79' }}
+  className="sticky top-0 z-50 border-b-2 border-black backdrop-blur-sm"
+  style={{ backgroundColor: 'rgba(206, 174, 121, 0.9)' }}
 >
-  <div className="max-w-6xl mx-auto px-4 py-4">
-    {/* User Info oben rechts */}
-    <div className="flex justify-end mb-2">
-      <div className="text-right text-black">
-        <p className="font-semibold">Hey {session.user?.name}! 🤠</p>
-        <p className="text-sm font-bold">
-          {remainingVotes} Stimme{remainingVotes !== 1 ? 'n' : ''} übrig
-        </p>
+  <div className="max-w-6xl mx-auto px-4 py-4 relative">
+    {/* Sign Out rechts oben */}
+    <div className="absolute top-4 right-4">
+      <button 
+        onClick={() => signOut()}
+        className="text-black hover:text-gray-700 transition-colors font-semibold text-sm"
+      >
+        Sign out
+      </button>
+    </div>
+    
+    {/* Logo mittig oben */}
+    <div className="flex justify-center mb-4">
+      <img
+        src="https://thebosshoss.com/_next/static/media/tbh_bttb.cb9d83ef.webp"
+        alt="The BossHoss - Back to the Boots"
+        className="h-16 w-auto md:h-20 md:w-auto"
+        onError={(e) => {
+          console.log('Logo loading failed, using fallback')
+          e.currentTarget.style.display = 'none'
+          e.currentTarget.nextElementSibling?.classList.remove('hidden')
+        }}
+      />
+      {/* Fallback falls Bild nicht lädt */}
+      <div className="hidden h-16 md:h-20 flex items-center justify-center bg-black/20 rounded-lg px-8">
+        <span className="font-blackbetty text-xl md:text-2xl text-black">THE BOSSHOSS</span>
       </div>
     </div>
     
-    {/* Logo mittig */}
-    <div className="flex justify-center">
-      <Image
-        src="https://thebosshoss.com/_next/static/media/tbh_bttb.cb9d83ef.webp"
-        alt="The BossHoss - Back to the Boots"
-        width={280}
-        height={100}
-        className="h-16 w-auto md:h-20 md:w-auto"
-        priority
-      />
+    {/* Votes mittig darunter */}
+    <div className="text-center">
+      <p className="text-black font-bold text-lg">
+        {remainingVotes} Stimme{remainingVotes !== 1 ? 'n' : ''} übrig
+      </p>
     </div>
   </div>
 </header>
@@ -536,11 +549,17 @@ export default function VotingPage() {
       <main className="max-w-6xl mx-auto px-4 py-8">
         {/* Voting Instructions - Erweiterte Version mit Buttons */}
 <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-amber-200 mb-8">
-  <h2 className="text-2xl font-bold text-gray-900 mb-4">
-    🗳️ Wähle deine Lieblings-BossHoss Songs!
-  </h2>
+  {/* User Begrüßung oben */}
+  <div className="text-center mb-6">
+    <h2 className="text-3xl font-bold text-gray-900 mb-2">
+      Hey {session.user?.name}! 🤠
+    </h2>
+    <h3 className="text-xl font-semibold text-gray-700">
+      Wähle deine Lieblings-BossHoss Songs!
+    </h3>
+  </div>
   
-  {/* User Info und Navigation - Vereinfacht */}
+   {/* User Info und Navigation - Vereinfacht */}
   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
     <div className="flex items-center space-x-4">
       <button 
@@ -582,7 +601,7 @@ export default function VotingPage() {
     </div>
   </div>
   
-  {/* Action Buttons */}
+   {/* Action Buttons */}
   <div className="flex flex-wrap gap-3">
     {/* Refresh Button */}
     <button
@@ -595,7 +614,7 @@ export default function VotingPage() {
       <span className="hidden sm:inline">Refresh</span>
     </button>
     
-    {/* Community Results Button */}
+   {/* Community Results Button */}
     {votedTracks.length > 0 && (
       <button
         onClick={loadCommunityResults}
@@ -612,7 +631,10 @@ export default function VotingPage() {
       disabled={creatingPlaylist}
       className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full font-semibold transition-all duration-200 disabled:opacity-50"
     >
-      <ListMusic className="w-4 h-4" />
+      {/* Spotify Logo für Playlist Button */}
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+      </svg>
       <span>
         {creatingPlaylist 
           ? 'Erstelle...' 
@@ -634,9 +656,13 @@ export default function VotingPage() {
           href={playlistStatus.playlist?.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-sm font-semibold transition-colors"
+          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-sm font-semibold transition-colors flex items-center space-x-1"
         >
-          🎵 In Spotify öffnen
+          {/* Spotify Logo SVG */}
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+          </svg>
+          <span>In Spotify öffnen</span>
         </a>
       </div>
     </div>
