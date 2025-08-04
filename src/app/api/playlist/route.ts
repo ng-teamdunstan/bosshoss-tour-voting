@@ -264,7 +264,7 @@ async function createNewPlaylist(accessToken: string, userId: string, topTracks:
   rank: number
 }>): Promise<SpotifyPlaylist> {
   
-  const description = `Die beliebtesten The BossHoss Songs basierend auf Community Voting für die Back to the Clubs Tour 2025. Wird täglich automatisch aktualisiert! 🎸 Erstellt: ${new Date().toLocaleDateString('de-DE')}`
+  const description = `Die beliebtesten The BossHoss Songs basierend auf dem Community Voting für die Back to the Clubs Tour 2025. Wird täglich automatisch aktualisiert! 🎸 Erstellt: ${new Date().toLocaleDateString('de-DE')}`
   
   const createResponse = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
     method: 'POST',
