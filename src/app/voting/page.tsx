@@ -587,23 +587,12 @@ export default function VotingPage() {
       {/* Modal Footer */}
       <div className="p-4 bg-gray-50 border-t border-gray-200">
         <div className="flex justify-between items-center">
-          <div className="text-sm text-gray-600">
-            Das sind die beliebtesten BossHoss Songs der Community!
-          </div>
-          
           <div className="flex space-x-3">
             <button
               onClick={() => setShowResults(false)}
               className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 transform hover:scale-105"
             >
               Zurück zum Voting
-            </button>
-            
-            <button
-              onClick={() => router.push('/')}
-              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 transform hover:scale-105"
-            >
-              Zur Startseite
             </button>
           </div>
         </div>
