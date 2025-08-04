@@ -1,11 +1,12 @@
+// src/app/voting/page.tsx - SERVER-SIDE VERSION
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { Music, ArrowLeft, Vote, Trophy, ListMusic, Star, Play, Clock, RefreshCw } from 'lucide-react'
-import { fetchSpotifyJSON, processBatches } from '@/lib/spotify-utils'
+import { Music, ArrowLeft, Vote, Trophy, ListMusic, Star, Play, Clock, RefreshCw, Server } from 'lucide-react'
+import { fetchSpotifyJSON } from '@/lib/spotify-utils'
 
 // Interfaces - vor ihrer Verwendung deklariert
 interface SpotifyImage {
@@ -62,9 +63,9 @@ export default function VotingPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
 
-  // State declarations mit Caching
+  // State declarations mit Server-Caching
   const [loading, setLoading] = useState(true)
-  const [loadingProgress, setLoadingProgress] = useState({ loaded: 0, total: 0 })
+  const [serverLoading, setServerLoading] = useState(false)
   const [bosshossAlbums, setBosshossAlbums] = useState<SpotifyAlbum[]>([])
   const [expandedAlbums, setExpandedAlbums] = useState<ExpandedAlbums>({})
   const [recentTracks, setRecentTracks] = useState<string[]>([])
@@ -77,10 +78,11 @@ export default function VotingPage() {
   const [playlistStatus, setPlaylistStatus] = useState<PlaylistStatus>({ hasPlaylist: false })
   const [creatingPlaylist, setCreatingPlaylist] = useState(false)
   
-  // Caching states
+  // Server-Caching states
   const [dataLoaded, setDataLoaded] = useState(false)
   const [lastLoadTime, setLastLoadTime] = useState<number>(0)
   const [userHistoryLoaded, setUserHistoryLoaded] = useState(false)
+  const [dataSource, setDataSource] = useState<'server-cache' | 'server-fresh' | 'loading'>('loading')
 
   // Redirect if not logged in
   useEffect(() => {
@@ -107,210 +109,77 @@ export default function VotingPage() {
     return votedTracks.includes(trackId)
   }
 
-  // Cache Helper Functions - OPTIMIERT für Production
-  const isDataFresh = (lastLoad: number, maxAgeMinutes: number): boolean => {
-    const now = Date.now()
-    const maxAge = maxAgeMinutes * 60 * 1000 // Convert to milliseconds
-    return (now - lastLoad) < maxAge
-  }
-
-  const shouldLoadBossHossData = (): boolean => {
-    // BossHoss Alben ändern sich praktisch NIE (nur 1 Single + 1 Album in 5 Wochen)
-    // 24 STUNDEN Cache ist perfekt!
-    return !dataLoaded || !isDataFresh(lastLoadTime, 24 * 60) // 24 Stunden
-  }
-
-  const shouldLoadUserHistory = (): boolean => {
-    // User History ändert sich nicht so schnell
-    // 30 MINUTEN Cache ist ausreichend
-    return !userHistoryLoaded || !isDataFresh(lastLoadTime, 30) // 30 Minuten
-  }
-
-  // Optimierte Album-Loading Funktion - Production Ready
-  const loadAlbumsOptimized = async (
-    albums: any[],
-    accessToken: string,
-    onProgress: (loaded: number, total: number) => void
-  ): Promise<any[]> => {
-    const BATCH_SIZE = 5      // Reduziert von 8 auf 5 (sicherer)
-    const DELAY_MS = 500      // Erhöht von 300ms auf 500ms (sicherer)
-    
-    // Sortiere Alben nach Wichtigkeit (neueste zuerst)
-    const sortedAlbums = albums.sort((a: any, b: any) => {
-      return new Date(b.release_date).getTime() - new Date(a.release_date).getTime()
-    })
-    
-    const results: any[] = []
-    
-    console.log(`🎵 Loading ${sortedAlbums.length} albums in batches of ${BATCH_SIZE} (Production Mode)`)
-    
-    for (let i = 0; i < sortedAlbums.length; i += BATCH_SIZE) {
-      const batch = sortedAlbums.slice(i, i + BATCH_SIZE)
-      
-      console.log(`📀 Loading batch ${Math.floor(i/BATCH_SIZE) + 1}/${Math.ceil(sortedAlbums.length/BATCH_SIZE)}`)
-      
-      try {
-        // Parallele Verarbeitung innerhalb des Batches mit Staggering
-        const batchResults = await Promise.all(
-          batch.map(async (album: any, index: number) => {
-            // Staggered loading - 75ms zwischen parallel requests (erhöht von 50ms)
-            if (index > 0) {
-              await new Promise(resolve => setTimeout(resolve, index * 75))
-            }
-            
-            try {
-              console.log(`🎶 Loading tracks for: ${album.name}`)
-              
-              const tracksData = await fetchSpotifyJSON(
-                `https://api.spotify.com/v1/albums/${album.id}/tracks?market=DE`,
-                accessToken
-              )
-              
-              return {
-                id: album.id,
-                name: album.name,
-                release_date: album.release_date,
-                images: album.images,
-                album_type: album.album_type,
-                tracks: tracksData.items?.map((track: any) => ({
-                  ...track,
-                  album: {
-                    name: album.name,
-                    images: album.images,
-                    release_date: album.release_date
-                  }
-                })) || []
-              }
-              
-            } catch (error) {
-              console.error(`❌ Error loading tracks for album ${album.name}:`, error)
-              // Album ohne Tracks zurückgeben
-              return {
-                id: album.id,
-                name: album.name,
-                release_date: album.release_date,
-                images: album.images,
-                album_type: album.album_type,
-                tracks: []
-              }
-            }
-          })
-        )
-        
-        results.push(...batchResults)
-        
-        // Progress Callback
-        onProgress(results.length, sortedAlbums.length)
-        
-        // Pause zwischen Batches (erhöht für mehr Sicherheit)
-        if (i + BATCH_SIZE < sortedAlbums.length) {
-          console.log(`⏸️  Cooling down for ${DELAY_MS}ms...`)
-          await new Promise(resolve => setTimeout(resolve, DELAY_MS))
-        }
-        
-      } catch (error) {
-        console.error(`❌ Batch ${Math.floor(i/BATCH_SIZE) + 1} failed:`, error)
-        continue
-      }
-    }
-    
-    return results
-  }
-
-  // Main data loading functions wrapped in useCallback
+  // SERVER-SIDE BossHoss Data Loading - SUPER FAST!
   const loadBossHossData = useCallback(async (forceRefresh: boolean = false) => {
-    // Cache Check - nur laden wenn nötig
-    if (!forceRefresh && !shouldLoadBossHossData()) {
-      console.log('🎵 Using cached BossHoss data')
-      setLoading(false)
-      return
-    }
-
     try {
       setLoading(true)
-      setLoadingProgress({ loaded: 0, total: 0 })
-      const userSession = session as any
-
-      console.log('🔍 Loading fresh BossHoss data...')
-
-      // 1. Search for BossHoss artist (sehr schnell)
-      const artistData = await fetchSpotifyJSON(
-        `https://api.spotify.com/v1/search?q=artist:BossHoss&type=artist&limit=1`,
-        userSession.accessToken
-      )
+      setServerLoading(true)
       
-      if (!artistData.artists?.items?.length) {
-        console.error('BossHoss artist not found')
-        setLoading(false)
-        return
+      console.log('📡 Loading BossHoss data from server...')
+      
+      // Call our server API instead of Spotify directly
+      const url = forceRefresh ? '/api/bosshoss-data?refresh=true' : '/api/bosshoss-data'
+      const response = await fetch(url, {
+        cache: forceRefresh ? 'no-cache' : 'default'
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`)
       }
-
-      const artistId = artistData.artists.items[0].id
-      console.log('✅ Found BossHoss artist:', artistId)
-
-      // 2. Get all BossHoss albums (sehr schnell)
-      console.log('📀 Loading BossHoss albums list...')
-      const albumsData = await fetchSpotifyJSON(
-        `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album,single&market=DE&limit=50`,
-        userSession.accessToken
-      )
-
-      if (!albumsData.items?.length) {
-        console.error('No albums found')
-        setLoading(false)
-        return
+      
+      const result = await response.json()
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to load data from server')
       }
-
-      console.log(`🎵 Found ${albumsData.items.length} albums/singles`)
-      setLoadingProgress({ loaded: 0, total: albumsData.items.length })
-
-      // 3. Load tracks for albums - OPTIMIERT mit Progress
-      const albumsWithTracks = await loadAlbumsOptimized(
-        albumsData.items,
-        userSession.accessToken,
-        (loaded: number, total: number) => {
-          setLoadingProgress({ loaded, total })
-        }
-      )
-
-      // 4. Albums sind bereits sortiert in loadAlbumsOptimized
-      setBosshossAlbums(albumsWithTracks)
+      
+      // Server hat Daten zurückgegeben!
+      setBosshossAlbums(result.data)
+      setDataSource(result.cached ? 'server-cache' : 'server-fresh')
       
       // Expand first 2 releases by default
       const initialExpanded: ExpandedAlbums = {}
-      albumsWithTracks.slice(0, 2).forEach((album: any) => {
+      result.data.slice(0, 2).forEach((album: any) => {
         initialExpanded[album.id] = true
       })
       setExpandedAlbums(initialExpanded)
       
-      // Update cache status
       setDataLoaded(true)
-      setLastLoadTime(Date.now())
+      setLastLoadTime(result.lastUpdate)
       
-      console.log('🎉 BossHoss data loaded and cached successfully!')
+      const loadType = result.cached ? 'cached (instant!)' : result.stale ? 'stale cache' : 'fresh'
+      console.log(`✅ BossHoss data loaded from server ${loadType}`)
+      
+      if (result.cached) {
+        console.log('⚡ INSTANT LOADING - No API calls needed!')
+      } else {
+        console.log('🔄 Server loaded fresh data - all users benefit for 24h!')
+      }
+      
       setLoading(false)
+      setServerLoading(false)
       
     } catch (error) {
-      console.error('❌ Error loading BossHoss data:', error)
+      console.error('❌ Error loading BossHoss data from server:', error)
       setLoading(false)
+      setServerLoading(false)
       
-      // User-freundliche Fehlermeldung
-      alert('Fehler beim Laden der BossHoss Songs. Bitte lade die Seite neu.')
+      alert('Fehler beim Laden der BossHoss Songs vom Server. Bitte versuche es nochmal.')
     }
-  }, [session, shouldLoadBossHossData, loadAlbumsOptimized])
+  }, [])
 
+  // User History Loading - weiterhin client-side (user-spezifisch)
   const loadUserListeningHistory = useCallback(async (forceRefresh: boolean = false) => {
-    // Cache Check - nur laden wenn nötig
-    if (!forceRefresh && !shouldLoadUserHistory()) {
+    if (!forceRefresh && userHistoryLoaded) {
       console.log('🎧 Using cached user history data')
       return
     }
 
     try {
       const userSession = session as any
-      console.log('🎧 Loading fresh user listening history...')
+      console.log('🎧 Loading user listening history...')
 
-      // Get recently played tracks (last 50) mit Retry
+      // Get recently played tracks (last 50)
       const recentData = await fetchSpotifyJSON(
         'https://api.spotify.com/v1/me/player/recently-played?limit=50',
         userSession.accessToken
@@ -320,10 +189,10 @@ export default function VotingPage() {
       setRecentTracks(recentTrackIds)
       console.log(`✅ Found ${recentTrackIds.length} recent tracks`)
 
-      // Kleine Pause zwischen API-Aufrufen (reduziert)
-      await new Promise(resolve => setTimeout(resolve, 200))
+      // Kleine Pause zwischen API-Aufrufen
+      await new Promise(resolve => setTimeout(resolve, 300))
 
-      // Get top tracks (long term = ~1 year) mit Retry
+      // Get top tracks (long term = ~1 year)
       const topData = await fetchSpotifyJSON(
         'https://api.spotify.com/v1/me/top/tracks?time_range=long_term&limit=50',
         userSession.accessToken
@@ -333,7 +202,6 @@ export default function VotingPage() {
       setTopTracks(topTrackIds)
       console.log(`✅ Found ${topTrackIds.length} top tracks`)
       
-      // Update cache status
       setUserHistoryLoaded(true)
       
     } catch (error) {
@@ -342,7 +210,7 @@ export default function VotingPage() {
       setRecentTracks([])
       setTopTracks([])
     }
-  }, [session, shouldLoadUserHistory])
+  }, [session])
 
   const loadUserVotingStatus = async () => {
     try {
@@ -385,22 +253,20 @@ export default function VotingPage() {
     }
   }
 
-  // Force refresh function for manual updates
+  // Force refresh function - triggers server refresh
   const forceRefreshData = async () => {
-    console.log('🔄 Force refreshing all data...')
+    console.log('🔄 Force refreshing data from server...')
     setDataLoaded(false)
     setUserHistoryLoaded(false)
     setLastLoadTime(0)
-    setLoading(true)
     
     try {
-      await loadBossHossData(true)
+      await loadBossHossData(true) // Force server refresh
       await loadUserListeningHistory(true)
       await loadUserVotingStatus()
       await loadPlaylistStatus()
     } catch (error) {
       console.error('Error during force refresh:', error)
-      setLoading(false)
     }
   }
 
@@ -489,7 +355,7 @@ export default function VotingPage() {
     }))
   }
 
-  // Load data when session is available - mit intelligentem Caching
+  // Load data when session is available
   useEffect(() => {
     if (!session) return
     
@@ -497,12 +363,14 @@ export default function VotingPage() {
     if (!userSession.accessToken) return
 
     const loadInitialData = async () => {
-      // Voting Status und Playlist Status immer neu laden (ändern sich häufig)
+      // Voting Status und Playlist Status immer neu laden
       await loadUserVotingStatus()
       await loadPlaylistStatus()
       
-      // BossHoss Daten und User History nur laden wenn nötig (mit Cache)
+      // BossHoss Daten vom Server laden (super schnell!)
       await loadBossHossData()
+      
+      // User History laden (weiterhin client-side)
       await loadUserListeningHistory()
     }
     
@@ -510,26 +378,23 @@ export default function VotingPage() {
   }, [session, loadBossHossData, loadUserListeningHistory])
 
   if (status === 'loading' || loading) {
-    const progress = loadingProgress.total > 0 ? (loadingProgress.loaded / loadingProgress.total) * 100 : 0
+    const loadingMessage = serverLoading ? 
+      (dataSource === 'server-fresh' ? 'Server lädt frische Daten...' : 'Loading von Server...') :
+      'Loading BossHoss Songs...'
     
     return (
       <div className="min-h-screen bg-gradient-to-b from-amber-50 to-amber-100 flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-amber-800 font-semibold mb-2">Loading BossHoss Songs...</p>
+          <p className="text-amber-800 font-semibold mb-2">{loadingMessage}</p>
           
-          {loadingProgress.total > 0 && (
-            <>
-              <div className="w-full bg-amber-200 rounded-full h-2 mb-2">
-                <div 
-                  className="bg-amber-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                ></div>
+          {serverLoading && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
+              <div className="flex items-center justify-center space-x-2 text-blue-700">
+                <Server className="w-4 h-4" />
+                <span className="text-sm">Server-Side Loading - Viel schneller!</span>
               </div>
-              <p className="text-amber-600 text-sm">
-                {loadingProgress.loaded} / {loadingProgress.total} Alben geladen ({Math.round(progress)}%)
-              </p>
-            </>
+            </div>
           )}
         </div>
       </div>
@@ -648,7 +513,7 @@ export default function VotingPage() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8">
-        {/* Instructions mit Cache-Info */}
+        {/* Instructions mit Server-Info */}
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 mb-8 border border-amber-200">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">🎸 Wähle deine Lieblings-BossHoss Songs</h2>
           <div className="grid md:grid-cols-3 gap-4 text-sm">
@@ -668,11 +533,14 @@ export default function VotingPage() {
           <div className="flex justify-between items-center mt-3">
             <p className="text-gray-600">Du hast {remainingVotes} Stimmen für heute übrig. Wähle weise!</p>
             {dataLoaded && (
-              <p className="text-xs text-gray-500">
-                📊 Alben: {new Date(lastLoadTime).toLocaleTimeString('de-DE')}
-                {!isDataFresh(lastLoadTime, 24 * 60) && <span className="text-orange-500"> (24h+ alt)</span>}
-                {isDataFresh(lastLoadTime, 24 * 60) && <span className="text-green-500"> (✓ 24h Cache)</span>}
-              </p>
+              <div className="text-xs text-gray-500 flex items-center space-x-2">
+                <Server className="w-4 h-4" />
+                <span>
+                  {dataSource === 'server-cache' && <span className="text-green-600">⚡ Server Cache (instant)</span>}
+                  {dataSource === 'server-fresh' && <span className="text-blue-600">🔄 Server Fresh (24h cache)</span>}
+                  {lastLoadTime > 0 && <span> • {new Date(lastLoadTime).toLocaleTimeString('de-DE')}</span>}
+                </span>
+              </div>
             )}
           </div>
         </div>
