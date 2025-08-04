@@ -581,7 +581,7 @@ export default function VotingPage() {
   </div>
   
   <p className="text-gray-600 mb-6 text-center">
-    <strong>So geht's:</strong> Deine Stimme zählt mehr, wenn du die Songs auf Spotify streamst! 
+    <strong>Voting:</strong> Deine Stimme zählt mehr, wenn du die Songs auf Spotify streamst! 
     Wähle unten die Songs aus, die auf der Tour nicht fehlen dürfen.
   </p>
   
