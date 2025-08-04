@@ -107,7 +107,7 @@ export default function VotingPage() {
     return votedTracks.includes(trackId)
   }
 
-  // Cache Helper Functions
+  // Cache Helper Functions - OPTIMIERT für Production
   const isDataFresh = (lastLoad: number, maxAgeMinutes: number): boolean => {
     const now = Date.now()
     const maxAge = maxAgeMinutes * 60 * 1000 // Convert to milliseconds
@@ -115,21 +115,25 @@ export default function VotingPage() {
   }
 
   const shouldLoadBossHossData = (): boolean => {
-    return !dataLoaded || !isDataFresh(lastLoadTime, 30) // 30 Minuten Cache
+    // BossHoss Alben ändern sich praktisch NIE (nur 1 Single + 1 Album in 5 Wochen)
+    // 24 STUNDEN Cache ist perfekt!
+    return !dataLoaded || !isDataFresh(lastLoadTime, 24 * 60) // 24 Stunden
   }
 
   const shouldLoadUserHistory = (): boolean => {
-    return !userHistoryLoaded || !isDataFresh(lastLoadTime, 5) // 5 Minuten Cache
+    // User History ändert sich nicht so schnell
+    // 30 MINUTEN Cache ist ausreichend
+    return !userHistoryLoaded || !isDataFresh(lastLoadTime, 30) // 30 Minuten
   }
 
-  // Optimierte Album-Loading Funktion
+  // Optimierte Album-Loading Funktion - Production Ready
   const loadAlbumsOptimized = async (
     albums: any[],
     accessToken: string,
     onProgress: (loaded: number, total: number) => void
   ): Promise<any[]> => {
-    const BATCH_SIZE = 8 // Erhöht von 3 auf 8
-    const DELAY_MS = 300 // Reduziert von 2000ms auf 300ms
+    const BATCH_SIZE = 5      // Reduziert von 8 auf 5 (sicherer)
+    const DELAY_MS = 500      // Erhöht von 300ms auf 500ms (sicherer)
     
     // Sortiere Alben nach Wichtigkeit (neueste zuerst)
     const sortedAlbums = albums.sort((a: any, b: any) => {
@@ -138,22 +142,24 @@ export default function VotingPage() {
     
     const results: any[] = []
     
+    console.log(`🎵 Loading ${sortedAlbums.length} albums in batches of ${BATCH_SIZE} (Production Mode)`)
+    
     for (let i = 0; i < sortedAlbums.length; i += BATCH_SIZE) {
       const batch = sortedAlbums.slice(i, i + BATCH_SIZE)
       
-      console.log(`🎵 Loading album batch ${Math.floor(i/BATCH_SIZE) + 1}/${Math.ceil(sortedAlbums.length/BATCH_SIZE)}`)
+      console.log(`📀 Loading batch ${Math.floor(i/BATCH_SIZE) + 1}/${Math.ceil(sortedAlbums.length/BATCH_SIZE)}`)
       
       try {
-        // Parallele Verarbeitung innerhalb des Batches
+        // Parallele Verarbeitung innerhalb des Batches mit Staggering
         const batchResults = await Promise.all(
           batch.map(async (album: any, index: number) => {
-            // Staggered loading - kleine Verzögerung zwischen parallel requests
+            // Staggered loading - 75ms zwischen parallel requests (erhöht von 50ms)
             if (index > 0) {
-              await new Promise(resolve => setTimeout(resolve, index * 50))
+              await new Promise(resolve => setTimeout(resolve, index * 75))
             }
             
             try {
-              console.log(`📀 Loading tracks for: ${album.name}`)
+              console.log(`🎶 Loading tracks for: ${album.name}`)
               
               const tracksData = await fetchSpotifyJSON(
                 `https://api.spotify.com/v1/albums/${album.id}/tracks?market=DE`,
@@ -196,8 +202,9 @@ export default function VotingPage() {
         // Progress Callback
         onProgress(results.length, sortedAlbums.length)
         
-        // Kürzere Pause zwischen Batches
+        // Pause zwischen Batches (erhöht für mehr Sicherheit)
         if (i + BATCH_SIZE < sortedAlbums.length) {
+          console.log(`⏸️  Cooling down for ${DELAY_MS}ms...`)
           await new Promise(resolve => setTimeout(resolve, DELAY_MS))
         }
         
@@ -662,8 +669,9 @@ export default function VotingPage() {
             <p className="text-gray-600">Du hast {remainingVotes} Stimmen für heute übrig. Wähle weise!</p>
             {dataLoaded && (
               <p className="text-xs text-gray-500">
-                📊 Daten geladen: {new Date(lastLoadTime).toLocaleTimeString('de-DE')}
-                {!isDataFresh(lastLoadTime, 30) && <span className="text-orange-500"> (veraltet)</span>}
+                📊 Alben: {new Date(lastLoadTime).toLocaleTimeString('de-DE')}
+                {!isDataFresh(lastLoadTime, 24 * 60) && <span className="text-orange-500"> (24h+ alt)</span>}
+                {isDataFresh(lastLoadTime, 24 * 60) && <span className="text-green-500"> (✓ 24h Cache)</span>}
               </p>
             )}
           </div>
