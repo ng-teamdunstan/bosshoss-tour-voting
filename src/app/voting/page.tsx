@@ -118,8 +118,8 @@ export default function VotingPage() {
 
   const getVoteLabel = (trackId: string) => {
     const multiplier = getVoteMultiplier(trackId)
-    if (multiplier === 5) return '🔥 DEIN TOP TRACK (5x Punkte)'
-    if (multiplier === 3) return '🎵 KÜRZLICH GEHÖRT (3x Punkte)'
+    if (multiplier === 5) return '🔥 DEIN TOP TRACK (5x)'
+    if (multiplier === 3) return '🎵 KÜRZLICH GEHÖRT (3x)'
     return '⭐ NORMALE STIMME (1x Punkt)'
   }
 
@@ -570,16 +570,6 @@ export default function VotingPage() {
     </h3>
   </div>
   
-  {/* Navigation nur noch Abmelden */}
-  <div className="flex justify-end items-center mb-6">
-    <button 
-      onClick={() => signOut()}
-      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full font-semibold transition-colors"
-    >
-      Abmelden
-    </button>
-  </div>
-  
   <p className="text-gray-600 mb-6 text-center">
     <strong>Voting:</strong> Deine Stimme zählt mehr, wenn du die Songs auf Spotify streamst! 
     Wähle unten die Songs aus, die auf der Tour nicht fehlen dürfen.
@@ -720,44 +710,54 @@ export default function VotingPage() {
                 </div>
               </div>
 
-              {/* Tracks List */}
-              {expandedAlbums[album.id] && (
-                <div className="p-6 space-y-3">
-                  {album.tracks.map((track) => (
-                    <div key={track.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-800">{track.name}</h4>
-                        <p className="text-sm text-gray-600">{track.artists.map(a => a.name).join(', ')}</p>
-                        {(recentTracks.includes(track.id) || topTracks.includes(track.id)) && (
-                          <p className="text-xs text-blue-600 font-medium mt-1">
-                            {getVoteLabel(track.id)}
-                          </p>
-                        )}
-                      </div>
-                      
-                      <button
-                        onClick={() => handleVote(track.id, track.name, track.artists[0].name, album.name)}
-                        disabled={hasVoted(track.id) || remainingVotes <= 0 || submitting}
-                        className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center space-x-2 ${
-                          hasVoted(track.id)
-                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
-                            : remainingVotes <= 0
-                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                            : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600'
-                        }`}
-                      >
-                        <Vote className="w-4 h-4" />
-                        <span>
-                          {hasVoted(track.id) 
-                            ? 'Gevoted' 
-                            : `Vote (${getVoteMultiplier(track.id)}x)`
-                          }
-                        </span>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Tracks List - Optimierte Version */}
+{expandedAlbums[album.id] && (
+  <div className="p-2 space-y-2">
+    {album.tracks.map((track) => (
+      <div key={track.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center space-x-2 mb-1">
+            <h4 className="font-semibold text-gray-800 truncate">{track.name}</h4>
+            
+            {/* Farbige Tags nur für spezielle Vote-Multiplier */}
+            {getVoteMultiplier(track.id) === 5 && (
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-red-50 text-red-800 border border-red-200 flex-shrink-0">
+                🔥 TOP TRACK
+              </span>
+            )}
+            {getVoteMultiplier(track.id) === 3 && (
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200 flex-shrink-0">
+                📻 RECENT
+              </span>
+            )}
+            {/* Standard (1 Punkt) = kein Tag */}
+          </div>
+          <p className="text-sm text-gray-600 truncate">{track.artists.map(a => a.name).join(', ')}</p>
+        </div>
+        
+        <button
+          onClick={() => handleVote(track.id, track.name, track.artists[0].name, album.name)}
+          disabled={hasVoted(track.id) || remainingVotes <= 0 || submitting}
+          className={`ml-3 px-3 py-1.5 rounded-full font-semibold text-sm transition-all duration-200 flex items-center space-x-1 flex-shrink-0 ${
+            hasVoted(track.id)
+              ? 'bg-green-100 text-green-700 cursor-not-allowed'
+              : remainingVotes <= 0
+              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+              : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 transform hover:scale-105'
+          }`}
+        >
+          <Vote className="w-3 h-3" />
+          <span>
+            {hasVoted(track.id) 
+              ? '✓' 
+              : `+${getVoteMultiplier(track.id)}`
+            }
+          </span>
+        </button>
+      </div>
+    ))}
+  </div>
+)}
             </div>
           ))}
         </div>
