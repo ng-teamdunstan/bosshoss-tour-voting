@@ -507,23 +507,20 @@ export default function VotingPage() {
   </div>
 </header>
 
-      {/* Community Results Modal - Überarbeitet */}
+      {/* Community Results Modal - Kompakter ohne Emojis */}
 {showResults && (
   <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[85vh] overflow-hidden shadow-2xl">
       
       {/* Modal Header */}
       <div 
-        className="text-black p-8 border-b-2 border-black"
+        className="text-black p-6 border-b-2 border-black"
         style={{ backgroundColor: '#ceae79' }}
       >
         <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <Trophy className="w-10 h-10" />
-            <div>
-              <h2 className="text-3xl font-bold">Community Top 15</h2>
-              <p className="text-lg opacity-80">Back to the Boots Tour 2025</p>
-            </div>
+          <div>
+            <h2 className="text-3xl font-bold">Community Top 15</h2>
+            <p className="text-lg opacity-80">Back to the Boots Tour 2025</p>
           </div>
           
           <button
@@ -536,19 +533,18 @@ export default function VotingPage() {
       </div>
       
       {/* Modal Content */}
-      <div className="p-8 overflow-y-auto max-h-[65vh]">
+      <div className="p-4 overflow-y-auto max-h-[65vh]">
         {votingResults.length === 0 ? (
-          <div className="text-center py-12">
-            <Trophy className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <div className="text-center py-8">
             <p className="text-xl text-gray-500">Noch keine Voting-Ergebnisse verfügbar.</p>
             <p className="text-gray-400 mt-2">Sei der Erste und gib deine Stimme ab!</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {votingResults.map((result, index) => (
               <div 
                 key={result.trackId}
-                className={`flex items-center space-x-6 p-6 rounded-2xl transition-all duration-300 hover:shadow-lg ${
+                className={`flex items-center space-x-4 p-4 rounded-xl transition-all duration-300 hover:shadow-lg ${
                   index === 0 ? 'bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 border-2 border-amber-300 shadow-lg' :
                   index < 3 ? 'bg-gradient-to-r from-amber-25 to-orange-25 border border-amber-200 shadow-md' :
                   'bg-gray-50 border border-gray-200'
@@ -556,7 +552,7 @@ export default function VotingPage() {
               >
                 
                 {/* Platzierungs-Nummer */}
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg ${
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg ${
                   index === 0 ? 'bg-gradient-to-r from-amber-500 to-orange-500' :
                   index === 1 ? 'bg-gradient-to-r from-amber-400 to-orange-400' :
                   index === 2 ? 'bg-gradient-to-r from-amber-400 to-orange-400' :
@@ -567,25 +563,16 @@ export default function VotingPage() {
                 
                 {/* Song Info */}
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">{result.trackName}</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">{result.trackName}</h3>
                   <p className="text-gray-600">{result.artistName}</p>
                   {result.albumName && (
                     <p className="text-sm text-gray-500">{result.albumName}</p>
                   )}
                 </div>
                 
-                {/* Ranking Badge für Top 3 */}
-                {index < 3 && (
-                  <div className="flex flex-col items-center">
-                    {index === 0 && <span className="text-2xl">🥇</span>}
-                    {index === 1 && <span className="text-2xl">🥈</span>}
-                    {index === 2 && <span className="text-2xl">🥉</span>}
-                  </div>
-                )}
-                
                 {/* Punkte und Votes */}
                 <div className="text-right">
-                  <div className="text-2xl font-bold bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">
+                  <div className="text-xl font-bold bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">
                     {result.totalPoints}
                   </div>
                   <div className="text-sm text-gray-500">{result.totalVotes} Votes</div>
@@ -598,23 +585,23 @@ export default function VotingPage() {
       </div>
       
       {/* Modal Footer */}
-      <div className="p-6 bg-gray-50 border-t border-gray-200">
+      <div className="p-4 bg-gray-50 border-t border-gray-200">
         <div className="flex justify-between items-center">
           <div className="text-sm text-gray-600">
-            🎸 Das sind die beliebtesten BossHoss Songs der Community!
+            Das sind die beliebtesten BossHoss Songs der Community!
           </div>
           
-          <div className="flex space-x-4">
+          <div className="flex space-x-3">
             <button
               onClick={() => setShowResults(false)}
-              className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105"
+              className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 transform hover:scale-105"
             >
               Zurück zum Voting
             </button>
             
             <button
               onClick={() => router.push('/')}
-              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105"
+              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 transform hover:scale-105"
             >
               Zur Startseite
             </button>
