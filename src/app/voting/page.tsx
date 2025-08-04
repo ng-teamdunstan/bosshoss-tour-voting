@@ -618,7 +618,7 @@ export default function VotingPage() {
   
   <p className="text-gray-600 mb-6 text-center">
     <strong>Voting:</strong> Deine Stimme zählt mehr, wenn du die Songs auf Spotify streamst! 
-    Wähle unten die Songs aus, die auf der Tour nicht fehlen dürfen. Du kannst jeden Tag neue Votes vergeben und deine Lieblings-Songs boosten, indem du sie auf Spotify streamst. Die Top 15 Songs werden in einer Community-Playlist in deiner Spotify Bibliothek täglich aktualisiert.
+    Wähle unten die Songs aus, die auf der Tour nicht fehlen dürfen. Du kannst jeden Tag 10 Votes vergeben und deine Lieblings-Songs boosten, indem du sie auf Spotify streamst. Die Top 15 Songs werden in einer Community-Playlist in deiner Spotify Bibliothek täglich aktualisiert.
   </p>
   
   {/* Vote-Gewichtungen in hervorgehobenen Boxen */}
