@@ -519,8 +519,8 @@ export default function VotingPage() {
       >
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-3xl font-bold">Community Top 15</h2>
-            <p className="text-lg opacity-80">Back to the Boots Tour 2025</p>
+            <h2 className="text-3xl font-bold">Voting Top 15</h2>
+            <p className="text-lg opacity-80">Diese Songs dürfen nicht fehlen</p>
           </div>
           
           <button
@@ -618,7 +618,7 @@ export default function VotingPage() {
   
   <p className="text-gray-600 mb-6 text-center">
     <strong>Voting:</strong> Deine Stimme zählt mehr, wenn du die Songs auf Spotify streamst! 
-    Wähle unten die Songs aus, die auf der Tour nicht fehlen dürfen.
+    Wähle unten die Songs aus, die auf der Tour nicht fehlen dürfen. Du kannst jeden Tag neue Votes vergeben und deine Lieblings-Songs Boosten, indem du sie auf Spotify streamst.
   </p>
   
   {/* Vote-Gewichtungen in hervorgehobenen Boxen */}
@@ -680,7 +680,7 @@ export default function VotingPage() {
         className="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-full font-semibold transition-all duration-200"
       >
         <Trophy className="w-4 h-4" />
-        <span>Community Top 15</span>
+        <span>Votingergebnis</span>
       </button>
     )}
     
