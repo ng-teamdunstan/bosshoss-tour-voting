@@ -134,7 +134,7 @@ export default function Home() {
                 </div>
                 <h3 className="font-helltown mb-3 text-lg md:text-xl tracking-[0.1rem] uppercase font-semibold">Live Updates</h3>
                 <p className="font-rama text-sm md:text-base tracking-[0.05em]">
-                  Automatische Playlist-Updates täglich. Die aktuellen Top-Songs 
+                  Voting Playlist auf Spotify mit automatischen täglichen Updates. Die aktuellen Top-Songs 
                   immer in deiner Spotify Library.
                 </p>
               </div>
