@@ -453,12 +453,23 @@ export default function VotingPage() {
 
   return (
     <div className="min-h-screen bttb-bg">
-      {/* Header - Korrigierte Version */}
+      {/* Header - Mit Back-Pfeil links */}
 <header 
   className="sticky top-0 z-50 border-b-2 border-black backdrop-blur-sm"
   style={{ backgroundColor: 'rgba(206, 174, 121, 0.9)' }}
 >
   <div className="max-w-6xl mx-auto px-4 py-4 relative">
+    {/* Back Button links */}
+    <div className="absolute top-4 left-4">
+      <button 
+        onClick={() => router.push('/')}
+        className="text-black hover:text-gray-700 transition-colors"
+        title="Zurück zur Startseite"
+      >
+        <ArrowLeft className="w-6 h-6" />
+      </button>
+    </div>
+    
     {/* Sign Out rechts oben */}
     <div className="absolute top-4 right-4">
       <button 
@@ -547,7 +558,7 @@ export default function VotingPage() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8">
-        {/* Voting Instructions - Erweiterte Version mit Buttons */}
+        {/* Voting Instructions - Mit Hey Username */}
 <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-amber-200 mb-8">
   {/* User Begrüßung oben */}
   <div className="text-center mb-6">
@@ -559,49 +570,61 @@ export default function VotingPage() {
     </h3>
   </div>
   
-   {/* User Info und Navigation - Vereinfacht */}
-  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-    <div className="flex items-center space-x-4">
-      <button 
-        onClick={() => router.push('/')}
-        className="flex items-center space-x-2 text-gray-600 hover:text-amber-600 transition-colors"
-      >
-        <ArrowLeft className="w-5 h-5" />
-        <span className="font-semibold">Zurück zur Startseite</span>
-      </button>
-    </div>
-    
-    <div className="flex items-center space-x-4">
-      <button 
-        onClick={() => signOut()}
-        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full font-semibold transition-colors"
-      >
-        Abmelden
-      </button>
-    </div>
+  {/* Navigation nur noch Abmelden */}
+  <div className="flex justify-end items-center mb-6">
+    <button 
+      onClick={() => signOut()}
+      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full font-semibold transition-colors"
+    >
+      Abmelden
+    </button>
   </div>
   
-  <p className="text-gray-600 mb-4">
+  <p className="text-gray-600 mb-6 text-center">
     <strong>Smart Voting:</strong> Deine Stimme zählt mehr, wenn du die Songs auch wirklich hörst! 
     Wir checken deine Spotify-History für faire Gewichtung.
   </p>
   
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-6">
-    <div className="flex items-center space-x-2">
-      <Star className="w-5 h-5 text-amber-500" />
-      <span><strong>1 Punkt:</strong> Standard Vote für alle Songs</span>
+  {/* Vote-Gewichtungen in hervorgehobenen Boxen */}
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    {/* Standard Vote */}
+    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-center">
+      <div className="flex justify-center mb-3">
+        <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center">
+          <Star className="w-6 h-6 text-white" />
+        </div>
+      </div>
+      <h4 className="font-bold text-amber-800 mb-2">Standard Vote</h4>
+      <p className="text-amber-700 text-sm font-semibold mb-1">1 Punkt</p>
+      <p className="text-amber-600 text-xs">Für alle Songs verfügbar</p>
     </div>
-    <div className="flex items-center space-x-2">
-      <Clock className="w-5 h-5 text-blue-500" />
-      <span><strong>3 Punkte:</strong> Du hast den Song kürzlich gehört</span>
+    
+    {/* Recent Play */}
+    <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-center">
+      <div className="flex justify-center mb-3">
+        <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+          <Clock className="w-6 h-6 text-white" />
+        </div>
+      </div>
+      <h4 className="font-bold text-blue-800 mb-2">Recently Played</h4>
+      <p className="text-blue-700 text-sm font-semibold mb-1">3 Punkte</p>
+      <p className="text-blue-600 text-xs">Du hast den Song kürzlich gehört (letzte 50 Tracks)</p>
     </div>
-    <div className="flex items-center space-x-2">
-      <TrendingUp className="w-5 h-5 text-red-500" />
-      <span><strong>5 Punkte:</strong> Einer deiner meistgehörten Songs</span>
+    
+    {/* Top Track */}
+    <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-center">
+      <div className="flex justify-center mb-3">
+        <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
+          <TrendingUp className="w-6 h-6 text-white" />
+        </div>
+      </div>
+      <h4 className="font-bold text-red-800 mb-2">Dein Favorit</h4>
+      <p className="text-red-700 text-sm font-semibold mb-1">5 Punkte</p>
+      <p className="text-red-600 text-xs">Einer deiner meistgehörten Songs (letztes Jahr)</p>
     </div>
   </div>
   
-   {/* Action Buttons */}
+  {/* Action Buttons */}
   <div className="flex flex-wrap gap-3">
     {/* Refresh Button */}
     <button
@@ -614,7 +637,7 @@ export default function VotingPage() {
       <span className="hidden sm:inline">Refresh</span>
     </button>
     
-   {/* Community Results Button */}
+    {/* Community Results Button */}
     {votedTracks.length > 0 && (
       <button
         onClick={loadCommunityResults}
