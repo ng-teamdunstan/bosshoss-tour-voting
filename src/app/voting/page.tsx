@@ -485,7 +485,7 @@ export default function VotingPage() {
       <img
         src="https://thebosshoss.com/_next/static/media/tbh_bttb.cb9d83ef.webp"
         alt="The BossHoss - Back to the Boots"
-        className="h-16 w-auto md:h-20 md:w-auto"
+        className="h-10 w-auto md:h-20 md:w-auto"
         onError={(e) => {
           console.log('Logo loading failed, using fallback')
           e.currentTarget.style.display = 'none'
@@ -581,8 +581,8 @@ export default function VotingPage() {
   </div>
   
   <p className="text-gray-600 mb-6 text-center">
-    <strong>Smart Voting:</strong> Deine Stimme zählt mehr, wenn du die Songs auch wirklich hörst! 
-    Wir checken deine Spotify-History für faire Gewichtung.
+    <strong>So geht's:</strong> Deine Stimme zählt mehr, wenn du die Songs auf Spotify streamst! 
+    Wähle unten die Songs aus, die auf der Tour nicht fehlen dürfen.
   </p>
   
   {/* Vote-Gewichtungen in hervorgehobenen Boxen */}
@@ -608,7 +608,7 @@ export default function VotingPage() {
       </div>
       <h4 className="font-bold text-blue-800 mb-2">Recently Played</h4>
       <p className="text-blue-700 text-sm font-semibold mb-1">3 Punkte</p>
-      <p className="text-blue-600 text-xs">Du hast den Song kürzlich gehört (letzte 50 Tracks)</p>
+      <p className="text-blue-600 text-xs">Du hast den Song kürzlich gehört</p>
     </div>
     
     {/* Top Track */}
@@ -620,7 +620,7 @@ export default function VotingPage() {
       </div>
       <h4 className="font-bold text-red-800 mb-2">Dein Favorit</h4>
       <p className="text-red-700 text-sm font-semibold mb-1">5 Punkte</p>
-      <p className="text-red-600 text-xs">Einer deiner meistgehörten Songs (letztes Jahr)</p>
+      <p className="text-red-600 text-xs">Einer deiner meistgehörten Songs</p>
     </div>
   </div>
   
