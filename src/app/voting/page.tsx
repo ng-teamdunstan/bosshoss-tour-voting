@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { Music, ArrowLeft, Vote, Trophy, ListMusic, Star, Play, Clock, RefreshCw, Server, Zap, CloudDownload } from 'lucide-react'
+import { Music, Star, Clock, TrendingUp, Zap, CloudDownload, Server, Vote, ArrowLeft, CheckCircle, ChevronDown, ChevronUp, RefreshCw, Trophy, ListMusic } from 'lucide-react'
 import { fetchSpotifyJSON } from '@/lib/spotify-utils'
+
 
 // Interfaces - vor ihrer Verwendung deklariert
 interface SpotifyImage {
@@ -424,7 +425,7 @@ export default function VotingPage() {
     }
     
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-amber-100 flex items-center justify-center">
+      <div className="min-h-screen bttb-bg flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-amber-600 mx-auto mb-4"></div>
           <p className="text-amber-800 font-semibold mb-2">{loadingMessage}</p>
@@ -451,61 +452,36 @@ export default function VotingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50 to-red-50">
-      {/* Header */}
-      <header className="bg-black/90 backdrop-blur-sm border-b-4 border-amber-500 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <button 
-              onClick={() => router.push('/')}
-              className="text-white hover:text-amber-400 transition-colors mr-3"
-            >
-              <ArrowLeft className="w-6 h-6" />
-            </button>
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
-              <Music className="w-5 h-5 text-black" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">SONG VOTING</h1>
-              <p className="text-amber-400 text-sm">Hey {session.user?.name}!</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <div className="text-right text-white">
-              <p className="text-lg font-bold">{remainingVotes}</p>
-              <p className="text-xs text-amber-400">Stimmen übrig</p>
-            </div>
-            
-            <button
-              onClick={forceRefreshData}
-              disabled={loading}
-              className="bg-gray-600 text-white px-3 py-2 rounded-lg font-semibold hover:bg-gray-700 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50"
-              title="Daten neu laden"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
-            </button>
-            
-            <button
-              onClick={loadCommunityResults}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center space-x-2"
-            >
-              <Trophy className="w-4 h-4" />
-              <span>Top 15</span>
-            </button>
-            
-            <button
-              onClick={createOrUpdatePlaylist}
-              disabled={creatingPlaylist}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50"
-            >
-              <ListMusic className="w-4 h-4" />
-              <span>{creatingPlaylist ? 'Erstelle...' : (playlistStatus.hasPlaylist ? 'Update Playlist' : 'Erstelle Playlist')}</span>
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bttb-bg">
+      {/* Header - Neue Version */}
+<header 
+  className="sticky top-0 z-50 border-b-2 border-black"
+  style={{ backgroundColor: '#ceae79' }}
+>
+  <div className="max-w-6xl mx-auto px-4 py-4">
+    {/* User Info oben rechts */}
+    <div className="flex justify-end mb-2">
+      <div className="text-right text-black">
+        <p className="font-semibold">Hey {session.user?.name}! 🤠</p>
+        <p className="text-sm font-bold">
+          {remainingVotes} Stimme{remainingVotes !== 1 ? 'n' : ''} übrig
+        </p>
+      </div>
+    </div>
+    
+    {/* Logo mittig */}
+    <div className="flex justify-center">
+      <Image
+        src="https://thebosshoss.com/_next/static/media/tbh_bttb.cb9d83ef.webp"
+        alt="The BossHoss - Back to the Boots"
+        width={280}
+        height={100}
+        className="h-16 w-auto md:h-20 md:w-auto"
+        priority
+      />
+    </div>
+  </div>
+</header>
 
       {/* Community Results Modal */}
       {showResults && (
@@ -558,64 +534,114 @@ export default function VotingPage() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8">
-        {/* Instructions mit Server Performance Info */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 mb-8 border border-amber-200">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">🎸 Wähle deine Lieblings-BossHoss Songs</h2>
-          <div className="grid md:grid-cols-3 gap-4 text-sm">
-            <div className="flex items-center space-x-2">
-              <Star className="w-5 h-5 text-amber-500" />
-              <span><strong>Normale Stimme:</strong> 1 Punkt</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Clock className="w-5 h-5 text-blue-500" />
-              <span><strong>Kürzlich gehört:</strong> 3 Punkte</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Play className="w-5 h-5 text-red-500" />
-              <span><strong>Dein Top Track:</strong> 5 Punkte</span>
-            </div>
-          </div>
-          
-          <div className="flex justify-between items-center mt-4 pt-3 border-t border-amber-100">
-            <p className="text-gray-600">Du hast {remainingVotes} Stimmen für heute übrig. Wähle weise!</p>
-            
-            {/* Server Performance Info */}
-            <div className="text-xs text-gray-500 flex items-center space-x-2">
-              <Server className="w-4 h-4" />
-              <div className="text-right">
-                {serverStatus === 'cached' &&
-                  <div className="flex items-center space-x-1">
-                    <Zap className="w-3 h-3 text-green-500" />
-                    <span className="text-green-600">Cache ({cacheInfo.age}min alt)</span>
-                  </div>
-                }
-                {serverStatus === 'fresh' &&
-                  <div className="flex items-center space-x-1">
-                    <CloudDownload className="w-3 h-3 text-blue-500" />
-                    <span className="text-blue-600">Fresh Load</span>
-                  </div>
-                }
-                {serverStatus === 'background' &&
-                  <div className="flex items-center space-x-1">
-                    <RefreshCw className="w-3 h-3 text-orange-500 animate-pulse" />
-                    <span className="text-orange-600">Background Update</span>
-                  </div>
-                }
-                <div className="text-gray-400">{cacheInfo.loadTime}</div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Background Refresh Notification */}
-          {cacheInfo.backgroundRefresh && (
-            <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center space-x-2 text-blue-700">
-                <RefreshCw className="w-4 h-4 animate-pulse" />
-                <span className="text-sm">Server aktualisiert Daten im Hintergrund - noch aktuellere Daten kommen bald!</span>
-              </div>
-            </div>
-          )}
+        {/* Voting Instructions - Erweiterte Version mit Buttons */}
+<div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-amber-200 mb-8">
+  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+    🗳️ Wähle deine Lieblings-BossHoss Songs!
+  </h2>
+  
+  {/* User Info und Navigation - Vereinfacht */}
+  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+    <div className="flex items-center space-x-4">
+      <button 
+        onClick={() => router.push('/')}
+        className="flex items-center space-x-2 text-gray-600 hover:text-amber-600 transition-colors"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span className="font-semibold">Zurück zur Startseite</span>
+      </button>
+    </div>
+    
+    <div className="flex items-center space-x-4">
+      <button 
+        onClick={() => signOut()}
+        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full font-semibold transition-colors"
+      >
+        Abmelden
+      </button>
+    </div>
+  </div>
+  
+  <p className="text-gray-600 mb-4">
+    <strong>Smart Voting:</strong> Deine Stimme zählt mehr, wenn du die Songs auch wirklich hörst! 
+    Wir checken deine Spotify-History für faire Gewichtung.
+  </p>
+  
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-6">
+    <div className="flex items-center space-x-2">
+      <Star className="w-5 h-5 text-amber-500" />
+      <span><strong>1 Punkt:</strong> Standard Vote für alle Songs</span>
+    </div>
+    <div className="flex items-center space-x-2">
+      <Clock className="w-5 h-5 text-blue-500" />
+      <span><strong>3 Punkte:</strong> Du hast den Song kürzlich gehört</span>
+    </div>
+    <div className="flex items-center space-x-2">
+      <TrendingUp className="w-5 h-5 text-red-500" />
+      <span><strong>5 Punkte:</strong> Einer deiner meistgehörten Songs</span>
+    </div>
+  </div>
+  
+  {/* Action Buttons */}
+  <div className="flex flex-wrap gap-3">
+    {/* Refresh Button */}
+    <button
+      onClick={forceRefreshData}
+      disabled={loading}
+      className="flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-full font-semibold transition-all duration-200 disabled:opacity-50"
+      title="Daten neu laden"
+    >
+      <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+      <span className="hidden sm:inline">Refresh</span>
+    </button>
+    
+    {/* Community Results Button */}
+    {votedTracks.length > 0 && (
+      <button
+        onClick={loadCommunityResults}
+        className="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-full font-semibold transition-all duration-200"
+      >
+        <Trophy className="w-4 h-4" />
+        <span>Community Top 15</span>
+      </button>
+    )}
+    
+    {/* Playlist Button */}
+    <button
+      onClick={createOrUpdatePlaylist}
+      disabled={creatingPlaylist}
+      className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full font-semibold transition-all duration-200 disabled:opacity-50"
+    >
+      <ListMusic className="w-4 h-4" />
+      <span>
+        {creatingPlaylist 
+          ? 'Erstelle...' 
+          : (playlistStatus.hasPlaylist ? 'Update Playlist' : 'Erstelle Playlist')
+        }
+      </span>
+    </button>
+  </div>
+  
+  {/* Playlist Status */}
+  {playlistStatus.hasPlaylist && (
+    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span className="text-green-800 font-semibold text-sm">Playlist aktiv</span>
         </div>
+        <a
+          href={playlistStatus.playlist?.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-sm font-semibold transition-colors"
+        >
+          🎵 In Spotify öffnen
+        </a>
+      </div>
+    </div>
+  )}
+</div>
 
         {/* Albums List */}
         <div className="space-y-6">
