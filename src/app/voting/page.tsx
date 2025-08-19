@@ -8,7 +8,7 @@ import { Music, Star, Clock, TrendingUp, Zap, CloudDownload, Server, Vote, Arrow
 import { fetchSpotifyJSON } from '@/lib/spotify-utils'
 
 
-// Interfaces - vor ihrer Verwendung deklariert
+// Interfaces
 interface SpotifyImage {
   url: string
   height: number
@@ -38,6 +38,9 @@ interface SpotifyAlbum {
   images: SpotifyImage[]
   album_type: string
   tracks: SpotifyTrack[]
+  external_urls?: {
+    spotify: string
+  }
 }
 
 interface VotingResult {
@@ -453,7 +456,7 @@ export default function VotingPage() {
 
   return (
     <div className="min-h-screen bttb-bg">
-      {/* Header - Mit Back-Pfeil links */}
+      {/* Header */}
 <header 
   className="sticky top-0 z-50 border-b-2 border-black backdrop-blur-sm"
   style={{ backgroundColor: 'rgba(206, 174, 121, 0.9)' }}
@@ -723,28 +726,56 @@ export default function VotingPage() {
           {bosshossAlbums.map((album) => (
             <div key={album.id} className="bg-white/90 backdrop-blur-sm rounded-xl overflow-hidden border border-amber-200 shadow-lg">
               {/* Album Header */}
-              <div 
-                onClick={() => toggleAlbum(album.id)}
-                className="p-6 cursor-pointer hover:bg-amber-50 transition-colors border-b border-amber-100"
-              >
-                <div className="flex items-center space-x-4">
-                  <Image 
-                    src={album.images[0]?.url || '/placeholder-album.jpg'} 
-                    alt={album.name}
-                    width={64}
-                    height={64}
-                    className="w-16 h-16 rounded-lg shadow-md"
-                  />
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-800">{album.name}</h3>
-                    <p className="text-gray-600">{album.album_type === 'album' ? 'Album' : 'Single'} • {new Date(album.release_date).getFullYear()}</p>
-                    <p className="text-sm text-gray-500">{album.tracks.length} Songs</p>
-                  </div>
-                  <div className="text-amber-600">
-                    {expandedAlbums[album.id] ? '▼' : '▶'}
-                  </div>
-                </div>
-              </div>
+<div 
+  onClick={() => toggleAlbum(album.id)}
+  className="p-6 cursor-pointer hover:bg-amber-50 transition-colors border-b border-amber-100"
+>
+  <div className="flex items-center space-x-4">
+    {/* Cover-Artwork mit Spotify-Link */}
+    <a 
+      href={album.external_urls?.spotify || `https://open.spotify.com/album/${album.id}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex-shrink-0 hover:opacity-80 transition-opacity"
+      onClick={(e) => e.stopPropagation()} // Verhindert, dass das Album aufgeklappt wird
+    >
+      <Image 
+        src={album.images[0]?.url || '/placeholder-album.jpg'} 
+        alt={album.name}
+        width={64}
+        height={64}
+        className="w-16 h-16 rounded-lg shadow-md cursor-pointer"
+      />
+    </a>
+
+    {/* Album-Info mit Spotify Button */}
+    <div className="flex-1">
+      <div className="flex items-center space-x-3 mb-1">
+        <h3 className="text-xl font-bold text-gray-800">{album.name}</h3>
+        <a
+          href={album.external_urls?.spotify || `https://open.spotify.com/album/${album.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()} // Verhindert, dass das Album aufgeklappt wird
+          className="inline-flex items-center space-x-1 bg-[#1DB954] hover:bg-[#1ed760] text-white px-3 py-1 rounded-full text-sm font-semibold transition-all duration-200 transform hover:scale-105"
+        >
+          {/* Spotify Logo */}
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+          </svg>
+          <span>Listen on Spotify</span>
+        </a>
+      </div>
+      <p className="text-gray-600">{album.album_type === 'album' ? 'Album' : 'Single'} • {new Date(album.release_date).getFullYear()}</p>
+      <p className="text-sm text-gray-500">{album.tracks.length} Songs</p>
+    </div>
+
+    {/* Toggle-Pfeil (unverändert) */}
+    <div className="text-amber-600">
+      {expandedAlbums[album.id] ? '▼' : '▶'}
+    </div>
+  </div>
+</div>
 
               {/* Tracks List - Optimierte Version */}
 {expandedAlbums[album.id] && (
