@@ -214,8 +214,11 @@ export default function VotingPage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500"></div>
+      <div className="min-h-screen bttb-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-yellow-500 mx-auto mb-4"></div>
+          <p className="text-yellow-200 font-semibold">Lade BossHoss Voting...</p>
+        </div>
       </div>
     )
   }
@@ -223,7 +226,7 @@ export default function VotingPage() {
   if (!session) return null
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white">
+    <div className="min-h-screen bttb-bg text-white">
       {/* Simple Header */}
       <header className="bg-black/50 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
