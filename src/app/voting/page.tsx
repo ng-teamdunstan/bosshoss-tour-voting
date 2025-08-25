@@ -228,32 +228,32 @@ export default function VotingPage() {
   return (
     <div className="min-h-screen bttb-bg text-white">
       {/* Simple Header */}
-      <header className="bg-black/50 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-40">
+      <header className="backdrop-blur-sm border-b border-gray-800 sticky top-0 z-40" style={{ backgroundColor: 'rgba(201, 175, 128, 0.8)' }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => router.push('/')}
-                className="flex items-center space-x-2 text-yellow-500 hover:text-yellow-400"
+                className="flex items-center space-x-2 text-gray-800 hover:text-gray-900 font-semibold"
               >
                 <ArrowLeft className="w-5 h-5" />
                 <span>Zurück</span>
               </button>
               
               <div className="flex items-center space-x-3">
-                <Vote className="w-6 h-6 text-yellow-500" />
-                <h1 className="text-xl font-bold">Song Voting</h1>
+                <Vote className="w-6 h-6 text-gray-800" />
+                <h1 className="text-xl font-bold text-gray-900">Song Voting</h1>
               </div>
             </div>
 
             <div className="flex items-center space-x-4">
-              <div className="bg-gray-800/50 px-4 py-2 rounded-full border border-gray-700">
-                <span className="text-sm font-medium">{remainingVotes} Stimmen</span>
+              <div className="bg-gray-900/20 px-4 py-2 rounded-full border border-gray-700/30">
+                <span className="text-sm font-medium text-gray-900">{remainingVotes} Stimmen</span>
               </div>
               
               <button
                 onClick={() => signOut()}
-                className="text-sm text-gray-400 hover:text-white"
+                className="text-sm text-gray-700 hover:text-gray-900 font-medium"
               >
                 Logout
               </button>
@@ -270,7 +270,7 @@ export default function VotingPage() {
           <button
             onClick={() => loadAlbums()}
             disabled={loading}
-            className="flex items-center space-x-2 bg-yellow-600 hover:bg-yellow-700 text-black px-4 py-2 rounded-full font-semibold disabled:opacity-50"
+            className="flex items-center space-x-2 bg-yellow-600 hover:bg-yellow-700 text-black px-4 py-2 rounded-full font-semibold disabled:opacity-50 shadow-md"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             <span>Songs neu laden</span>
@@ -279,7 +279,7 @@ export default function VotingPage() {
           {!showResults ? (
             <button
               onClick={loadResults}
-              className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-full font-semibold"
+              className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-full font-semibold shadow-md"
             >
               <Trophy className="w-4 h-4" />
               <span>Ergebnisse zeigen</span>
@@ -287,7 +287,7 @@ export default function VotingPage() {
           ) : (
             <button
               onClick={() => setShowResults(false)}
-              className="flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 px-6 py-2 rounded-full font-semibold"
+              className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-800 text-white px-6 py-2 rounded-full font-semibold shadow-md"
             >
               <ListMusic className="w-4 h-4" />
               <span>Zurück zu Songs</span>
@@ -298,7 +298,7 @@ export default function VotingPage() {
             <button
               onClick={handlePlaylist}
               disabled={creatingPlaylist}
-              className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 px-6 py-2 rounded-full font-semibold disabled:opacity-50"
+              className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full font-semibold disabled:opacity-50 shadow-md"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
@@ -431,24 +431,24 @@ export default function VotingPage() {
           <div className="space-y-8">
             {loading && (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-yellow-500 mx-auto mb-4"></div>
-                <p className="text-gray-400">Lade BossHoss Songs...</p>
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-yellow-600 mx-auto mb-4"></div>
+                <p className="text-gray-800 font-semibold">Lade BossHoss Songs...</p>
               </div>
             )}
 
             {!loading && albums.length === 0 && (
               <div className="text-center py-12">
                 <Music className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">Keine Songs gefunden</p>
+                <p className="text-gray-800 font-semibold">Keine Songs gefunden</p>
               </div>
             )}
 
             {/* Albums */}
             {albums.map((album) => (
-              <div key={album.id} className="bg-gray-900/50 rounded-xl border border-gray-800 overflow-hidden">
+              <div key={album.id} className="rounded-xl border border-gray-700/50 overflow-hidden shadow-lg" style={{ backgroundColor: '#c9af80' }}>
                 {/* Album Header mit Spotify Link */}
                 <div 
-                  className="p-6 cursor-pointer hover:bg-gray-800/50 transition-colors"
+                  className="p-6 cursor-pointer hover:bg-black/10 transition-colors"
                   onClick={() => setExpandedAlbums(prev => ({
                     ...prev,
                     [album.id]: !prev[album.id]
@@ -468,7 +468,7 @@ export default function VotingPage() {
                       
                       <div>
                         <div className="flex items-center space-x-3 mb-2">
-                          <h2 className="text-xl font-bold">{album.name}</h2>
+                          <h2 className="text-xl font-bold text-gray-900">{album.name}</h2>
                           
                           {/* Spotify Album Link */}
                           <a
@@ -486,31 +486,31 @@ export default function VotingPage() {
                           </a>
                         </div>
                         
-                        <div className="text-sm text-gray-400 mt-1">
+                        <div className="text-sm text-gray-700 mt-1">
                           {new Date(album.release_date).getFullYear()} • {album.tracks.length} Songs
                         </div>
                       </div>
                     </div>
                     
                     {expandedAlbums[album.id] ? (
-                      <ChevronUp className="w-6 h-6 text-gray-400" />
+                      <ChevronUp className="w-6 h-6 text-gray-700" />
                     ) : (
-                      <ChevronDown className="w-6 h-6 text-gray-400" />
+                      <ChevronDown className="w-6 h-6 text-gray-700" />
                     )}
                   </div>
                 </div>
 
                 {/* Track List */}
                 {expandedAlbums[album.id] && (
-                  <div className="border-t border-gray-800">
+                  <div className="border-t border-gray-600/50 bg-black/5">
                     {album.tracks.map((track) => (
                       <div
                         key={track.id}
-                        className="flex items-center justify-between p-4 hover:bg-gray-800/30 border-b border-gray-800/50 last:border-b-0"
+                        className="flex items-center justify-between p-4 hover:bg-black/10 border-b border-gray-600/30 last:border-b-0 transition-colors"
                       >
                         <div>
-                          <h3 className="font-medium">{track.name}</h3>
-                          <p className="text-sm text-gray-400">
+                          <h3 className="font-medium text-gray-900">{track.name}</h3>
+                          <p className="text-sm text-gray-700">
                             {track.artists.map(a => a.name).join(', ')}
                           </p>
                         </div>
@@ -527,12 +527,12 @@ export default function VotingPage() {
                             remainingVotes <= 0 || 
                             submitting
                           }
-                          className={`px-4 py-2 rounded-full font-semibold transition-all duration-200 min-w-[100px] ${
+                          className={`px-4 py-2 rounded-full font-semibold transition-all duration-200 min-w-[120px] ${
                             votedTracks.includes(track.id) 
-                              ? 'bg-green-800 text-green-200 cursor-not-allowed' 
+                              ? 'bg-green-600 text-white cursor-not-allowed' 
                               : remainingVotes <= 0
-                                ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                                : 'bg-yellow-600 hover:bg-yellow-700 text-black hover:scale-105'
+                                ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                                : 'bg-yellow-600 hover:bg-yellow-700 text-white hover:scale-105 shadow-md'
                           }`}
                         >
                           {votedTracks.includes(track.id) ? (
