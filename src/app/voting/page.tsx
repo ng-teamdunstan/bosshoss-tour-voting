@@ -216,8 +216,8 @@ export default function VotingPage() {
     return (
       <div className="min-h-screen bttb-bg flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-yellow-500 mx-auto mb-4"></div>
-          <p className="text-yellow-200 font-semibold">Lade BossHoss Voting...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-gray-800 mx-auto mb-4"></div>
+          <p className="text-black font-bold text-xl">Lade BossHoss Voting...</p>
         </div>
       </div>
     )
@@ -431,15 +431,15 @@ export default function VotingPage() {
           <div className="space-y-8">
             {loading && (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-yellow-600 mx-auto mb-4"></div>
-                <p className="text-gray-800 font-semibold">Lade BossHoss Songs...</p>
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-gray-800 mx-auto mb-4"></div>
+                <p className="text-black font-bold text-lg">Lade BossHoss Songs...</p>
               </div>
             )}
 
             {!loading && albums.length === 0 && (
               <div className="text-center py-12">
-                <Music className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-800 font-semibold">Keine Songs gefunden</p>
+                <Music className="w-16 h-16 text-gray-800 mx-auto mb-4" />
+                <p className="text-black font-bold text-lg">Keine Songs gefunden</p>
               </div>
             )}
 
@@ -468,7 +468,7 @@ export default function VotingPage() {
                       
                       <div>
                         <div className="flex items-center space-x-3 mb-2">
-                          <h2 className="text-xl font-bold text-gray-900">{album.name}</h2>
+                          <h2 className="text-xl font-bold text-black">{album.name}</h2>
                           
                           {/* Spotify Album Link */}
                           <a
@@ -486,16 +486,16 @@ export default function VotingPage() {
                           </a>
                         </div>
                         
-                        <div className="text-sm text-gray-700 mt-1">
+                        <div className="text-sm text-gray-800 font-medium mt-1">
                           {new Date(album.release_date).getFullYear()} • {album.tracks.length} Songs
                         </div>
                       </div>
                     </div>
                     
                     {expandedAlbums[album.id] ? (
-                      <ChevronUp className="w-6 h-6 text-gray-700" />
+                      <ChevronUp className="w-6 h-6 text-gray-800" />
                     ) : (
-                      <ChevronDown className="w-6 h-6 text-gray-700" />
+                      <ChevronDown className="w-6 h-6 text-gray-800" />
                     )}
                   </div>
                 </div>
@@ -509,8 +509,8 @@ export default function VotingPage() {
                         className="flex items-center justify-between p-4 hover:bg-black/10 border-b border-gray-600/30 last:border-b-0 transition-colors"
                       >
                         <div>
-                          <h3 className="font-medium text-gray-900">{track.name}</h3>
-                          <p className="text-sm text-gray-700">
+                          <h3 className="font-semibold text-black">{track.name}</h3>
+                          <p className="text-sm text-gray-800">
                             {track.artists.map(a => a.name).join(', ')}
                           </p>
                         </div>
