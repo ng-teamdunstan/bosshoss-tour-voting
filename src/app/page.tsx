@@ -318,7 +318,7 @@ export default function Home() {
               Powered with 💪 by Dunstan Media
             </a>
           </p>
-          <p>
+          <p className="font-rama opacity-80 text-sm">
             <a 
               href="https://thebosshoss.com/impressum" 
               target="_blank" 
@@ -326,6 +326,15 @@ export default function Home() {
               className="font-rama ml-2 hover:opacity-50 transition-opacity duration-300"
             >
               Impressum
+            </a>
+             | 
+            <a 
+              href="https://thebosshoss.com/impressum" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="font-rama ml-2 hover:opacity-50 transition-opacity duration-300"
+            >
+              Datenschutz
             </a>
           </p>
         </div>
