@@ -308,7 +308,7 @@ export default function Home() {
       <footer className="relative z-20 text-center py-8 mt-8">
         <div className="max-w-6xl mx-auto px-4">
           <p className="font-rama opacity-80 text-sm">
-            © 2025 The BossHoss • Back to the Boots Tour • 
+            © 2025 The BossHoss • 
             <a 
               href="https://dunstan.media" 
               target="_blank" 
@@ -316,6 +316,16 @@ export default function Home() {
               className="font-rama ml-2 hover:opacity-50 transition-opacity duration-300"
             >
               Powered with 💪 by Dunstan Media
+            </a>
+          </p>
+          <p>
+            <a 
+              href="https://thebosshoss.com/impressum" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="font-rama ml-2 hover:opacity-50 transition-opacity duration-300"
+            >
+              Impressum
             </a>
           </p>
         </div>

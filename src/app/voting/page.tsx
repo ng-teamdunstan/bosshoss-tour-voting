@@ -315,7 +315,7 @@ export default function VotingPage() {
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-3xl font-bold mb-2">🏆 Voting Ergebnisse</h2>
-              <p className="text-gray-400">Die beliebtesten Songs für die nächste Tour</p>
+              <p className="text-gray-400">Diese Songs dürfen auf der Tour nicht fehlen</p>
             </div>
 
             <div className="grid gap-4">
