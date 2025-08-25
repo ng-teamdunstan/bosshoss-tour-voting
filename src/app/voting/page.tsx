@@ -133,6 +133,20 @@ export default function VotingPage() {
     }
   }
 
+  // Helper: Find album cover for a song
+  const findAlbumCover = (albumName: string): string => {
+    const album = albums.find(a => a.name === albumName)
+    if (album?.images?.[0]?.url) {
+      return album.images[0].url
+    }
+    // Fallback: Versuche alternative Schreibweise zu finden
+    const alternativeAlbum = albums.find(a => 
+      a.name.toLowerCase().includes(albumName.toLowerCase()) ||
+      albumName.toLowerCase().includes(a.name.toLowerCase())
+    )
+    return alternativeAlbum?.images?.[0]?.url || '/placeholder-album.jpg'
+  }
+
   // Initial data loading
   useEffect(() => {
     if (session) {
@@ -293,39 +307,100 @@ export default function VotingPage() {
           )}
         </div>
 
-        {/* Results View */}
+        {/* Results View mit Album Covers */}
         {showResults ? (
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-3xl font-bold mb-2">🏆 Voting Ergebnisse</h2>
-              <p className="text-gray-400">Die beliebtesten Songs für die Tour</p>
+              <p className="text-gray-400">Die beliebtesten Songs für die nächste Tour</p>
             </div>
 
             <div className="grid gap-4">
               {results.map((result, index) => (
                 <div
                   key={result.trackId}
-                  className="bg-gray-900/50 rounded-xl border border-gray-800 p-6 flex items-center justify-between"
+                  className={`rounded-xl border p-6 flex items-center justify-between transition-all duration-200 hover:scale-[1.02] ${
+                    index === 0 ? 'bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border-yellow-500/50 shadow-lg shadow-yellow-500/20' :
+                    index === 1 ? 'bg-gradient-to-r from-gray-900/50 to-gray-800/50 border-gray-400/50' :
+                    index === 2 ? 'bg-gradient-to-r from-orange-900/20 to-red-900/20 border-orange-500/50' :
+                    'bg-gray-900/50 border-gray-800'
+                  }`}
                 >
                   <div className="flex items-center space-x-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
-                      index === 0 ? 'bg-yellow-500 text-black' :
-                      index === 1 ? 'bg-gray-400 text-black' :
-                      index === 2 ? 'bg-orange-600 text-white' :
+                    {/* Ranking Badge */}
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg ${
+                      index === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-black' :
+                      index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-black' :
+                      index === 2 ? 'bg-gradient-to-br from-orange-500 to-red-600 text-white' :
                       'bg-gray-700 text-white'
                     }`}>
                       {result.rank}
                     </div>
+
+                    {/* Album Cover */}
+                    <div className="relative">
+                      <div className="w-16 h-16 rounded-lg shadow-md overflow-hidden">
+                        {findAlbumCover(result.albumName) !== '/placeholder-album.jpg' ? (
+                          <Image
+                            src={findAlbumCover(result.albumName)}
+                            alt={`${result.albumName} Cover`}
+                            width={64}
+                            height={64}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          /* SVG Placeholder */
+                          <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
+                            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Glanz-Effekt für Top 3 */}
+                      {index < 3 && (
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-lg"></div>
+                      )}
+                    </div>
                     
-                    <div>
-                      <h3 className="font-semibold text-lg">{result.trackName}</h3>
-                      <p className="text-gray-400">{result.artistName} • {result.albumName}</p>
+                    {/* Song Info */}
+                    <div className="flex-grow">
+                      <h3 className="font-bold text-lg text-white mb-1">{result.trackName}</h3>
+                      <p className="text-gray-300 text-sm">{result.artistName}</p>
+                      <p className="text-gray-400 text-xs">{result.albumName}</p>
                     </div>
                   </div>
                   
+                  {/* Vote Stats */}
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-yellow-500">{result.totalPoints}</div>
-                    <div className="text-sm text-gray-400">{result.totalVotes} Stimmen</div>
+                    <div className={`text-3xl font-bold mb-1 ${
+                      index === 0 ? 'text-yellow-400' :
+                      index === 1 ? 'text-gray-300' :
+                      index === 2 ? 'text-orange-400' :
+                      'text-gray-200'
+                    }`}>
+                      {result.totalPoints}
+                    </div>
+                    <div className="text-sm text-gray-400">
+                      {result.totalVotes} Stimmen
+                    </div>
+                    {/* Zusätzliche Badges für Top 3 */}
+                    {index === 0 && (
+                      <div className="text-xs bg-yellow-500 text-black px-2 py-1 rounded-full mt-2 font-semibold">
+                        👑 SIEGER
+                      </div>
+                    )}
+                    {index === 1 && (
+                      <div className="text-xs bg-gray-400 text-black px-2 py-1 rounded-full mt-2 font-semibold">
+                        🥈 RUNNER-UP
+                      </div>
+                    )}
+                    {index === 2 && (
+                      <div className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full mt-2 font-semibold">
+                        🥉 TOP 3
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
