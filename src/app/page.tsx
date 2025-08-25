@@ -110,10 +110,10 @@ export default function Home() {
                 <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
                   <Star className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="font-helltown mb-3 text-lg md:text-xl tracking-[0.1rem] uppercase font-semibold">Smart Voting</h3>
+                <h3 className="font-helltown mb-3 text-lg md:text-xl tracking-[0.1rem] uppercase font-semibold">Tägliche Votes</h3>
                 <p className="font-rama text-sm md:text-base tracking-[0.05em]">
-                  Deine Stimme zählt mehr, wenn du die Songs auch wirklich hörst! 
-                  Bis zu 5 Punkte pro Vote.
+                  Dir stehen 10 Stimmen pro Tag zur Verfügung um deine 
+                  Lieblingssongs zu voten.
                 </p>
               </div>
 
@@ -123,7 +123,7 @@ export default function Home() {
                 </div>
                 <h3 className="font-helltown mb-3 text-lg md:text-xl tracking-[0.1rem] uppercase font-semibold">Fan Community</h3>
                 <p className="font-rama text-sm md:text-base tracking-[0.05em]">
-                  Sieh die Ergebnisse aller Fans und entdecke die beliebtesten 
+                  Sieh die Ergebnisse aller Fans in Echtzeit und entdecke die beliebtesten 
                   BossHoss Tracks der Community.
                 </p>
               </div>
@@ -325,7 +325,7 @@ export default function Home() {
               rel="noopener noreferrer"
               className="font-rama ml-2 hover:opacity-50 transition-opacity duration-300"
             >
-              Impressum
+              Impressum 
             </a>
              | 
             <a 
