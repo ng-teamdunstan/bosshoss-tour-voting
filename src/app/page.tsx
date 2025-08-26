@@ -110,9 +110,9 @@ export default function Home() {
                 <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
                   <Star className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="font-helltown mb-3 text-lg md:text-xl tracking-[0.1rem] uppercase font-semibold">Tägliche Votes</h3>
+                <h3 className="font-helltown mb-3 text-lg md:text-xl tracking-[0.1rem] uppercase font-semibold">Daily Votes</h3>
                 <p className="font-rama text-sm md:text-base tracking-[0.05em]">
-                  Dir stehen 10 Stimmen pro Tag zur Verfügung um deine 
+                  Dir stehen 10 Stimmen pro Tag zur Verfügung um für deine 
                   Lieblingssongs zu voten.
                 </p>
               </div>

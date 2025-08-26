@@ -45,7 +45,7 @@ export default function VotingPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
 
-  // Schlanker State - nur das Nötige
+  // State declarations - VEREINFACHT + Popup für Auto-Playlist
   const [loading, setLoading] = useState(true)
   const [albums, setAlbums] = useState<SpotifyAlbum[]>([])
   const [expandedAlbums, setExpandedAlbums] = useState<Record<string, boolean>>({})
@@ -56,6 +56,10 @@ export default function VotingPage() {
   const [results, setResults] = useState<VotingResult[]>([])
   const [hasPlaylist, setHasPlaylist] = useState(false)
   const [creatingPlaylist, setCreatingPlaylist] = useState(false)
+  
+  // Auto-Playlist Success Popup
+  const [showPlaylistPopup, setShowPlaylistPopup] = useState(false)
+  const [newPlaylistUrl, setNewPlaylistUrl] = useState<string>('')
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -156,10 +160,12 @@ export default function VotingPage() {
     }
   }, [session, loadAlbums])
 
-  // Simple vote submission - always 1 point
+  // Simple vote submission with auto-playlist creation
   const submitVote = async (trackId: string, trackName: string, artistName: string, albumName: string) => {
     if (votedTracks.includes(trackId) || remainingVotes <= 0 || submitting) return
 
+    const wasFirstVote = remainingVotes === 10 && !hasPlaylist
+    
     setSubmitting(true)
     try {
       const response = await fetch('/api/vote', {
@@ -181,6 +187,12 @@ export default function VotingPage() {
         setVotedTracks(prev => [...prev, trackId])
         setRemainingVotes(data.votesRemaining)
         console.log(`✅ Vote successful: ${trackName}`)
+        
+        // 🎉 AUTO-CREATE PLAYLIST AFTER FIRST VOTE
+        if (wasFirstVote) {
+          console.log('🎵 First vote detected - creating playlist automatically...')
+          await createPlaylistAfterFirstVote(trackName)
+        }
       } else {
         alert(data.message || 'Voting-Fehler')
       }
@@ -189,6 +201,26 @@ export default function VotingPage() {
       alert('Netzwerk-Fehler beim Voten')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  // Auto-create playlist after first vote
+  const createPlaylistAfterFirstVote = async (firstSongName: string) => {
+    try {
+      console.log('🎵 Auto-creating playlist...')
+      const response = await fetch('/api/playlist', { method: 'POST' })
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        setHasPlaylist(true)
+        setNewPlaylistUrl(data.playlist?.url || '')
+        setShowPlaylistPopup(true)
+        console.log('✅ Auto-playlist created successfully!')
+      } else {
+        console.warn('⚠️ Auto-playlist creation failed:', data.message)
+      }
+    } catch (error) {
+      console.error('❌ Auto-playlist creation error:', error)
     }
   }
 
@@ -315,7 +347,7 @@ export default function VotingPage() {
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-3xl font-bold mb-2">🏆 Voting Ergebnisse</h2>
-              <p className="text-gray-400">Diese Songs dürfen auf der Tour nicht fehlen</p>
+              <p className="text-gray-400">Die beliebtesten Songs für die nächste Tour</p>
             </div>
 
             <div className="grid gap-4">
