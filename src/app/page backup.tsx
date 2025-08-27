@@ -40,7 +40,12 @@ const handleConsentDeclined = () => {
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-black mx-auto mb-4"></div>
           <p className="font-rama text-black font-semibold">Loading...</p>
         </div>
-        {/* ❌ ENTFERNT: ConsentPopup gehört nicht in den Loading-State */}
+        {/* Consent Popup */}
+<ConsentPopup
+  isOpen={showConsentPopup}
+  onClose={handleConsentDeclined}
+  onAccept={handleConsentAccepted}
+/>
       </div>
     )
   }
@@ -355,20 +360,6 @@ const handleConsentDeclined = () => {
           </p>
         </div>
       </footer>
-
-      {/* ✅ KORREKT PLATZIERT: ConsentPopup am Ende der Komponente */}
-      <ConsentPopup
-        isOpen={showConsentPopup}
-        onClose={handleConsentDeclined}
-        onAccept={handleConsentAccepted}
-      />
-
-      {/* Debug Info (nur in Development) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="fixed bottom-4 left-4 bg-black text-white p-2 rounded text-xs z-50">
-          Popup State: {showConsentPopup ? 'OPEN' : 'CLOSED'}
-        </div>
-      )}
     </div>
   )
 }
