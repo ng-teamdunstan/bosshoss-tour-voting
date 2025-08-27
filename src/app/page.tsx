@@ -4,6 +4,7 @@ import { useSession, signIn, signOut } from 'next-auth/react'
 import { useState } from 'react'
 import { Star, Users, Clock } from 'lucide-react'
 import ConsentPopup, { ConsentData } from '@/components/ConsentPopup'
+import Image from 'next/image'
 
 export default function Home() {
   const { data: session, status } = useSession()
@@ -68,14 +69,16 @@ const handleConsentDeclined = () => {
 
           {/* Logo */}
           <div className="text-center relative">
-            <img 
-              src="https://thebosshoss.com/_next/static/media/tbh_bttb.cb9d83ef.webp"
-              alt="The BossHoss - Back to the Boots"
-              className="mx-auto mb-6 w-[14rem] h-auto"
-              style={{
-                filter: 'drop-shadow(8px 0 16px rgba(206,174,121,.1333)) drop-shadow(4px 0 8px rgba(206,174,121,.2666)) drop-shadow(1px 0 2px rgba(206,174,121,.6666))'
-              }}
-            />
+         <Image 
+  src="https://thebosshoss.com/_next/static/media/tbh_bttb.cb9d83ef.webp"
+  alt="The BossHoss - Back to the Boots"
+  width={224}
+  height={100}
+  className="mx-auto mb-6 w-full h-auto max-w-[14rem]"
+  style={{
+    filter: 'drop-shadow(8px 0 16px rgba(206,174,121,.1333)) drop-shadow(4px 0 8px rgba(206,174,121,.2666)) drop-shadow(1px 0 2px rgba(206,174,121,.6666))'
+  }}
+/>
           </div>
         </div>
       </header>

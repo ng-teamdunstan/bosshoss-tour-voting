@@ -1,4 +1,4 @@
-// src/components/ConsentPopup.tsx
+// src/components/ConsentPopup.tsx - ESLint-konforme Version
 'use client'
 
 import { useState } from 'react'
@@ -87,7 +87,7 @@ export default function ConsentPopup({ isOpen, onClose, onAccept }: ConsentPopup
           {/* Kurze Erklärung */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-3">
-              So funktioniert's:
+              So funktioniert es:
             </h3>
             <div className="grid md:grid-cols-3 gap-4 text-sm">
               <div className="flex items-start space-x-2 p-3 bg-amber-50 rounded-lg">
@@ -125,7 +125,7 @@ export default function ConsentPopup({ isOpen, onClose, onAccept }: ConsentPopup
               <div className="flex items-start space-x-3">
                 <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-medium text-gray-900">Spotify-Profil (Name & E-Mail)</p>
+                  <p className="font-medium text-gray-900">Spotify-Profil (Name &amp; E-Mail)</p>
                   <p className="text-gray-600">Für Login und Identifikation beim Voting</p>
                 </div>
               </div>
@@ -142,7 +142,7 @@ export default function ConsentPopup({ isOpen, onClose, onAccept }: ConsentPopup
                 <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-medium text-gray-900">Playlist-Zugriff</p>
-                  <p className="text-gray-600">Erstellen & tägliches Update der "BossHoss Setlist 2025" Playlist</p>
+                  <p className="text-gray-600">Erstellen &amp; tägliches Update der &ldquo;BossHoss Setlist 2025&rdquo; Playlist</p>
                 </div>
               </div>
             </div>
@@ -173,7 +173,7 @@ export default function ConsentPopup({ isOpen, onClose, onAccept }: ConsentPopup
                     <p>• Erstellung und Update einer Community-Playlist in meiner Spotify-Library</p>
                   </div>
                   <p className="text-xs text-gray-600 mt-2 italic">
-                    Rechtliche Grundlage: Vertragserfüllung (Voting-Service) & berechtigtes Interesse (Community-Features)
+                    Rechtliche Grundlage: Vertragserfüllung (Voting-Service) &amp; berechtigtes Interesse (Community-Features)
                   </p>
                 </div>
               </div>
