@@ -3,15 +3,27 @@
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { useState } from 'react'
 import { Star, Users, Clock } from 'lucide-react'
+import ConsentPopup, { ConsentData } from '@/components/ConsentPopup'
 
 export default function Home() {
   const { data: session, status } = useSession()
   const [isLoading, setIsLoading] = useState(false)
+  const [showConsentPopup, setShowConsentPopup] = useState(false)
 
-  const handleSpotifyLogin = async () => {
-    setIsLoading(true)
-    await signIn('spotify', { callbackUrl: '/voting' })
-  }
+ const handleSpotifyLogin = () => {
+  setShowConsentPopup(true)
+}
+
+const handleConsentAccepted = (consentData: ConsentData) => {
+  localStorage.setItem('pendingUserConsent', JSON.stringify(consentData))
+  setShowConsentPopup(false)
+  setIsLoading(true)
+  signIn('spotify', { callbackUrl: '/voting' })
+}
+
+const handleConsentDeclined = () => {
+  setShowConsentPopup(false)
+}
 
   // Spotify Logo SVG Component
   const SpotifyLogo = ({ className }: { className?: string }) => (
@@ -27,6 +39,12 @@ export default function Home() {
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-black mx-auto mb-4"></div>
           <p className="font-rama text-black font-semibold">Loading...</p>
         </div>
+        {/* Consent Popup */}
+<ConsentPopup
+  isOpen={showConsentPopup}
+  onClose={handleConsentDeclined}
+  onAccept={handleConsentAccepted}
+/>
       </div>
     )
   }
