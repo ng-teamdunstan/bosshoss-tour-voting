@@ -7,7 +7,7 @@ import { kv } from '@vercel/kv'
 export interface UserConsent {
   userId: string
   timestamp: number
-  ipAddress?: string | undefined  // ✅ Explizit undefined erlauben
+  ipAddress?: string | null  // ✅ null ist erlaubt
   required: {
     terms: boolean
     privacy: boolean
@@ -40,35 +40,25 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // ✅ Helper: null zu undefined konvertieren  
-    const getClientIP = (): string | undefined => {
-      const forwarded = request.headers.get('x-forwarded-for')
-      return request.ip || (forwarded !== null ? forwarded : undefined)
-    }
-
     const userConsent: UserConsent = {
       userId: session.user.email,
       timestamp: body.timestamp || Date.now(),
-      ipAddress: getClientIP(),
+      ipAddress: request.ip || request.headers.get('x-forwarded-for'),
       required: body.required,
-      optional: body.optional || { newsletter: false },
+      optional: body.optional || {},
       version: '1.0'
     }
 
     // In Vercel KV speichern
     await kv.set(`consent:${session.user.email}`, userConsent)
     
-    // Newsletter-Integration (wenn gewählt)
-    if (userConsent.optional.newsletter) {
-      await handleNewsletterSignup(session.user.email, session.user.name || '')
-    }
-
+    // Newsletter-Integration entfernt
+    
     console.log(`✅ Consent saved for: ${session.user.email}`)
     
     return NextResponse.json({ 
       success: true, 
-      message: 'Consent erfolgreich gespeichert',
-      hasNewsletter: userConsent.optional.newsletter
+      message: 'Consent erfolgreich gespeichert'
     })
 
   } catch (error) {
@@ -114,7 +104,7 @@ export async function GET() {
   }
 }
 
-// PATCH: Newsletter-Einstellungen ändern
+// PATCH: Consent-Einstellungen aktualisieren (vereinfacht ohne Newsletter)
 export async function PATCH(request: NextRequest) {
   try {
     const session: any = await getServerSession(authOptions)
@@ -123,7 +113,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
-    const { newsletter } = await request.json()
+    const updates = await request.json()
     const existingConsent = await kv.get<UserConsent>(`consent:${session.user.email}`)
     
     if (!existingConsent) {
@@ -133,30 +123,22 @@ export async function PATCH(request: NextRequest) {
       }, { status: 404 })
     }
 
-    // Update nur Newsletter-Setting
+    // Update nur optionale Einstellungen (aktuell keine vorhanden, aber für Zukunft)
     const updatedConsent: UserConsent = {
       ...existingConsent,
       optional: {
-        newsletter: Boolean(newsletter)
+        ...existingConsent.optional,
+        ...updates.optional
       },
       timestamp: Date.now() // Update timestamp
     }
 
     await kv.set(`consent:${session.user.email}`, updatedConsent)
 
-    // Newsletter An/Abmelden
-    if (newsletter !== existingConsent.optional.newsletter) {
-      if (newsletter) {
-        await handleNewsletterSignup(session.user.email, session.user.name || '')
-      } else {
-        await handleNewsletterUnsubscribe(session.user.email)
-      }
-    }
-
     return NextResponse.json({ 
       success: true, 
       message: 'Einstellungen aktualisiert',
-      newsletter: newsletter
+      consent: updatedConsent
     })
 
   } catch (error) {
@@ -185,8 +167,7 @@ export async function DELETE() {
     // 2. Alle Voting-Daten löschen
     await deleteAllUserVotingData(userId)
     
-    // 3. Newsletter abmelden
-    await handleNewsletterUnsubscribe(userId)
+    // Newsletter-Abmeldung entfernt
     
     console.log(`🗑️ Complete data deletion for: ${userId}`)
     
@@ -201,48 +182,6 @@ export async function DELETE() {
       success: false, 
       error: 'Löschung fehlgeschlagen' 
     }, { status: 500 })
-  }
-}
-
-// Helper: Newsletter-Anmeldung
-async function handleNewsletterSignup(email: string, name: string) {
-  try {
-    console.log(`📧 Newsletter signup: ${email}`)
-    
-    // TODO: Hier würde Mailchimp API Integration stehen
-    // Für jetzt nur Logging
-    
-    /*
-    const mailchimpResponse = await fetch(`https://us1.api.mailchimp.com/3.0/lists/${process.env.MAILCHIMP_LIST_ID}/members`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.MAILCHIMP_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        email_address: email,
-        status: 'subscribed',
-        merge_fields: {
-          FNAME: name.split(' ')[0] || 'Fan',
-          LNAME: name.split(' ').slice(1).join(' ') || ''
-        },
-        tags: ['BossHoss-Voting']
-      })
-    })
-    */
-    
-  } catch (error) {
-    console.error('Newsletter signup failed:', error)
-  }
-}
-
-// Helper: Newsletter-Abmeldung  
-async function handleNewsletterUnsubscribe(email: string) {
-  try {
-    console.log(`📧 Newsletter unsubscribe: ${email}`)
-    // TODO: Mailchimp Unsubscribe API
-  } catch (error) {
-    console.error('Newsletter unsubscribe failed:', error)
   }
 }
 

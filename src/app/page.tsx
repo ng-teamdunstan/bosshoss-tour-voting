@@ -11,18 +11,29 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
   const [showConsentPopup, setShowConsentPopup] = useState(false)
 
- const handleSpotifyLogin = () => {
+const handleSpotifyLogin = () => {
+  console.log('🎯 Login button clicked - opening consent popup')
   setShowConsentPopup(true)
 }
 
 const handleConsentAccepted = (consentData: ConsentData) => {
-  localStorage.setItem('pendingUserConsent', JSON.stringify(consentData))
+  console.log('✅ Consent accepted:', consentData)
+  
+  try {
+    localStorage.setItem('pendingUserConsent', JSON.stringify(consentData))
+    console.log('💾 Consent saved to localStorage')
+  } catch (error) {
+    console.warn('⚠️ Could not save to localStorage:', error)
+  }
+  
   setShowConsentPopup(false)
   setIsLoading(true)
+  console.log('🎵 Redirecting to Spotify OAuth...')
   signIn('spotify', { callbackUrl: '/voting' })
 }
 
 const handleConsentDeclined = () => {
+  console.log('❌ Consent declined')
   setShowConsentPopup(false)
 }
 
