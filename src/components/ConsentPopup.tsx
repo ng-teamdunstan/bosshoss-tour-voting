@@ -72,10 +72,10 @@ export default function ConsentPopup({ isOpen, onClose, onAccept }: ConsentPopup
         <div className="px-6 py-4 rounded-t-xl backdrop-blur-sm" style={{ backgroundColor: 'rgba(201, 175, 128, 0.9)' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Music className="w-8 h-8 text-black" />
+              
               <div>
-                <h2 className="text-xl font-bold text-black">BossHoss Setlist Voting</h2>
-                <p className="text-gray-800 text-sm">Lass uns gemeinsam die perfekte Setlist erstellen!</p>
+                <h2 className="text-xl font-bold text-black">BossHoss Club Tour Voting</h2>
+                <p className="text-gray-800 text-sm">Vote deine Lieblingssongs für die Back to the Clubs Tour</p>
               </div>
             </div>
             <button 
