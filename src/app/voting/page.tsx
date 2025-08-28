@@ -343,7 +343,6 @@ export default function VotingPage() {
         </div>
 
         {/* Results View mit Album Covers */}
-        // Vereinfachtes Leaderboard - zu ersetzen in der voting/page.tsx
 
         {/* Results View mit einheitlichem Design */}
         {showResults ? (
@@ -412,7 +411,7 @@ export default function VotingPage() {
             </div>
           </div>
         ) : (
-          /* Song Voting bleibt unverändert */
+          
           /* Song Voting */
           <div className="space-y-8">
             {loading && (
