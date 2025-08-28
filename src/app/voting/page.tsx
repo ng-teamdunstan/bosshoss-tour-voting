@@ -349,7 +349,7 @@ export default function VotingPage() {
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-3xl font-bold mb-2">Voting Ergebnisse</h2>
-              <p className="text-gray-400">Die beliebtesten Songs für die nächste Tour</p>
+              <p className="text-gray-800">Die beliebtesten Songs für die nächste Tour</p>
             </div>
 
             {/* Playlist Update Button im Results-Bereich */}
@@ -407,10 +407,10 @@ export default function VotingPage() {
                         <h3 className="text-lg font-semibold text-white mb-1">
                           {result.trackName}
                         </h3>
-                        <p className="text-gray-400 text-sm">
+                        <p className="text-white text-sm">
                           {result.albumName}
                         </p>
-                        <p className="text-gray-500 text-xs mt-1">
+                        <p className="text-gray-200 text-xs mt-1">
                           {result.artistName}
                         </p>
                       </div>
@@ -420,11 +420,11 @@ export default function VotingPage() {
                     <div className="flex items-center space-x-4">
                       {/* Punkte */}
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-gray-200">
+                        <div className="text-2xl font-bold text-white">
                           {result.totalPoints}
                         </div>
-                        <div className="text-sm text-gray-400">
-                          {result.totalVotes} Stimmen
+                        <div className="text-sm text-gray-200">
+                          Votes
                         </div>
                       </div>
 
@@ -464,7 +464,7 @@ export default function VotingPage() {
             {loading && (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-gray-800 mx-auto mb-4"></div>
-                <p className="text-black font-bold text-lg">Lade BossHoss Songs...</p>
+                <p className="text-black font-bold text-lg">Lade The BossHoss Songs...</p>
               </div>
             )}
 
