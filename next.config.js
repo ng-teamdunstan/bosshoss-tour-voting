@@ -5,6 +5,12 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'thebosshoss.com',
+        port: '',
+        pathname: '/_next/static/media/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'i.scdn.co',
         port: '',
         pathname: '/image/**',

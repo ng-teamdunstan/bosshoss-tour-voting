@@ -202,7 +202,6 @@ export default function ConsentPopup({ isOpen, onClose, onAccept }: ConsentPopup
         {/* Footer */}
         <div className="px-6 py-4 bg-gray-50 rounded-b-xl">
           <div className="flex flex-col md:flex-row gap-3">
-            {/* ✅ Button genau wie auf der Startseite - Spotify Grün mit Logo */}
             <button
               onClick={handleAccept}
               disabled={!requiredConsent}
@@ -239,7 +238,7 @@ export default function ConsentPopup({ isOpen, onClose, onAccept }: ConsentPopup
               <button type="button" onClick={() => window.open('/terms', '_blank')} className="hover:text-amber-600 flex items-center transition-colors">
                 Nutzungsbedingungen <ExternalLink className="w-3 h-3 ml-1" />
               </button>
-              <a href="mailto:support@thebosshoss.com" className="hover:text-amber-600 transition-colors">
+              <a href="mailto:info@internashville.com" className="hover:text-amber-600 transition-colors">
                 Support
               </a>
             </div>

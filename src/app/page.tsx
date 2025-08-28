@@ -188,7 +188,8 @@ const handleConsentDeclined = () => {
                   { date: '05.10.2025', city: 'FRANKFURT', venue: 'BATSCHKAPP', status: 'sold_out' },
                   { date: '06.10.2025', city: 'LEIPZIG', venue: 'TÄUBCHENTHAL', status: 'few_left' },
                   { date: '07.10.2025', city: 'DRESDEN', venue: 'ALTER SCHLACHTHOF', status: 'few_left' },
-                  { date: '08.10.2025', city: 'MÜNCHEN', venue: 'BACKSTAGE-WERK', status: 'sold_out' }
+                  { date: '08.10.2025', city: 'MÜNCHEN', venue: 'BACKSTAGE-WERK', status: 'sold_out' },
+                  { date: '19.10.2025', city: 'BERLIN', venue: 'ASTRA - THANX SHOW', status: 'few_left' }
                 ].map((show, index) => (
                   <a 
                     key={index}
@@ -254,7 +255,8 @@ const handleConsentDeclined = () => {
                   { date: '05.10.2025', city: 'FRANKFURT', venue: 'BATSCHKAPP', status: 'sold_out' },
                   { date: '06.10.2025', city: 'LEIPZIG', venue: 'TÄUBCHENTHAL', status: 'few_left' },
                   { date: '07.10.2025', city: 'DRESDEN', venue: 'ALTER SCHLACHTHOF', status: 'few_left' },
-                  { date: '08.10.2025', city: 'MÜNCHEN', venue: 'BACKSTAGE-WERK', status: 'sold_out' }
+                  { date: '08.10.2025', city: 'MÜNCHEN', venue: 'BACKSTAGE-WERK', status: 'sold_out' },
+                  { date: '19.10.2025', city: 'BERLIN', venue: 'ASTRA - THANX SHOW', status: 'few_left' }
                 ].map((show, index) => (
                   <a 
                     key={index}
@@ -342,7 +344,7 @@ const handleConsentDeclined = () => {
               rel="noopener noreferrer"
               className="font-rama ml-2 hover:opacity-50 transition-opacity duration-300"
             >
-              Powered with 💪 by Dunstan Media
+              Powered with love and care by Dunstan Media
             </a>
           </p>
           <p className="font-rama opacity-80 text-sm">
@@ -353,21 +355,19 @@ const handleConsentDeclined = () => {
               className="font-rama ml-2 hover:opacity-50 transition-opacity duration-300"
             >
               Impressum 
-            </a>
-             | 
+            </a> 
             <a 
-              href="https://thebosshoss.com/impressum" 
+              href="https://bosshoss-tour-voting.vercel.app/privacy" 
               target="_blank" 
               rel="noopener noreferrer"
               className="font-rama ml-2 hover:opacity-50 transition-opacity duration-300"
             >
-              Datenschutz
+              Datenschutzerklärung
             </a>
           </p>
         </div>
       </footer>
 
-      {/* ✅ KORREKT PLATZIERT: ConsentPopup am Ende der Komponente */}
       <ConsentPopup
         isOpen={showConsentPopup}
         onClose={handleConsentDeclined}
