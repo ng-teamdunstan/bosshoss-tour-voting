@@ -232,12 +232,12 @@ export default function ConsentPopup({ isOpen, onClose, onAccept }: ConsentPopup
           {/* Links */}
           <div className="mt-4 pt-3 border-t border-gray-200 text-center">
             <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-600">
-              <button type="button" onClick={() => window.open('/privacy', '_blank')} className="hover:text-amber-600 flex items-center transition-colors">
-                Datenschutzerklärung <ExternalLink className="w-3 h-3 ml-1" />
-              </button>
-              <button type="button" onClick={() => window.open('/terms', '_blank')} className="hover:text-amber-600 flex items-center transition-colors">
-                Nutzungsbedingungen <ExternalLink className="w-3 h-3 ml-1" />
-              </button>
+              <button type="button" onClick={() => window.location.href = '/privacy'} className="hover:text-gray-800 flex items-center transition-colors">
+  Datenschutzerklärung
+</button>
+<button type="button" onClick={() => window.location.href = '/terms'} className="hover:text-gray-800 flex items-center transition-colors">
+  Nutzungsbedingungen
+</button>
               <a href="mailto:info@internashville.com" className="hover:text-amber-600 transition-colors">
                 Support
               </a>
