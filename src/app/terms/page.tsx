@@ -222,13 +222,13 @@ export default function TermsPage() {
               <div className="border border-gray-200 rounded-lg p-4">
                 <div className="space-y-2">
                   <p className="text-sm text-gray-700">
-                    <strong>Ende der App:</strong> Das Voting endet automatisch mit dem Start der &quot;Back to the Boots Club Tour 2025&quot;.
+                    <strong>Votingende:</strong> Das Voting endet automatisch nach der &quot;Back to the Boots Club Tour 2025&quot;.
                   </p>
                   <p className="text-sm text-gray-700">
                     <strong>Vorzeitige Kündigung:</strong> Sie können Ihren Account jederzeit löschen lassen.
                   </p>
                   <p className="text-sm text-gray-700">
-                    <strong>Datenlöschung:</strong> Nach Beendigung werden alle Nutzerdaten DSGVO-konform gelöscht.
+                    <strong>Datenlöschung:</strong> Nach Beendigung der Tour werden alle Nutzerdaten DSGVO-konform gelöscht.
                   </p>
                 </div>
               </div>
@@ -247,7 +247,7 @@ export default function TermsPage() {
                   <li>• Sicherheitsverbesserungen implementiert werden</li>
                 </ul>
                 <p className="text-sm text-gray-700 font-semibold">
-                  Über wesentliche Änderungen werden Sie per E-Mail oder durch eine Benachrichtigung in der App informiert.
+                  Über wesentliche Änderungen werden Sie durch eine Benachrichtigung in der App informiert.
                 </p>
               </div>
             </section>

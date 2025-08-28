@@ -345,69 +345,116 @@ export default function VotingPage() {
         {/* Results View mit Album Covers */}
 
         {/* Results View mit einheitlichem Design */}
-        {showResults ? (
+         {showResults ? (
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-3xl font-bold mb-2">Voting Ergebnisse</h2>
               <p className="text-gray-400">Die beliebtesten Songs für die nächste Tour</p>
             </div>
 
+            {/* Playlist Update Button im Results-Bereich */}
+            <div className="flex justify-center">
+              <button
+                onClick={handlePlaylist}
+                disabled={creatingPlaylist}
+                className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full font-semibold disabled:opacity-50 shadow-lg transition-all duration-300 transform hover:scale-105"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+                </svg>
+                <span>
+                  {creatingPlaylist ? 'Wird aktualisiert...' : hasPlaylist ? 'Playlist aktualisieren' : 'Playlist erstellen'}
+                </span>
+              </button>
+            </div>
+
             <div className="grid gap-4">
               {results.map((result, index) => (
                 <div
                   key={result.trackId}
-                  className="rounded-xl border bg-gray-900/50 border-gray-800 p-6 flex items-center justify-between transition-all duration-200 hover:scale-[1.02]"
+                  className="rounded-xl border bg-gray-900/50 border-gray-800 p-6 transition-all duration-200 hover:scale-[1.02]"
                 >
-                  <div className="flex items-center space-x-4">
-                    {/* Einheitliche Ranking Nummer */}
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg bg-gray-700 text-white">
-                      {result.rank}
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      {/* Einheitliche Ranking Nummer */}
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg bg-gray-700 text-white">
+                        {result.rank}
+                      </div>
 
-                    {/* Album Cover */}
-                    <div className="relative">
-                      <div className="w-16 h-16 rounded-lg shadow-md overflow-hidden">
-                        {findAlbumCover(result.albumName) !== '/placeholder-album.jpg' ? (
-                          <Image
-                            src={findAlbumCover(result.albumName)}
-                            alt={`${result.albumName} Cover`}
-                            width={64}
-                            height={64}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          /* SVG Placeholder */
-                          <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
-                            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                            </svg>
-                          </div>
-                        )}
+                      {/* Album Cover */}
+                      <div className="relative">
+                        <div className="w-16 h-16 rounded-lg shadow-md overflow-hidden">
+                          {findAlbumCover(result.albumName) !== '/placeholder-album.jpg' ? (
+                            <Image
+                              src={findAlbumCover(result.albumName)}
+                              alt={`${result.albumName} Cover`}
+                              width={64}
+                              height={64}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
+                              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Song Info */}
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-white mb-1">
+                          {result.trackName}
+                        </h3>
+                        <p className="text-gray-400 text-sm">
+                          {result.albumName}
+                        </p>
+                        <p className="text-gray-500 text-xs mt-1">
+                          {result.artistName}
+                        </p>
                       </div>
                     </div>
 
-                    {/* Song Info */}
-                    <div>
-                      <h3 className="text-lg font-semibold text-white mb-1">
-                        {result.trackName}
-                      </h3>
-                      <p className="text-gray-400 text-sm">
-                        {result.albumName}
-                      </p>
-                    </div>
-                  </div>
+                    {/* Right side: Points and Spotify Button */}
+                    <div className="flex items-center space-x-4">
+                      {/* Punkte */}
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-gray-200">
+                          {result.totalPoints}
+                        </div>
+                        <div className="text-sm text-gray-400">
+                          {result.totalVotes} Stimmen
+                        </div>
+                      </div>
 
-                  {/* Punkte - einheitliche Farbe */}
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-gray-200">
-                      {result.totalPoints}
-                    </div>
-                    <div className="text-sm text-gray-400">
-                      {result.totalVotes} Stimmen
+                      {/* Listen on Spotify Button */}
+                      <a
+                        href={`https://open.spotify.com/search/${encodeURIComponent(`${result.trackName} ${result.artistName}`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-2 bg-[#1DB954] hover:bg-[#1ed760] text-white px-4 py-2 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+                        </svg>
+                        <span className="hidden sm:inline">Listen on Spotify</span>
+                        <span className="sm:hidden">Spotify</span>
+                      </a>
                     </div>
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Info-Box unter dem Leaderboard */}
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 text-center">
+              <p className="text-gray-300 text-sm">
+                🎵 Die Playlist wird automatisch täglich mit diesen Top-Songs aktualisiert
+              </p>
+              <p className="text-gray-400 text-xs mt-1">
+                Songs mit mehr Stimmen stehen weiter oben in deiner Spotify-Playlist
+              </p>
             </div>
           </div>
         ) : (
