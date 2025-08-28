@@ -1,9 +1,8 @@
-// src/app/privacy/page.tsx
 'use client'
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowLeft, Shield, Mail, Database, Server, Users, Clock } from 'lucide-react'
+import { ArrowLeft, Shield } from 'lucide-react'
 
 export default function PrivacyPage() {
   return (
@@ -38,7 +37,7 @@ export default function PrivacyPage() {
         <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden">
           
           {/* Header Section */}
-          <div className="bg-gradient-to-r from-gray-800 to-black text-white px-8 py-6">
+          <div className="bg-gray-800 text-white px-8 py-6">
             <div className="flex items-center space-x-3">
               <Shield className="w-8 h-8" />
               <div>
@@ -53,16 +52,13 @@ export default function PrivacyPage() {
             
             {/* Verantwortlicher */}
             <section>
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <Users className="w-5 h-5 mr-2 text-blue-600" />
-                1. Verantwortlicher
-              </h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">1. Verantwortlicher</h2>
               <div className="bg-gray-50 rounded-lg p-4">
                 <p className="font-semibold">TBH Rights GmbH</p>
                 <p>An der Industriebahn 12</p>
                 <p>13088 Berlin, Deutschland</p>
                 <p className="mt-2">
-                  <strong>Kontakt:</strong> <a href="mailto:info@internashville.com" className="text-blue-600 hover:underline">info@internashville.com</a>
+                  <strong>Kontakt:</strong> <a href="mailto:info@internashville.com" className="underline">info@internashville.com</a>
                 </p>
                 <p className="text-sm text-gray-600 mt-2">
                   Kein Datenschutzbeauftragter bestellt (nicht erforderlich gem. Art. 37 DSGVO)
@@ -73,39 +69,34 @@ export default function PrivacyPage() {
             {/* Zweck der App */}
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4">2. Zweck der Datenverarbeitung</h2>
-              <p className="text-gray-700 mb-4">
-                Diese App ermöglicht es BossHoss-Fans, für ihre Lieblingssongs zu voten und so die Setlist der &quot;Back to the Boots Club Tour 2025&quot; zu beeinflussen. 
-              </p>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-blue-900">Voting-System</h3>
-                  <p className="text-sm text-blue-800">Abstimmung über Lieblingssongs</p>
-                </div>
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-green-900">Community-Ranking</h3>
-                  <p className="text-sm text-green-800">Ermittlung der beliebtesten Songs</p>
-                </div>
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-purple-900">Spotify-Playlist</h3>
-                  <p className="text-sm text-purple-800">Automatische Playlist-Erstellung</p>
+              <div className="space-y-3">
+                <p className="text-gray-700">
+                  Diese App ermöglicht es Fans von The BossHoss, für Songs zu voten, die auf der &quot;Back to the Boots Club Tour 2025&quot; 
+                  gespielt werden sollen. Die Datenverarbeitung erfolgt ausschließlich für diesen Zweck.
+                </p>
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">Hauptfunktionen</h3>
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    <li>• Song-Voting mit Spotify-Integration</li>
+                    <li>• Automatische Playlist-Erstellung basierend auf Voting-Ergebnissen</li>
+                    <li>• Community-Ranking der beliebtesten Songs</li>
+                  </ul>
                 </div>
               </div>
             </section>
 
-            {/* Welche Daten */}
+            {/* Erhobene Daten */}
             <section>
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <Database className="w-5 h-5 mr-2 text-green-600" />
-                3. Welche Daten wir verarbeiten
-              </h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">3. Welche Daten wir verarbeiten</h2>
               <div className="space-y-4">
                 
                 <div className="border border-gray-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-900 mb-2">3.1 Spotify-Profildaten</h3>
+                  <h3 className="font-semibold text-gray-900 mb-2">3.1 Spotify-Daten</h3>
                   <ul className="text-sm text-gray-700 space-y-1">
-                    <li>• <strong>Name:</strong> Ihr öffentlicher Spotify-Displayname</li>
-                    <li>• <strong>E-Mail-Adresse:</strong> Zur eindeutigen Identifikation</li>
-                    <li>• <strong>Spotify-ID:</strong> Technische Kennung Ihres Accounts</li>
+                    <li>• <strong>Benutzername:</strong> Ihr öffentlicher Spotify-Nutzername</li>
+                    <li>• <strong>E-Mail-Adresse:</strong> Aus Ihrem Spotify-Profil</li>
+                    <li>• <strong>Benutzer-ID:</strong> Eindeutige Spotify-Kennung</li>
+                    <li>• <strong>Profilbild:</strong> Falls in Ihrem Spotify-Profil hinterlegt</li>
                   </ul>
                   <p className="text-xs text-gray-600 mt-2">
                     <strong>Rechtsgrundlage:</strong> Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung)
@@ -127,7 +118,7 @@ export default function PrivacyPage() {
                 <div className="border border-gray-200 rounded-lg p-4">
                   <h3 className="font-semibold text-gray-900 mb-2">3.3 Playlist-Daten</h3>
                   <ul className="text-sm text-gray-700 space-y-1">
-                    <li>• <strong>Playlist-ID:</strong> Kennung der erstellten &quot;The BossHoss - Back to the Clubs Community Voting Top 15&quot; Playlist</li>
+                    <li>• <strong>Playlist-ID:</strong> Kennung der erstellten &quot;BossHoss Community Voting 2025&quot; Playlist</li>
                     <li>• <strong>Playlist-Zugriff:</strong> Berechtigung zum Erstellen und Aktualisieren</li>
                   </ul>
                   <p className="text-xs text-gray-600 mt-2">
@@ -151,42 +142,39 @@ export default function PrivacyPage() {
 
             {/* Auftragsverarbeiter */}
             <section>
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <Server className="w-5 h-5 mr-2 text-orange-600" />
-                4. Auftragsverarbeiter & Datentransfers
-              </h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">4. Auftragsverarbeiter & Datentransfers</h2>
               <div className="space-y-4">
                 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-blue-900">Vercel Inc. (Hosting)</h3>
-                  <ul className="text-sm text-blue-800 mt-2">
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900">Vercel Inc. (Hosting)</h3>
+                  <ul className="text-sm text-gray-700 mt-2">
                     <li>• <strong>Standort:</strong> Server in Frankfurt, Deutschland</li>
                     <li>• <strong>Zweck:</strong> Website-Hosting und Analytics</li>
                     <li>• <strong>Datenschutz:</strong> <a href="https://vercel.com/legal/privacy-policy" target="_blank" className="underline">Vercel Privacy Policy</a></li>
                   </ul>
                 </div>
 
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-green-900">Upstash (Datenbank)</h3>
-                  <ul className="text-sm text-green-800 mt-2">
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900">Upstash (Datenbank)</h3>
+                  <ul className="text-sm text-gray-700 mt-2">
                     <li>• <strong>Standort:</strong> Server in Irland (EU)</li>
                     <li>• <strong>Zweck:</strong> Speicherung von Voting- und Nutzerdaten</li>
                     <li>• <strong>Datenschutz:</strong> <a href="https://upstash.com/privacy" target="_blank" className="underline">Upstash Privacy Policy</a></li>
                   </ul>
                 </div>
 
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-purple-900">Spotify AB</h3>
-                  <ul className="text-sm text-purple-800 mt-2">
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900">Spotify AB</h3>
+                  <ul className="text-sm text-gray-700 mt-2">
                     <li>• <strong>Zweck:</strong> OAuth-Anmeldung und Playlist-Verwaltung</li>
                     <li>• <strong>Datenübertragung:</strong> Nur für Authentifizierung erforderlich</li>
                     <li>• <strong>Datenschutz:</strong> <a href="https://www.spotify.com/privacy" target="_blank" className="underline">Spotify Privacy Policy</a></li>
                   </ul>
                 </div>
 
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-yellow-900">Dunstan Media (Agentur)</h3>
-                  <ul className="text-sm text-yellow-800 mt-2">
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900">Dunstan Media (Agentur)</h3>
+                  <ul className="text-sm text-gray-700 mt-2">
                     <li>• <strong>Zweck:</strong> Technische Entwicklung und Support</li>
                     <li>• <strong>Zugriff:</strong> Nur für Wartung und Fehlerbehebung</li>
                     <li>• <strong>Verpflichtung:</strong> Auftragsverarbeitungsvertrag und Geheimhaltung</li>
@@ -197,26 +185,23 @@ export default function PrivacyPage() {
 
             {/* Speicherdauer */}
             <section>
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <Clock className="w-5 h-5 mr-2 text-red-600" />
-                5. Speicherdauer
-              </h2>
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">5. Speicherdauer</h2>
+              <div className="border border-gray-200 rounded-lg p-4">
                 <div className="space-y-3">
                   <div>
-                    <h3 className="font-semibold text-red-900">Voting- und Nutzerdaten</h3>
-                    <p className="text-sm text-red-800">Bis zum Ende der &quot;Back to the Boots Club Tour 2025&quot; (voraussichtlich November 2025)</p>
+                    <h3 className="font-semibold text-gray-900">Voting- und Nutzerdaten</h3>
+                    <p className="text-sm text-gray-700">Bis zum Ende der &quot;Back to the Boots Club Tour 2025&quot; (voraussichtlich November 2025)</p>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-red-900">Server-Logs</h3>
-                    <p className="text-sm text-red-800">Automatische Löschung nach 30 Tagen</p>
+                    <h3 className="font-semibold text-gray-900">Server-Logs</h3>
+                    <p className="text-sm text-gray-700">Automatische Löschung nach 30 Tagen</p>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-red-900">Session-Cookies</h3>
-                    <p className="text-sm text-red-800">Werden beim Schließen des Browsers gelöscht</p>
+                    <h3 className="font-semibold text-gray-900">Session-Cookies</h3>
+                    <p className="text-sm text-gray-700">Werden beim Schließen des Browsers gelöscht</p>
                   </div>
-                  <div className="bg-white p-3 rounded border border-red-300">
-                    <p className="text-sm text-red-900">
+                  <div className="bg-gray-100 p-3 rounded border border-gray-300">
+                    <p className="text-sm text-gray-700">
                       <strong>Wichtig:</strong> Sie können jederzeit eine vorzeitige Löschung Ihrer Daten beantragen (siehe Ihre Rechte unten).
                     </p>
                   </div>
@@ -244,56 +229,78 @@ export default function PrivacyPage() {
                 </div>
                 <div className="space-y-3">
                   <div className="border border-gray-200 rounded p-3">
-                    <h3 className="font-semibold text-gray-900 text-sm">⏸Recht auf Einschränkung (Art. 18)</h3>
+                    <h3 className="font-semibold text-gray-900 text-sm">Recht auf Einschränkung (Art. 18)</h3>
                     <p className="text-xs text-gray-600">Verarbeitung einschränken</p>
                   </div>
                   <div className="border border-gray-200 rounded p-3">
                     <h3 className="font-semibold text-gray-900 text-sm">Recht auf Datenübertragbarkeit (Art. 20)</h3>
-                    <p className="text-xs text-gray-600">Export Ihrer Daten</p>
+                    <p className="text-xs text-gray-600">Ihre Daten in strukturiertem Format</p>
                   </div>
                   <div className="border border-gray-200 rounded p-3">
-                    <h3 className="font-semibold text-gray-900 text-sm">Widerspruchsrecht (Art. 21)</h3>
-                    <p className="text-xs text-gray-600">Der Verarbeitung widersprechen</p>
+                    <h3 className="font-semibold text-gray-900 text-sm">Recht auf Widerspruch (Art. 21)</h3>
+                    <p className="text-xs text-gray-600">Verarbeitung widersprechen</p>
                   </div>
                 </div>
               </div>
-              
-              <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
-                <h3 className="font-semibold text-green-900 mb-2">Rechte ausüben</h3>
-                <p className="text-sm text-green-800 mb-2">
-                  Sie können Ihre Rechte auf zwei Wegen ausüben:
+              <div className="mt-4 bg-gray-100 p-3 rounded">
+                <p className="text-sm text-gray-700">
+                  <strong>Kontakt für Datenschutzanfragen:</strong> <a href="mailto:info@internashville.com" className="underline">info@internashville.com</a>
                 </p>
-                <ul className="text-sm text-green-800 space-y-1">
-                  <li>• <strong>Per E-Mail:</strong> <a href="mailto:info@internashville.com" className="underline font-medium">info@internashville.com</a></li>
-                </ul>
+                <p className="text-xs text-gray-600 mt-1">
+                  Sie haben auch das Recht, sich bei einer Datenschutzbehörde zu beschweren.
+                </p>
               </div>
             </section>
 
-            {/* Beschwerde */}
+            {/* Cookies */}
             <section>
-              <h2 className="text-xl font-bold text-gray-900 mb-4">7. Beschwerderecht</h2>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-gray-700 text-sm mb-2">
-                  Sie haben das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren:
-                </p>
-                <div className="text-sm">
-                  <p className="font-semibold">Berliner Beauftragte für Datenschutz und Informationsfreiheit</p>
-                  <p>Friedrichstr. 219, 10969 Berlin</p>
-                  <p><a href="https://www.datenschutz-berlin.de" target="_blank" className="text-blue-600 hover:underline">www.datenschutz-berlin.de</a></p>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">7. Cookies und Tracking</h2>
+              <div className="space-y-3">
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">Erforderliche Cookies</h3>
+                  <p className="text-sm text-gray-700">
+                    Wir verwenden ausschließlich technisch notwendige Session-Cookies für die Spotify-Anmeldung. 
+                    Diese werden automatisch gelöscht, wenn Sie den Browser schließen.
+                  </p>
+                </div>
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">Analytics</h3>
+                  <p className="text-sm text-gray-700">
+                    Wir nutzen Vercel Analytics für anonyme Nutzungsstatistiken (Seitenaufrufe, Ladezeiten). 
+                    Diese Daten sind nicht personenbezogen und können nicht zu Ihnen zurückverfolgt werden.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* Datensicherheit */}
+            <section>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">8. Datensicherheit</h2>
+              <div className="border border-gray-200 rounded-lg p-4">
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-700">
+                    Wir treffen angemessene technische und organisatorische Maßnahmen zum Schutz Ihrer Daten:
+                  </p>
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    <li>• <strong>Verschlüsselung:</strong> HTTPS für alle Datenübertragungen</li>
+                    <li>• <strong>Zugriffskontrolle:</strong> Beschränkter Zugang zu Produktionsdaten</li>
+                    <li>• <strong>Regelmäßige Updates:</strong> Sicherheitspatches für alle Systeme</li>
+                    <li>• <strong>Monitoring:</strong> Überwachung auf verdächtige Aktivitäten</li>
+                  </ul>
                 </div>
               </div>
             </section>
 
             {/* Änderungen */}
             <section>
-              <h2 className="text-xl font-bold text-gray-900 mb-4">8. Änderungen dieser Datenschutzerklärung</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">9. Änderungen dieser Datenschutzerklärung</h2>
               <p className="text-gray-700 text-sm">
                 Wir behalten uns vor, diese Datenschutzerklärung zu aktualisieren, um rechtlichen Anforderungen zu entsprechen 
                 oder Änderungen unserer Services zu berücksichtigen. Die aktuelle Version finden Sie immer unter dieser URL.
               </p>
-              <div className="mt-4 bg-blue-50 border border-blue-200 rounded p-3">
-                <p className="text-sm text-blue-900">
-                  <strong>Letzte Aktualisierung:</strong> Januar 2025<br/>
+              <div className="mt-4 border border-gray-200 rounded p-3">
+                <p className="text-sm text-gray-700">
+                  <strong>Letzte Aktualisierung:</strong> August 2025<br/>
                   <strong>Version:</strong> 1.0
                 </p>
               </div>
@@ -305,7 +312,7 @@ export default function PrivacyPage() {
           <div className="bg-gray-100 px-8 py-4 text-center">
             <p className="text-sm text-gray-600">
               Bei Fragen zum Datenschutz kontaktieren Sie uns unter: 
-              <a href="mailto:info@internashville.com" className="text-blue-600 hover:underline ml-1">info@internashville.com</a>
+              <a href="mailto:info@internashville.com" className="underline ml-1">info@internashville.com</a>
             </p>
           </div>
         </div>

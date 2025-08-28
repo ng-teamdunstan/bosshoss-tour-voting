@@ -1,9 +1,8 @@
-// src/app/terms/page.tsx
 'use client'
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowLeft, FileText, AlertTriangle, CheckCircle, XCircle, Scale } from 'lucide-react'
+import { ArrowLeft, FileText } from 'lucide-react'
 
 export default function TermsPage() {
   return (
@@ -38,7 +37,7 @@ export default function TermsPage() {
         <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden">
           
           {/* Header Section */}
-          <div className="bg-gradient-to-r from-gray-800 to-black text-white px-8 py-6">
+          <div className="bg-gray-800 text-white px-8 py-6">
             <div className="flex items-center space-x-3">
               <FileText className="w-8 h-8" />
               <div>
@@ -59,7 +58,7 @@ export default function TermsPage() {
                 <p>An der Industriebahn 12</p>
                 <p>13088 Berlin, Deutschland</p>
                 <p className="mt-2">
-                  <strong>Kontakt:</strong> <a href="mailto:info@internashville.com" className="text-blue-600 hover:underline">info@internashville.com</a>
+                  <strong>Kontakt:</strong> <a href="mailto:info@internashville.com" className="underline">info@internashville.com</a>
                 </p>
               </div>
               <p className="text-gray-700 text-sm">
@@ -74,24 +73,21 @@ export default function TermsPage() {
               <div className="space-y-4">
                 <p className="text-gray-700">
                   Die App ermöglicht es Fans von The BossHoss, für ihre Lieblingssongs zu voten und so die Setlist 
-                  der &quot;Back to the Boots Club Tour 2025&quot; mitzubestimmen.
+                  der &quot;Back to the Boots Club Tour 2025&quot; zu beeinflussen.
                 </p>
                 
                 <div className="grid md:grid-cols-3 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <CheckCircle className="w-5 h-5 text-blue-600 mb-2" />
-                    <h3 className="font-semibold text-blue-900 text-sm">Voting-Funktion</h3>
-                    <p className="text-xs text-blue-800">10 Stimmen pro Tag für BossHoss-Songs</p>
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-gray-900 text-sm mb-2">Voting-Funktion</h3>
+                    <p className="text-xs text-gray-600">10 Stimmen pro Tag für BossHoss-Songs</p>
                   </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <CheckCircle className="w-5 h-5 text-green-600 mb-2" />
-                    <h3 className="font-semibold text-green-900 text-sm">Community-Ranking</h3>
-                    <p className="text-xs text-green-800">Einsicht in die Voting-Ergebnisse</p>
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-gray-900 text-sm mb-2">Community-Ranking</h3>
+                    <p className="text-xs text-gray-600">Einsicht in die Voting-Ergebnisse</p>
                   </div>
-                  <div className="bg-purple-50 p-4 rounded-lg">
-                    <CheckCircle className="w-5 h-5 text-purple-600 mb-2" />
-                    <h3 className="font-semibold text-purple-900 text-sm">Spotify-Integration</h3>
-                    <p className="text-xs text-purple-800">Automatische Playlist-Erstellung</p>
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-gray-900 text-sm mb-2">Spotify-Integration</h3>
+                    <p className="text-xs text-gray-600">Automatische Playlist-Erstellung</p>
                   </div>
                 </div>
               </div>
@@ -101,41 +97,30 @@ export default function TermsPage() {
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4">3. Nutzungsvoraussetzungen</h2>
               <div className="space-y-3">
-                <div className="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg">
-                  <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h3 className="font-semibold text-yellow-900 text-sm">Spotify-Account erforderlich</h3>
-                    <p className="text-xs text-yellow-800">Sie benötigen einen gültigen Spotify-Account für die Nutzung</p>
-                  </div>
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">Spotify-Account erforderlich</h3>
+                  <p className="text-sm text-gray-700">
+                    Für die Nutzung der App ist ein aktiver Spotify-Account (Free oder Premium) erforderlich. 
+                    Die Anmeldung erfolgt über Spotify OAuth.
+                  </p>
                 </div>
-                <div className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
-                  <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h3 className="font-semibold text-blue-900 text-sm">Mindestalter</h3>
-                    <p className="text-xs text-blue-800">Sie müssen mindestens 13 Jahre alt sein (entspricht Spotify&apos;s Mindestalter)</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
-                  <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h3 className="font-semibold text-green-900 text-sm">Einwilligung</h3>
-                    <p className="text-xs text-green-800">Zustimmung zu diesen Nutzungsbedingungen und der Datenschutzerklärung</p>
-                  </div>
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">Technische Voraussetzungen</h3>
+                  <p className="text-sm text-gray-700">
+                    Moderner Webbrowser mit JavaScript-Unterstützung und Internetverbindung.
+                  </p>
                 </div>
               </div>
             </section>
 
             {/* Nutzungsregeln */}
             <section>
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <Scale className="w-5 h-5 mr-2 text-green-600" />
-                4. Nutzungsregeln und Pflichten
-              </h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">4. Nutzungsregeln und Pflichten</h2>
               
               <div className="space-y-4">
-                <div className="border border-green-200 rounded-lg p-4 bg-green-50">
-                  <h3 className="font-semibold text-green-900 mb-2">Erlaubt ist:</h3>
-                  <ul className="text-sm text-green-800 space-y-1">
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">Erlaubt ist:</h3>
+                  <ul className="text-sm text-gray-700 space-y-1">
                     <li>• Ehrliches Voting für Ihre Lieblingssongs</li>
                     <li>• Maximal 10 Stimmen pro Tag</li>
                     <li>• Einsicht in die Community-Voting-Ergebnisse</li>
@@ -144,9 +129,9 @@ export default function TermsPage() {
                   </ul>
                 </div>
 
-                <div className="border border-red-200 rounded-lg p-4 bg-red-50">
-                  <h3 className="font-semibold text-red-900 mb-2">Verboten ist:</h3>
-                  <ul className="text-sm text-red-800 space-y-1">
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">Verboten ist:</h3>
+                  <ul className="text-sm text-gray-700 space-y-1">
                     <li>• <strong>Manipulation:</strong> Bots, automatisierte Scripts oder Mehrfach-Accounts</li>
                     <li>• <strong>Missbrauch:</strong> Übermäßige Anfragen oder Serverüberlastung</li>
                     <li>• <strong>Umgehung:</strong> Technische Schutzmaßnahmen umgehen</li>
@@ -160,19 +145,19 @@ export default function TermsPage() {
             {/* Voting-Regeln */}
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4">5. Voting-Regeln</h2>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="border border-gray-200 rounded-lg p-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <h3 className="font-semibold text-blue-900 mb-2">Voting-Limits</h3>
-                    <ul className="text-sm text-blue-800 space-y-1">
+                    <h3 className="font-semibold text-gray-900 mb-2">Voting-Limits</h3>
+                    <ul className="text-sm text-gray-700 space-y-1">
                       <li>• <strong>10 Stimmen</strong> pro Tag und Account</li>
                       <li>• <strong>1 Stimme</strong> pro Song und Tag</li>
                       <li>• <strong>1 Punkt</strong> pro Stimme</li>
                     </ul>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-blue-900 mb-2">Gültigkeit</h3>
-                    <ul className="text-sm text-blue-800 space-y-1">
+                    <h3 className="font-semibold text-gray-900 mb-2">Gültigkeit</h3>
+                    <ul className="text-sm text-gray-700 space-y-1">
                       <li>• Voting läuft bis zum <strong>Tour-Start</strong></li>
                       <li>• Stimmen können <strong>nicht rückgängig</strong> gemacht werden</li>
                       <li>• Bei Manipulation werden Stimmen <strong>disqualifiziert</strong></li>
@@ -186,22 +171,22 @@ export default function TermsPage() {
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4">6. Spotify-Integration</h2>
               <div className="space-y-3">
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-purple-900 mb-2">OAuth-Anmeldung</h3>
-                  <p className="text-sm text-purple-800">
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">OAuth-Anmeldung</h3>
+                  <p className="text-sm text-gray-700">
                     Wir verwenden Spotifys sichere OAuth-Anmeldung. Ihre Spotify-Zugangsdaten werden niemals bei uns gespeichert.
                   </p>
                 </div>
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-purple-900 mb-2">Playlist-Erstellung</h3>
-                  <p className="text-sm text-purple-800">
-                    Wir erstellen eine &quot;BossHoss Community Voting&quot; Playlist in Ihrer Spotify-Bibliothek, 
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">Playlist-Erstellung</h3>
+                  <p className="text-sm text-gray-700">
+                    Wir erstellen eine &quot;BossHoss Setlist 2025&quot; Playlist in Ihrer Spotify-Bibliothek, 
                     die automatisch mit den aktuellen Voting-Ergebnissen aktualisiert wird.
                   </p>
                 </div>
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-yellow-900 mb-2">Wichtiger Hinweis</h3>
-                  <p className="text-sm text-yellow-800">
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">Wichtiger Hinweis</h3>
+                  <p className="text-sm text-gray-700">
                     Die Spotify-Integration unterliegt auch den <a href="https://www.spotify.com/terms" target="_blank" className="underline">Spotify Nutzungsbedingungen</a>. 
                     Bei Problemen mit der Spotify-Funktionalität kontaktieren Sie uns.
                   </p>
@@ -213,14 +198,14 @@ export default function TermsPage() {
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4">7. Haftung und Gewährleistung</h2>
               <div className="space-y-4">
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="border border-gray-200 rounded-lg p-4">
                   <h3 className="font-semibold text-gray-900 mb-2">Verfügbarkeit</h3>
                   <p className="text-sm text-gray-700">
                     Wir bemühen uns um eine hohe Verfügbarkeit der App, können jedoch keine 100%ige Verfügbarkeit garantieren. 
                     Wartungsarbeiten und technische Störungen können vorübergehend zu Ausfällen führen.
                   </p>
                 </div>
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="border border-gray-200 rounded-lg p-4">
                   <h3 className="font-semibold text-gray-900 mb-2">Haftungsausschluss</h3>
                   <p className="text-sm text-gray-700">
                     Die Haftung für Schäden ist ausgeschlossen, soweit gesetzlich zulässig. 
@@ -233,53 +218,35 @@ export default function TermsPage() {
 
             {/* Beendigung */}
             <section>
-              <h2 className="text-xl font-bold text-gray-900 mb-4">8. Beendigung und Kündigung</h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-green-900 mb-2">🙋‍♂️ Durch Sie</h3>
-                  <p className="text-sm text-green-800">
-                    Sie können die Nutzung jederzeit beenden, indem Sie:
+              <h2 className="text-xl font-bold text-gray-900 mb-4">8. Beendigung der Nutzung</h2>
+              <div className="border border-gray-200 rounded-lg p-4">
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-700">
+                    <strong>Ende der App:</strong> Das Voting endet automatisch mit dem Start der &quot;Back to the Boots Club Tour 2025&quot;.
                   </p>
-                  <ul className="text-xs text-green-700 mt-2 space-y-1">
-                    <li>• Ihren Account in der App löschen</li>
-                    <li>• Die Spotify-Verbindung trennen</li>
-                    <li>• Uns per E-Mail kontaktieren</li>
-                  </ul>
-                </div>
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-red-900 mb-2">⚖️ Durch uns</h3>
-                  <p className="text-sm text-red-800">
-                    Wir können die Nutzung beenden bei:
+                  <p className="text-sm text-gray-700">
+                    <strong>Vorzeitige Kündigung:</strong> Sie können Ihren Account jederzeit löschen lassen.
                   </p>
-                  <ul className="text-xs text-red-700 mt-2 space-y-1">
-                    <li>• Verstoß gegen diese Bedingungen</li>
-                    <li>• Missbrauch oder Manipulation</li>
-                    <li>• Ende der Tour (automatisch)</li>
-                  </ul>
+                  <p className="text-sm text-gray-700">
+                    <strong>Datenlöschung:</strong> Nach Beendigung werden alle Nutzerdaten DSGVO-konform gelöscht.
+                  </p>
                 </div>
-              </div>
-              <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 className="font-semibold text-blue-900 mb-2">📅 Automatisches Ende</h3>
-                <p className="text-sm text-blue-800">
-                  Die App wird nach Ende der &quot;Back to the Boots Club Tour 2025&quot; automatisch eingestellt. 
-                  Alle Nutzerdaten werden dann DSGVO-konform gelöscht.
-                </p>
               </div>
             </section>
 
             {/* Änderungen */}
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4">9. Änderungen der Nutzungsbedingungen</h2>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-sm text-yellow-800 mb-2">
+              <div className="border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-700 mb-2">
                   Wir behalten uns vor, diese Nutzungsbedingungen zu ändern, wenn:
                 </p>
-                <ul className="text-xs text-yellow-700 space-y-1 mb-3">
+                <ul className="text-sm text-gray-700 space-y-1 mb-3">
                   <li>• Rechtliche Anforderungen es erfordern</li>
                   <li>• Neue App-Features hinzugefügt werden</li>
                   <li>• Sicherheitsverbesserungen implementiert werden</li>
                 </ul>
-                <p className="text-xs text-yellow-800 font-semibold">
+                <p className="text-sm text-gray-700 font-semibold">
                   Über wesentliche Änderungen werden Sie per E-Mail oder durch eine Benachrichtigung in der App informiert.
                 </p>
               </div>
@@ -288,7 +255,7 @@ export default function TermsPage() {
             {/* Rechtliches */}
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4">10. Anwendbares Recht und Gerichtsstand</h2>
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="border border-gray-200 rounded-lg p-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h3 className="font-semibold text-gray-900 text-sm mb-1">Anwendbares Recht</h3>
@@ -306,7 +273,7 @@ export default function TermsPage() {
               </div>
             </section>
 
-            {/* Salvatorische Klausel */}
+            {/* Schlussbestimmungen */}
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4">11. Schlussbestimmungen</h2>
               <div className="text-sm text-gray-700 space-y-2">
@@ -331,7 +298,7 @@ export default function TermsPage() {
               </div>
               <div>
                 <p>
-                  Fragen? <a href="mailto:info@internashville.com" className="text-blue-600 hover:underline">info@internashville.com</a>
+                  Fragen? <a href="mailto:info@internashville.com" className="underline">info@internashville.com</a>
                 </p>
               </div>
             </div>

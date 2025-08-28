@@ -68,7 +68,7 @@ export default function ConsentPopup({ isOpen, onClose, onAccept }: ConsentPopup
       {/* Modal */}
       <div className="relative bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         
-        {/* Header - ✅ Mit Voting-Page Farbe */}
+        {/* Header */}
         <div className="px-6 py-4 rounded-t-xl backdrop-blur-sm" style={{ backgroundColor: 'rgba(201, 175, 128, 0.9)' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -182,18 +182,16 @@ export default function ConsentPopup({ isOpen, onClose, onAccept }: ConsentPopup
             </div>
           </div>
 
-          {/* ❌ Newsletter-Block komplett entfernt */}
-
           {/* Deine Rechte */}
           <div className="bg-blue-50 rounded-lg p-4">
             <h4 className="font-medium text-gray-900 mb-2">🛡️ Deine Rechte:</h4>
             <div className="text-sm text-gray-700 grid md:grid-cols-2 gap-2">
-              <div>• ✅ Daten jederzeit einsehen</div>
-              <div>• ⚙️ Einstellungen ändern</div>
-              <div>• 📁 Daten exportieren</div>
-              <div>• ❌ Daten vollständig löschen</div>
-              <div>• 🔌 Spotify-Verbindung trennen</div>
-              <div>• 📧 Fragen? <a href="mailto:privacy@thebosshoss.com" className="text-blue-600 hover:underline font-medium">info@internashville.com</a></div>
+              <div>• Daten jederzeit einsehen</div>
+              <div>• Einstellungen ändern</div>
+              <div>• Daten exportieren</div>
+              <div>• Daten vollständig löschen</div>
+              <div>• Spotify-Verbindung trennen</div>
+              <div>• Fragen? <a href="mailto:privacy@thebosshoss.com" className="text-blue-600 hover:underline font-medium">info@internashville.com</a></div>
             </div>
             <p className="text-xs text-gray-600 mt-2">
               Speicherdauer: Bis Ende der Tour oder auf deinen Wunsch hin sofortige Löschung
