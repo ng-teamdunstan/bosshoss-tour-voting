@@ -74,7 +74,7 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4">2. Zweck der Datenverarbeitung</h2>
               <p className="text-gray-700 mb-4">
-                Diese App ermöglicht es BossHoss-Fans, für ihre Lieblingssongs zu voten und so die Setlist der "Back to the Boots Club Tour 2025" mitzubestimmen. 
+                Diese App ermöglicht es BossHoss-Fans, für ihre Lieblingssongs zu voten und so die Setlist der &quot;Back to the Boots Club Tour 2025&quot; zu beeinflussen. 
               </p>
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="bg-blue-50 p-4 rounded-lg">
@@ -127,7 +127,7 @@ export default function PrivacyPage() {
                 <div className="border border-gray-200 rounded-lg p-4">
                   <h3 className="font-semibold text-gray-900 mb-2">3.3 Playlist-Daten</h3>
                   <ul className="text-sm text-gray-700 space-y-1">
-                    <li>• <strong>Playlist-ID:</strong> Kennung der erstellten "BossHoss Setlist 2025" Playlist</li>
+                    <li>• <strong>Playlist-ID:</strong> Kennung der erstellten &quot;The BossHoss - Back to the Clubs Community Voting Top 15&quot; Playlist</li>
                     <li>• <strong>Playlist-Zugriff:</strong> Berechtigung zum Erstellen und Aktualisieren</li>
                   </ul>
                   <p className="text-xs text-gray-600 mt-2">
@@ -205,7 +205,7 @@ export default function PrivacyPage() {
                 <div className="space-y-3">
                   <div>
                     <h3 className="font-semibold text-red-900">Voting- und Nutzerdaten</h3>
-                    <p className="text-sm text-red-800">Bis zum Ende der "Back to the Boots Club Tour 2025" (voraussichtlich November 2025)</p>
+                    <p className="text-sm text-red-800">Bis zum Ende der &quot;Back to the Boots Club Tour 2025&quot; (voraussichtlich November 2025)</p>
                   </div>
                   <div>
                     <h3 className="font-semibold text-red-900">Server-Logs</h3>
@@ -230,41 +230,40 @@ export default function PrivacyPage() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-3">
                   <div className="border border-gray-200 rounded p-3">
-                    <h3 className="font-semibold text-gray-900 text-sm">📄 Recht auf Auskunft (Art. 15)</h3>
+                    <h3 className="font-semibold text-gray-900 text-sm">Recht auf Auskunft (Art. 15)</h3>
                     <p className="text-xs text-gray-600">Welche Daten wir über Sie speichern</p>
                   </div>
                   <div className="border border-gray-200 rounded p-3">
-                    <h3 className="font-semibold text-gray-900 text-sm">✏️ Recht auf Berichtigung (Art. 16)</h3>
+                    <h3 className="font-semibold text-gray-900 text-sm">Recht auf Berichtigung (Art. 16)</h3>
                     <p className="text-xs text-gray-600">Korrektur falscher Daten</p>
                   </div>
                   <div className="border border-gray-200 rounded p-3">
-                    <h3 className="font-semibold text-gray-900 text-sm">🗑️ Recht auf Löschung (Art. 17)</h3>
+                    <h3 className="font-semibold text-gray-900 text-sm">Recht auf Löschung (Art. 17)</h3>
                     <p className="text-xs text-gray-600">Vollständige Entfernung Ihrer Daten</p>
                   </div>
                 </div>
                 <div className="space-y-3">
                   <div className="border border-gray-200 rounded p-3">
-                    <h3 className="font-semibold text-gray-900 text-sm">⏸️ Recht auf Einschränkung (Art. 18)</h3>
+                    <h3 className="font-semibold text-gray-900 text-sm">⏸Recht auf Einschränkung (Art. 18)</h3>
                     <p className="text-xs text-gray-600">Verarbeitung einschränken</p>
                   </div>
                   <div className="border border-gray-200 rounded p-3">
-                    <h3 className="font-semibold text-gray-900 text-sm">📤 Recht auf Datenübertragbarkeit (Art. 20)</h3>
+                    <h3 className="font-semibold text-gray-900 text-sm">Recht auf Datenübertragbarkeit (Art. 20)</h3>
                     <p className="text-xs text-gray-600">Export Ihrer Daten</p>
                   </div>
                   <div className="border border-gray-200 rounded p-3">
-                    <h3 className="font-semibold text-gray-900 text-sm">🚫 Widerspruchsrecht (Art. 21)</h3>
+                    <h3 className="font-semibold text-gray-900 text-sm">Widerspruchsrecht (Art. 21)</h3>
                     <p className="text-xs text-gray-600">Der Verarbeitung widersprechen</p>
                   </div>
                 </div>
               </div>
               
               <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
-                <h3 className="font-semibold text-green-900 mb-2">🛠️ Rechte ausüben</h3>
+                <h3 className="font-semibold text-green-900 mb-2">Rechte ausüben</h3>
                 <p className="text-sm text-green-800 mb-2">
                   Sie können Ihre Rechte auf zwei Wegen ausüben:
                 </p>
                 <ul className="text-sm text-green-800 space-y-1">
-                  <li>• <strong>Direkt in der App:</strong> Account-Einstellungen → Datenschutz → Account löschen</li>
                   <li>• <strong>Per E-Mail:</strong> <a href="mailto:info@internashville.com" className="underline font-medium">info@internashville.com</a></li>
                 </ul>
               </div>

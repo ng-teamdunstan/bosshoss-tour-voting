@@ -63,7 +63,7 @@ export default function TermsPage() {
                 </p>
               </div>
               <p className="text-gray-700 text-sm">
-                Diese Nutzungsbedingungen regeln die Nutzung der "BossHoss Setlist Voting" Web-App. 
+                Diese Nutzungsbedingungen regeln die Nutzung der &quot;BossHoss Community Voting&quot; Web-App. 
                 Mit der Nutzung der App akzeptieren Sie diese Bedingungen vollständig.
               </p>
             </section>
@@ -74,7 +74,7 @@ export default function TermsPage() {
               <div className="space-y-4">
                 <p className="text-gray-700">
                   Die App ermöglicht es Fans von The BossHoss, für ihre Lieblingssongs zu voten und so die Setlist 
-                  der "Back to the Boots Club Tour 2025" mitzubestimmen.
+                  der &quot;Back to the Boots Club Tour 2025&quot; mitzubestimmen.
                 </p>
                 
                 <div className="grid md:grid-cols-3 gap-4">
@@ -112,7 +112,7 @@ export default function TermsPage() {
                   <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                   <div>
                     <h3 className="font-semibold text-blue-900 text-sm">Mindestalter</h3>
-                    <p className="text-xs text-blue-800">Sie müssen mindestens 13 Jahre alt sein (entspricht Spotify's Mindestalter)</p>
+                    <p className="text-xs text-blue-800">Sie müssen mindestens 13 Jahre alt sein (entspricht Spotify&apos;s Mindestalter)</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
@@ -134,7 +134,7 @@ export default function TermsPage() {
               
               <div className="space-y-4">
                 <div className="border border-green-200 rounded-lg p-4 bg-green-50">
-                  <h3 className="font-semibold text-green-900 mb-2">✅ Erlaubt ist:</h3>
+                  <h3 className="font-semibold text-green-900 mb-2">Erlaubt ist:</h3>
                   <ul className="text-sm text-green-800 space-y-1">
                     <li>• Ehrliches Voting für Ihre Lieblingssongs</li>
                     <li>• Maximal 10 Stimmen pro Tag</li>
@@ -145,7 +145,7 @@ export default function TermsPage() {
                 </div>
 
                 <div className="border border-red-200 rounded-lg p-4 bg-red-50">
-                  <h3 className="font-semibold text-red-900 mb-2">❌ Verboten ist:</h3>
+                  <h3 className="font-semibold text-red-900 mb-2">Verboten ist:</h3>
                   <ul className="text-sm text-red-800 space-y-1">
                     <li>• <strong>Manipulation:</strong> Bots, automatisierte Scripts oder Mehrfach-Accounts</li>
                     <li>• <strong>Missbrauch:</strong> Übermäßige Anfragen oder Serverüberlastung</li>
@@ -195,12 +195,12 @@ export default function TermsPage() {
                 <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                   <h3 className="font-semibold text-purple-900 mb-2">Playlist-Erstellung</h3>
                   <p className="text-sm text-purple-800">
-                    Wir erstellen eine "BossHoss Setlist 2025" Playlist in Ihrer Spotify-Bibliothek, 
+                    Wir erstellen eine &quot;BossHoss Community Voting&quot; Playlist in Ihrer Spotify-Bibliothek, 
                     die automatisch mit den aktuellen Voting-Ergebnissen aktualisiert wird.
                   </p>
                 </div>
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-yellow-900 mb-2">⚠️ Wichtiger Hinweis</h3>
+                  <h3 className="font-semibold text-yellow-900 mb-2">Wichtiger Hinweis</h3>
                   <p className="text-sm text-yellow-800">
                     Die Spotify-Integration unterliegt auch den <a href="https://www.spotify.com/terms" target="_blank" className="underline">Spotify Nutzungsbedingungen</a>. 
                     Bei Problemen mit der Spotify-Funktionalität kontaktieren Sie uns.
@@ -261,7 +261,7 @@ export default function TermsPage() {
               <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h3 className="font-semibold text-blue-900 mb-2">📅 Automatisches Ende</h3>
                 <p className="text-sm text-blue-800">
-                  Die App wird nach Ende der "Back to the Boots Club Tour 2025" automatisch eingestellt. 
+                  Die App wird nach Ende der &quot;Back to the Boots Club Tour 2025&quot; automatisch eingestellt. 
                   Alle Nutzerdaten werden dann DSGVO-konform gelöscht.
                 </p>
               </div>
@@ -327,7 +327,7 @@ export default function TermsPage() {
           <div className="bg-gray-100 px-8 py-4">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between text-sm text-gray-600">
               <div>
-                <p><strong>Letzte Aktualisierung:</strong> Januar 2025 | <strong>Version:</strong> 1.0</p>
+                <p><strong>Letzte Aktualisierung:</strong> August 2025 | <strong>Version:</strong> 1.0</p>
               </div>
               <div>
                 <p>
