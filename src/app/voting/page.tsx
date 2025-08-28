@@ -343,10 +343,13 @@ export default function VotingPage() {
         </div>
 
         {/* Results View mit Album Covers */}
+        // Vereinfachtes Leaderboard - zu ersetzen in der voting/page.tsx
+
+        {/* Results View mit einheitlichem Design */}
         {showResults ? (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-3xl font-bold mb-2">🏆 Voting Ergebnisse</h2>
+              <h2 className="text-3xl font-bold mb-2">Voting Ergebnisse</h2>
               <p className="text-gray-400">Die beliebtesten Songs für die nächste Tour</p>
             </div>
 
@@ -354,21 +357,11 @@ export default function VotingPage() {
               {results.map((result, index) => (
                 <div
                   key={result.trackId}
-                  className={`rounded-xl border p-6 flex items-center justify-between transition-all duration-200 hover:scale-[1.02] ${
-                    index === 0 ? 'bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border-yellow-500/50 shadow-lg shadow-yellow-500/20' :
-                    index === 1 ? 'bg-gradient-to-r from-gray-900/50 to-gray-800/50 border-gray-400/50' :
-                    index === 2 ? 'bg-gradient-to-r from-orange-900/20 to-red-900/20 border-orange-500/50' :
-                    'bg-gray-900/50 border-gray-800'
-                  }`}
+                  className="rounded-xl border bg-gray-900/50 border-gray-800 p-6 flex items-center justify-between transition-all duration-200 hover:scale-[1.02]"
                 >
                   <div className="flex items-center space-x-4">
-                    {/* Ranking Badge */}
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg ${
-                      index === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-black' :
-                      index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-black' :
-                      index === 2 ? 'bg-gradient-to-br from-orange-500 to-red-600 text-white' :
-                      'bg-gray-700 text-white'
-                    }`}>
+                    {/* Einheitliche Ranking Nummer */}
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg bg-gray-700 text-white">
                       {result.rank}
                     </div>
 
@@ -392,73 +385,34 @@ export default function VotingPage() {
                           </div>
                         )}
                       </div>
-                      
-                      {/* Glanz-Effekt für Top 3 */}
-                      {index < 3 && (
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-lg"></div>
-                      )}
                     </div>
-                    
-                    {/* Song Info mit Spotify Link */}
-                    <div className="flex-grow">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="font-bold text-lg text-white">{result.trackName}</h3>
-                        
-                        {/* Spotify Song Link */}
-                        <a
-                          href={`https://open.spotify.com/track/${result.trackId}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 transform hover:scale-105"
-                          title="Song auf Spotify anhören"
-                        >
-                          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
-                          </svg>
-                          <span>Listen on Spotify</span>
-                        </a>
-                      </div>
-                      
-                      <p className="text-gray-300 text-sm">{result.artistName}</p>
-                      <p className="text-gray-400 text-xs">{result.albumName}</p>
+
+                    {/* Song Info */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-1">
+                        {result.trackName}
+                      </h3>
+                      <p className="text-gray-400 text-sm">
+                        {result.albumName}
+                      </p>
                     </div>
                   </div>
-                  
-                  {/* Vote Stats */}
+
+                  {/* Punkte - einheitliche Farbe */}
                   <div className="text-right">
-                    <div className={`text-3xl font-bold mb-1 ${
-                      index === 0 ? 'text-yellow-400' :
-                      index === 1 ? 'text-gray-300' :
-                      index === 2 ? 'text-orange-400' :
-                      'text-gray-200'
-                    }`}>
+                    <div className="text-2xl font-bold text-gray-200">
                       {result.totalPoints}
                     </div>
                     <div className="text-sm text-gray-400">
                       {result.totalVotes} Stimmen
                     </div>
-                    {/* Zusätzliche Badges für Top 3 */}
-                    {index === 0 && (
-                      <div className="text-xs bg-yellow-500 text-black px-2 py-1 rounded-full mt-2 font-semibold">
-                        👑 SIEGER
-                      </div>
-                    )}
-                    {index === 1 && (
-                      <div className="text-xs bg-gray-400 text-black px-2 py-1 rounded-full mt-2 font-semibold">
-                        🥈 RUNNER-UP
-                      </div>
-                    )}
-                    {index === 2 && (
-                      <div className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full mt-2 font-semibold">
-                        🥉 TOP 3
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
             </div>
           </div>
         ) : (
+          /* Song Voting bleibt unverändert */
           /* Song Voting */
           <div className="space-y-8">
             {loading && (
