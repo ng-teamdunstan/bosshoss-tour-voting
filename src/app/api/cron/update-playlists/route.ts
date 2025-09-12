@@ -1,3 +1,6 @@
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 // src/app/api/cron/update-playlists/route.ts - MIT AUTO-COVER
 import { fetchSpotifyJSON, fetchWithRetry } from '@/lib/spotify-utils'
 import { NextRequest, NextResponse } from 'next/server'
