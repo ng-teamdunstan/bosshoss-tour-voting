@@ -1,3 +1,6 @@
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 // src/app/api/bosshoss-data/route.ts - OPTIMIERT für Speed
 import { NextRequest, NextResponse } from 'next/server'
 
