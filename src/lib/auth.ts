@@ -16,14 +16,12 @@ export const authOptions: NextAuthOptions = {
     SpotifyProvider({
       clientId: process.env.SPOTIFY_CLIENT_ID!,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          scope: scopes,
-          // Wichtig: offline_access für refresh tokens
-          access_type: 'offline',
-          prompt: 'consent'
-        }
-      }
+   authorization: {
+     params: {
+       scope: scopes,
+       show_dialog: true  // ← Neue Zeile hinzufügen
+     }
+   }
     })
   ],
   callbacks: {
