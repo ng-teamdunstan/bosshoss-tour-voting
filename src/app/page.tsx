@@ -186,10 +186,10 @@ const handleConsentDeclined = () => {
                   { date: '03.10.2025', city: 'HANNOVER', venue: 'CAPITOL', status: 'sold_out' },
                   { date: '04.10.2025', city: 'STUTTGART', venue: 'IM WIZEMANN', status: 'sold_out' },
                   { date: '05.10.2025', city: 'FRANKFURT', venue: 'BATSCHKAPP', status: 'sold_out' },
-                  { date: '06.10.2025', city: 'LEIPZIG', venue: 'TÄUBCHENTHAL', status: 'few_left' },
+                  { date: '06.10.2025', city: 'LEIPZIG', venue: 'TÄUBCHENTHAL', status: 'sold_out' },
                   { date: '07.10.2025', city: 'DRESDEN', venue: 'ALTER SCHLACHTHOF', status: 'few_left' },
                   { date: '08.10.2025', city: 'MÜNCHEN', venue: 'BACKSTAGE-WERK', status: 'sold_out' },
-                  { date: '19.10.2025', city: 'BERLIN', venue: 'ASTRA - THANX SHOW', status: 'few_left' }
+                  { date: '19.10.2025', city: 'BERLIN', venue: 'ASTRA - THANX SHOW', status: 'new' }
                 ].map((show, index) => (
                   <a 
                     key={index}
@@ -253,10 +253,10 @@ const handleConsentDeclined = () => {
                   { date: '03.10.2025', city: 'HANNOVER', venue: 'CAPITOL', status: 'sold_out' },
                   { date: '04.10.2025', city: 'STUTTGART', venue: 'IM WIZEMANN', status: 'sold_out' },
                   { date: '05.10.2025', city: 'FRANKFURT', venue: 'BATSCHKAPP', status: 'sold_out' },
-                  { date: '06.10.2025', city: 'LEIPZIG', venue: 'TÄUBCHENTHAL', status: 'few_left' },
+                  { date: '06.10.2025', city: 'LEIPZIG', venue: 'TÄUBCHENTHAL', status: 'sold_out' },
                   { date: '07.10.2025', city: 'DRESDEN', venue: 'ALTER SCHLACHTHOF', status: 'few_left' },
                   { date: '08.10.2025', city: 'MÜNCHEN', venue: 'BACKSTAGE-WERK', status: 'sold_out' },
-                  { date: '19.10.2025', city: 'BERLIN', venue: 'ASTRA - THANX SHOW', status: 'few_left' }
+                  { date: '19.10.2025', city: 'BERLIN', venue: 'ASTRA - THANX SHOW', status: 'new' }
                 ].map((show, index) => (
                   <a 
                     key={index}
@@ -288,6 +288,13 @@ const handleConsentDeclined = () => {
                       <div className="absolute top-1 left-1/2 transform -translate-x-1/2 -rotate-12 z-10">
                         <span className="font-helltown text-xs bg-green-600 text-white px-2 py-1 uppercase shadow-lg">
                           FEW LEFT
+                        </span>
+                      </div>
+                    )}
+                    {show.status === 'new' && (
+                      <div className="absolute top-1 left-1/2 transform -translate-x-1/2 -rotate-12 z-10">
+                        <span className="font-helltown text-xs bg-green-600 text-white px-2 py-1 uppercase shadow-lg">
+                          NEW
                         </span>
                       </div>
                     )}
