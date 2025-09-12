@@ -8,7 +8,6 @@ const scopes = [
   'user-read-private', 
   'playlist-modify-public',
   'playlist-modify-private',
-  'playlist-read-private'
 ].join(' ')
 
 export const authOptions: NextAuthOptions = {
