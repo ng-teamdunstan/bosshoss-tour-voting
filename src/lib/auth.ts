@@ -6,8 +6,6 @@ import SpotifyProvider from 'next-auth/providers/spotify'
 const scopes = [
   'user-read-email',
   'user-read-private', 
-  'user-read-recently-played',
-  'user-top-read',
   'playlist-modify-public',
   'playlist-modify-private',
   'playlist-read-private'
