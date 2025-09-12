@@ -219,8 +219,15 @@ const handleConsentDeclined = () => {
                     )}
                     {show.status === 'few_left' && (
                       <div className="absolute top-2 left-1/2 transform -translate-x-1/2 -rotate-12 z-10">
-                        <span className="font-helltown text-xs bg-green-600 text-white px-3 py-1 uppercase shadow-lg">
+                        <span className="font-helltown text-xs bg-orange-600 text-white px-3 py-1 uppercase shadow-lg">
                           FEW LEFT
+                        </span>
+                      </div>
+                    )}
+                    {show.status === 'new' && (
+                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 -rotate-12 z-10">
+                        <span className="font-helltown text-xs bg-green-600 text-white px-3 py-1 uppercase shadow-lg">
+                          NEW
                         </span>
                       </div>
                     )}
@@ -286,7 +293,7 @@ const handleConsentDeclined = () => {
                     )}
                     {show.status === 'few_left' && (
                       <div className="absolute top-1 left-1/2 transform -translate-x-1/2 -rotate-12 z-10">
-                        <span className="font-helltown text-xs bg-green-600 text-white px-2 py-1 uppercase shadow-lg">
+                        <span className="font-helltown text-xs bg-orange-600 text-white px-2 py-1 uppercase shadow-lg">
                           FEW LEFT
                         </span>
                       </div>
